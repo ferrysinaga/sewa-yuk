@@ -1,5 +1,5 @@
+import { Link } from 'react-router-dom'
 import AppHeader from '../../components/layout/AppHeader'
-import { useToast } from '../../components/ui/Toast'
 import { useAuthStore } from '../../store/useAuthStore'
 
 const stats = [
@@ -11,7 +11,6 @@ const stats = [
 
 export default function AdminDashboard() {
   const user = useAuthStore((state) => state.user)
-  const { showToast } = useToast()
 
   const displayName = (user?.user_metadata?.full_name as string | undefined) || user?.email || 'Penyelenggara'
 
@@ -30,16 +29,15 @@ export default function AdminDashboard() {
               Kelola blueprint, pantau okupansi, dan kunci booth secara real-time.
             </p>
           </div>
-          <button
-            type="button"
-            onClick={() => showToast('Ruang kerja denah akan tersedia pada tahap berikutnya.', 'info')}
+          <Link
+            to="/admin/blueprint"
             className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2"
           >
             <svg viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4">
               <path d="M10.75 4.75a.75.75 0 0 0-1.5 0v4.5h-4.5a.75.75 0 0 0 0 1.5h4.5v4.5a.75.75 0 0 0 1.5 0v-4.5h4.5a.75.75 0 0 0 0-1.5h-4.5v-4.5Z" />
             </svg>
             Buat Denah Baru
-          </button>
+          </Link>
         </div>
 
         <div className="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">

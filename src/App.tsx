@@ -6,6 +6,7 @@ import LandingPage from './pages/landing/LandingPage'
 import Login from './pages/Login'
 import Register from './pages/Register'
 import AdminDashboard from './pages/admin/AdminDashboard'
+import BlueprintEditor from './pages/admin/BlueprintEditor'
 import EventExplorer from './pages/tenant/EventExplorer'
 import { useAuthStore } from './store/useAuthStore'
 
@@ -25,7 +26,9 @@ function AppRoutes() {
       <Route element={<ProtectedRoute />}>
         <Route path="/event" element={<EventExplorer />} />
         <Route element={<ProtectedRoute allowedRoles={['organizer']} />}>
-          <Route path="/admin/*" element={<AdminDashboard />} />
+          <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/admin/blueprint" element={<BlueprintEditor />} />
+          <Route path="/admin/*" element={<Navigate to="/admin" replace />} />
         </Route>
       </Route>
 
