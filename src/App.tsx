@@ -1,5 +1,45 @@
+import { useEffect } from 'react'
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
+import { ToastProvider } from './components/ui/Toast'
+import ProtectedRoute from './components/layout/ProtectedRoute'
 import LandingPage from './pages/landing/LandingPage'
+import Login from './pages/Login'
+import Register from './pages/Register'
+import AdminDashboard from './pages/admin/AdminDashboard'
+import EventExplorer from './pages/tenant/EventExplorer'
+import { useAuthStore } from './store/useAuthStore'
+
+function AppRoutes() {
+  const initialize = useAuthStore((state) => state.initialize)
+
+  useEffect(() => {
+    void initialize()
+  }, [initialize])
+
+  return (
+    <Routes>
+      <Route path="/" element={<LandingPage />} />
+      <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
+
+      <Route element={<ProtectedRoute />}>
+        <Route path="/event" element={<EventExplorer />} />
+        <Route element={<ProtectedRoute allowedRoles={['organizer']} />}>
+          <Route path="/admin/*" element={<AdminDashboard />} />
+        </Route>
+      </Route>
+
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
+  )
+}
 
 export default function App() {
-  return <LandingPage />
+  return (
+    <BrowserRouter>
+      <ToastProvider>
+        <AppRoutes />
+      </ToastProvider>
+    </BrowserRouter>
+  )
 }

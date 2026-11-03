@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
 type Category = 'Tech' | 'F&B' | 'Apparel'
-type BoothStatus = 'Available' | 'Booked'
+type BoothStatus = 'Available' | 'Reserved' | 'Booked'
 
 interface Booth {
   id: string
@@ -22,14 +22,8 @@ const booths: Booth[] = [
   { id: 'A-04', label: 'Booth A-04', category: 'Tech', price: 2900000, x: 24, y: 328, width: 120, height: 56, status: 'Available' },
   { id: 'B-01', label: 'Booth B-01', category: 'F&B', price: 6200000, x: 300, y: 64, width: 196, height: 88, status: 'Available' },
   { id: 'B-02', label: 'Booth B-02', category: 'Tech', price: 7400000, x: 300, y: 164, width: 196, height: 88, status: 'Available' },
-  { id: 'B-03', label: 'Booth B-03', category: 'Apparel', price: 5100000, x: 300, y: 264, width: 196, height: 88, status: 'Booked' },
+  { id: 'B-03', label: 'Booth B-03', category: 'Apparel', price: 5100000, x: 300, y: 264, width: 196, height: 88, status: 'Reserved' },
 ]
-
-const categoryFill: Record<Category, string> = {
-  Tech: 'fill-blue-50',
-  'F&B': 'fill-amber-50',
-  Apparel: 'fill-violet-50',
-}
 
 const formatPrice = (price: number) =>
   new Intl.NumberFormat('id-ID', {
@@ -100,14 +94,14 @@ function BoothMap() {
   const activeBooth = booths.find((booth) => booth.id === activeId)
 
   return (
-    <div className="rounded-2xl border border-gray-200 bg-white shadow-sm">
+    <div className="rounded-2xl border border-gray-200 bg-white shadow-md transition-shadow hover:shadow-lg">
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-gray-200 px-5 py-4">
         <div>
           <p className="text-sm font-semibold text-gray-900">Hall A — Jakarta Convention Center</p>
           <p className="text-xs text-gray-500">Pameran Teknologi Nusantara 2026</p>
         </div>
-        <span className="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-700 ring-1 ring-inset ring-emerald-100">
-          <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+        <span className="inline-flex items-center gap-2 rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-100">
+          <span className="h-1.5 w-1.5 rounded-full bg-blue-600" />
           Sinkron real-time
         </span>
       </div>
@@ -139,25 +133,25 @@ function BoothMap() {
 
           {booths.map((booth) => {
             const isActive = booth.id === activeId
-            const isBooked = booth.status === 'Booked'
+            const isUnavailable = booth.status !== 'Available'
 
             return (
               <g
                 key={booth.id}
                 role="button"
-                tabIndex={isBooked ? -1 : 0}
+                tabIndex={isUnavailable ? -1 : 0}
                 aria-label={`${booth.label}, ${booth.category}, ${formatPrice(booth.price)}, ${
-                  isBooked ? 'sudah dipesan' : 'tersedia'
+                  isUnavailable ? 'sudah dipesan' : 'tersedia'
                 }`}
                 aria-pressed={isActive}
-                onClick={() => !isBooked && setActiveId(booth.id)}
+                onClick={() => !isUnavailable && setActiveId(booth.id)}
                 onKeyDown={(event) => {
-                  if (!isBooked && (event.key === 'Enter' || event.key === ' ')) {
+                  if (!isUnavailable && (event.key === 'Enter' || event.key === ' ')) {
                     event.preventDefault()
                     setActiveId(booth.id)
                   }
                 }}
-                className={isBooked ? 'cursor-not-allowed' : 'cursor-pointer focus-visible:outline-none'}
+                className={isUnavailable ? 'cursor-not-allowed' : 'cursor-pointer focus-visible:outline-none'}
               >
                 <rect
                   x={booth.x}
@@ -168,9 +162,9 @@ function BoothMap() {
                   className={
                     isActive
                       ? 'fill-blue-600 stroke-blue-700 transition-colors'
-                      : isBooked
-                        ? 'fill-gray-100 stroke-gray-200'
-                        : `${categoryFill[booth.category]} stroke-gray-300 transition-colors hover:fill-blue-50 hover:stroke-blue-400`
+                      : isUnavailable
+                        ? 'fill-gray-100 stroke-gray-300'
+                        : 'fill-white stroke-gray-300 transition-colors hover:fill-blue-50 hover:stroke-blue-400'
                   }
                   strokeWidth={isActive ? 2 : 1.2}
                 />
@@ -178,7 +172,7 @@ function BoothMap() {
                 <text
                   x={booth.x + 14}
                   y={booth.y + 26}
-                  className={`text-[11px] font-semibold ${isActive ? 'fill-white' : isBooked ? 'fill-gray-400' : 'fill-gray-900'}`}
+                  className={`text-[11px] font-semibold ${isActive ? 'fill-white' : isUnavailable ? 'fill-gray-400' : 'fill-gray-900'}`}
                 >
                   {booth.id}
                 </text>
@@ -186,12 +180,12 @@ function BoothMap() {
                 <text
                   x={booth.x + 14}
                   y={booth.y + 44}
-                  className={`text-[9px] font-medium ${isActive ? 'fill-blue-100' : isBooked ? 'fill-gray-400' : 'fill-gray-500'}`}
+                  className={`text-[9px] font-medium ${isActive ? 'fill-blue-100' : isUnavailable ? 'fill-gray-400' : 'fill-gray-500'}`}
                 >
-                  {isBooked ? 'Terisi' : booth.category}
+                  {isUnavailable ? (booth.status === 'Reserved' ? 'Dipesan' : 'Terisi') : booth.category}
                 </text>
 
-                {!isBooked && (
+                {!isUnavailable && (
                   <text
                     x={booth.x + 14}
                     y={booth.y + booth.height - 14}
@@ -396,7 +390,7 @@ export default function LandingPage() {
               {values.map((item) => (
                 <div
                   key={item.title}
-                  className="group rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition-all hover:shadow-lg sm:p-7"
+                  className="group rounded-2xl border border-gray-200 bg-white p-6 shadow-md transition-all hover:shadow-lg sm:p-7"
                 >
                   <span className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-blue-50 text-blue-600 transition-colors group-hover:bg-blue-600 group-hover:text-white">
                     {item.icon}
@@ -419,7 +413,7 @@ export default function LandingPage() {
             </div>
 
             <div className="mt-12 grid gap-6 lg:grid-cols-2">
-              <article className="relative overflow-hidden rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-lg sm:p-8">
+              <article className="relative overflow-hidden rounded-2xl border border-gray-200 bg-white p-6 shadow-md transition-shadow hover:shadow-lg sm:p-8">
                 <div className="flex items-center justify-between gap-4">
                   <span className="inline-flex rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700 ring-1 ring-inset ring-blue-100">
                     Untuk Organizer
@@ -463,9 +457,9 @@ export default function LandingPage() {
                 </a>
               </article>
 
-              <article className="relative overflow-hidden rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-lg sm:p-8">
+              <article className="relative overflow-hidden rounded-2xl border border-gray-200 bg-white p-6 shadow-md transition-shadow hover:shadow-lg sm:p-8">
                 <div className="flex items-center justify-between gap-4">
-                  <span className="inline-flex rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700 ring-1 ring-inset ring-emerald-100">
+                  <span className="inline-flex rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-700 ring-1 ring-inset ring-gray-200">
                     Untuk Tenant
                   </span>
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" className="h-8 w-8 text-gray-300">
@@ -485,7 +479,7 @@ export default function LandingPage() {
                       key={tag}
                       className={`rounded-lg px-3 py-1.5 text-xs font-medium ring-1 ring-inset ${
                         tag === 'Semua'
-                          ? 'bg-gray-900 text-white ring-gray-900'
+                          ? 'bg-blue-600 text-white ring-blue-600'
                           : 'bg-white text-gray-600 ring-gray-200'
                       }`}
                     >
