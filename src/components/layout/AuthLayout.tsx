@@ -15,7 +15,7 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
 
         <Link
           to="/"
-          className="relative flex w-fit items-center gap-2.5 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-gray-900"
+          className="relative flex w-fit items-center gap-2.5 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-gray-900"
         >
           <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-600 text-white">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5">
@@ -94,7 +94,7 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
         <div className="flex items-center justify-between px-4 py-5 sm:px-6 lg:hidden">
           <Link
             to="/"
-            className="flex items-center gap-2.5 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2"
+            className="flex items-center gap-2.5 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2"
           >
             <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-600 text-white">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5">
@@ -115,7 +115,7 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
           <div className="w-full max-w-md">{children}</div>
         </div>
 
-        <footer className="px-4 pb-6 text-center text-xs text-gray-400 sm:px-6">
+        <footer className="px-4 pb-6 text-center text-xs text-gray-500 sm:px-6">
           © 2026 sewa-yuk. Semua hak dilindungi.
         </footer>
       </main>

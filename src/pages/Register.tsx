@@ -9,7 +9,7 @@ import { useAuthStore } from '../store/useAuthStore'
 import type { UserRole } from '../types/auth'
 
 const baseInputClass =
-  'w-full rounded-xl border bg-white px-4 py-3 text-sm text-gray-900 shadow-sm outline-none transition-colors placeholder:text-gray-400 focus:ring-2 disabled:cursor-not-allowed disabled:bg-gray-50'
+  'w-full rounded-xl border bg-white px-4 py-3 text-sm text-gray-900 shadow-sm outline-none transition-colors placeholder:text-gray-500 focus:ring-2 disabled:cursor-not-allowed disabled:bg-gray-50'
 
 function inputClass(hasError: boolean) {
   return `${baseInputClass} ${
@@ -206,7 +206,7 @@ export default function Register() {
                 type="button"
                 onClick={() => setShowPassword((current) => !current)}
                 aria-label={showPassword ? 'Sembunyikan kata sandi' : 'Tampilkan kata sandi'}
-                className="absolute right-1 top-1/2 -translate-y-1/2 rounded-lg p-2 text-gray-400 transition-colors hover:text-gray-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600"
+                className="absolute right-1 top-1/2 -translate-y-1/2 rounded-xl p-2 text-gray-500 transition-colors hover:text-gray-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600"
               >
                 {showPassword ? (
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5">

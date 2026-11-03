@@ -123,7 +123,7 @@ function BoothMap() {
           <rect x="0" y="0" width="520" height="400" rx="16" fill="url(#booth-grid)" opacity="0.7" />
           <rect x="0.5" y="0.5" width="519" height="399" rx="16" fill="none" stroke="#e5e7eb" />
 
-          <text x="260" y="34" textAnchor="middle" className="fill-gray-400 text-[10px] font-medium tracking-[0.25em]">
+          <text x="260" y="34" textAnchor="middle" className="fill-gray-500 text-[10px] font-medium tracking-[0.25em]">
             BLUEPRINT HALL A
           </text>
 
@@ -172,7 +172,7 @@ function BoothMap() {
                 <text
                   x={booth.x + 14}
                   y={booth.y + 26}
-                  className={`text-[11px] font-semibold ${isActive ? 'fill-white' : isUnavailable ? 'fill-gray-400' : 'fill-gray-900'}`}
+                  className={`text-[11px] font-semibold ${isActive ? 'fill-white' : isUnavailable ? 'fill-gray-600' : 'fill-gray-900'}`}
                 >
                   {booth.id}
                 </text>
@@ -180,7 +180,7 @@ function BoothMap() {
                 <text
                   x={booth.x + 14}
                   y={booth.y + 44}
-                  className={`text-[9px] font-medium ${isActive ? 'fill-blue-100' : isUnavailable ? 'fill-gray-400' : 'fill-gray-500'}`}
+                  className={`text-[9px] font-medium ${isActive ? 'fill-blue-50' : 'fill-gray-500'}`}
                 >
                   {isUnavailable ? (booth.status === 'Reserved' ? 'Dipesan' : 'Terisi') : booth.category}
                 </text>
@@ -200,7 +200,7 @@ function BoothMap() {
 
           <path d="M220 384h80" stroke="#d1d5db" strokeWidth="4" strokeLinecap="round" />
           <path d="M256 372v12" stroke="#d1d5db" strokeWidth="2" strokeDasharray="3 3" />
-          <text x="260" y="368" textAnchor="middle" className="fill-gray-400 text-[9px] font-medium tracking-[0.2em]">
+          <text x="260" y="368" textAnchor="middle" className="fill-gray-500 text-[9px] font-medium tracking-[0.2em]">
             PINTU MASUK
           </text>
         </svg>
@@ -270,7 +270,7 @@ export default function LandingPage() {
     <div className="min-h-screen bg-white text-gray-900">
       <header className="sticky top-0 z-50 border-b border-gray-200 bg-white/80 backdrop-blur">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-          <a href="/" className="flex items-center gap-2.5 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2">
+          <a href="/" className="flex items-center gap-2.5 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2">
             <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-600 text-white">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M4 9V6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v3M4 9h16M4 9v9a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9M9 9v11M15 9v11" />
@@ -284,7 +284,7 @@ export default function LandingPage() {
               <a
                 key={item.href}
                 href={item.href}
-                className="rounded-lg px-3 py-2 text-sm font-medium text-gray-600 transition-colors hover:text-gray-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2"
+                className="rounded-xl px-3 py-2 text-sm font-medium text-gray-600 transition-colors hover:text-gray-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2"
               >
                 {item.label}
               </a>
@@ -477,7 +477,7 @@ export default function LandingPage() {
                   {(['F&B', 'Teknologi', 'Pakaian', 'Semua'] as const).map((tag) => (
                     <span
                       key={tag}
-                      className={`rounded-lg px-3 py-1.5 text-xs font-medium ring-1 ring-inset ${
+                      className={`rounded-xl px-3 py-1.5 text-xs font-medium ring-1 ring-inset ${
                         tag === 'Semua'
                           ? 'bg-blue-600 text-white ring-blue-600'
                           : 'bg-white text-gray-600 ring-gray-200'
@@ -605,7 +605,7 @@ export default function LandingPage() {
       <footer className="border-t border-gray-200">
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-6 px-4 py-8 sm:px-6 md:flex-row lg:px-8">
           <div className="flex items-center gap-2.5">
-            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600 text-white">
+            <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-blue-600 text-white">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-4 w-4">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M4 9V6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v3M4 9h16M4 9v9a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9M9 9v11M15 9v11" />
               </svg>
@@ -629,7 +629,7 @@ export default function LandingPage() {
               Untuk Organizer
             </a>
           </nav>
-          <p className="text-xs text-gray-400">© 2026 sewa-yuk. Semua hak dilindungi.</p>
+          <p className="text-xs text-gray-500">© 2026 sewa-yuk. Semua hak dilindungi.</p>
         </div>
       </footer>
     </div>
