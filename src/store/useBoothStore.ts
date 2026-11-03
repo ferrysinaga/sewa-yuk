@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import type { Booth } from '../types/booth'
+import type { Booth, BoothStatus } from '../types/booth'
 
 export const DEFAULT_BLUEPRINT_ID = 'hall-a'
 
@@ -11,6 +11,7 @@ interface BoothStore {
   setBooths: (booths: Booth[]) => void
   addBooth: (booth: Booth) => void
   updateBoothPosition: (id: string, x: number, y: number) => void
+  updateBoothStatus: (id: string, status: BoothStatus) => void
   setActiveBooth: (id: string | null) => void
   removeBooth: (id: string) => void
   markSaved: () => void
@@ -43,6 +44,11 @@ export const useBoothStore = create<BoothStore>((set) => ({
         booth.id === id ? { ...booth, positionX: x, positionY: y } : booth,
       ),
       isDirty: true,
+    })),
+
+  updateBoothStatus: (id, status) =>
+    set((state) => ({
+      booths: state.booths.map((booth) => (booth.id === id ? { ...booth, status } : booth)),
     })),
 
   setActiveBooth: (id) => set({ activeBoothId: id }),

@@ -1,8 +1,9 @@
+import { Link } from 'react-router-dom'
 import AppHeader from '../../components/layout/AppHeader'
-import { useToast } from '../../components/ui/Toast'
 
 const events = [
   {
+    id: 'hall-a',
     title: 'Pameran Teknologi Nusantara 2026',
     venue: 'Jakarta Convention Center · Hall A',
     date: '12 — 15 Maret 2026',
@@ -11,6 +12,7 @@ const events = [
     total: 120,
   },
   {
+    id: 'hall-b',
     title: 'Festival Kuliner Merdeka',
     venue: 'Grand City Convention · Hall B',
     date: '2 — 5 April 2026',
@@ -19,6 +21,7 @@ const events = [
     total: 90,
   },
   {
+    id: 'hall-5',
     title: 'Indonesia Fashion Week',
     venue: 'ICE BSD · Hall 5',
     date: '21 — 26 April 2026',
@@ -29,8 +32,6 @@ const events = [
 ]
 
 export default function EventExplorer() {
-  const { showToast } = useToast()
-
   return (
     <div className="min-h-screen bg-gray-50/60">
       <AppHeader />
@@ -105,15 +106,12 @@ export default function EventExplorer() {
                   </div>
                 </div>
 
-                <button
-                  type="button"
-                  onClick={() =>
-                    showToast(`Peta booth ${event.title} akan tersedia pada tahap berikutnya.`, 'info')
-                  }
+                <Link
+                  to={`/event/${event.id}`}
                   className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2"
                 >
                   Lihat Peta Booth
-                </button>
+                </Link>
               </div>
             </article>
           ))}

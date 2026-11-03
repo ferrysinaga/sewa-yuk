@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../../store/useAuthStore'
 
 export default function AppHeader() {
+  const session = useAuthStore((state) => state.session)
   const user = useAuthStore((state) => state.user)
   const role = useAuthStore((state) => state.role)
   const signOut = useAuthStore((state) => state.signOut)
@@ -64,31 +65,48 @@ export default function AppHeader() {
           </nav>
         </div>
 
-        <div className="flex items-center gap-3">
-          <div className="hidden text-right sm:block">
-            <p className="max-w-[180px] truncate text-sm font-medium text-gray-900">{displayName}</p>
-            <p className="text-xs text-gray-500">
-              {role === 'organizer' ? 'Penyelenggara' : role === 'tenant' ? 'Penyewa' : 'Pengguna'}
-            </p>
+        {session ? (
+          <div className="flex items-center gap-3">
+            <div className="hidden text-right sm:block">
+              <p className="max-w-[180px] truncate text-sm font-medium text-gray-900">{displayName}</p>
+              <p className="text-xs text-gray-500">
+                {role === 'organizer' ? 'Penyelenggara' : role === 'tenant' ? 'Penyewa' : 'Pengguna'}
+              </p>
+            </div>
+            <span
+              className={`hidden rounded-full px-3 py-1 text-xs font-semibold ring-1 ring-inset sm:inline-flex ${
+                role === 'organizer'
+                  ? 'bg-blue-50 text-blue-700 ring-blue-100'
+                  : 'bg-gray-100 text-gray-700 ring-gray-200'
+              }`}
+            >
+              {role === 'organizer' ? 'Organizer' : 'Tenant'}
+            </span>
+            <button
+              type="button"
+              onClick={handleSignOut}
+              disabled={signingOut}
+              className="inline-flex items-center justify-center rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-900 shadow-sm transition-colors hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {signingOut ? 'Keluar…' : 'Keluar'}
+            </button>
           </div>
-          <span
-            className={`hidden rounded-full px-3 py-1 text-xs font-semibold ring-1 ring-inset sm:inline-flex ${
-              role === 'organizer'
-                ? 'bg-blue-50 text-blue-700 ring-blue-100'
-                : 'bg-gray-100 text-gray-700 ring-gray-200'
-            }`}
-          >
-            {role === 'organizer' ? 'Organizer' : 'Tenant'}
-          </span>
-          <button
-            type="button"
-            onClick={handleSignOut}
-            disabled={signingOut}
-            className="inline-flex items-center justify-center rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-900 shadow-sm transition-colors hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            {signingOut ? 'Keluar…' : 'Keluar'}
-          </button>
-        </div>
+        ) : (
+          <div className="flex items-center gap-2">
+            <Link
+              to="/login"
+              className="inline-flex items-center justify-center rounded-xl px-4 py-2 text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2"
+            >
+              Masuk
+            </Link>
+            <Link
+              to="/register"
+              className="inline-flex items-center justify-center rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2"
+            >
+              Daftar
+            </Link>
+          </div>
+        )}
       </div>
     </header>
   )
