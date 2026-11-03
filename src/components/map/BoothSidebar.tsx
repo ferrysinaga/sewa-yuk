@@ -51,7 +51,7 @@ function PaletteItem({ template }: { template: BoothTemplate }) {
       }`}
     >
       <div className="flex items-center gap-3">
-        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gray-100 text-gray-700">
+        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gray-100 text-gray-700">
           {categoryIcon[template.category]}
         </span>
         <div className="min-w-0">
@@ -111,21 +111,21 @@ export default function BoothSidebar() {
             </div>
 
             <dl className="mt-3 grid grid-cols-2 gap-2 text-xs">
-              <div className="rounded-lg bg-gray-50 p-2">
+              <div className="rounded-xl bg-gray-50 p-2">
                 <dt className="text-gray-500">Harga</dt>
                 <dd className="mt-0.5 font-semibold text-gray-900">{formatPrice(activeBooth.price)}</dd>
               </div>
-              <div className="rounded-lg bg-gray-50 p-2">
+              <div className="rounded-xl bg-gray-50 p-2">
                 <dt className="text-gray-500">Ukuran</dt>
                 <dd className="mt-0.5 font-semibold text-gray-900">
                   {activeBooth.width} × {activeBooth.height}
                 </dd>
               </div>
-              <div className="rounded-lg bg-gray-50 p-2">
+              <div className="rounded-xl bg-gray-50 p-2">
                 <dt className="text-gray-500">Posisi X</dt>
                 <dd className="mt-0.5 font-semibold text-gray-900">{Math.round(activeBooth.positionX)} px</dd>
               </div>
-              <div className="rounded-lg bg-gray-50 p-2">
+              <div className="rounded-xl bg-gray-50 p-2">
                 <dt className="text-gray-500">Posisi Y</dt>
                 <dd className="mt-0.5 font-semibold text-gray-900">{Math.round(activeBooth.positionY)} px</dd>
               </div>

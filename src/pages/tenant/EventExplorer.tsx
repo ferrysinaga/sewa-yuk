@@ -52,7 +52,7 @@ export default function EventExplorer() {
           {['Semua', 'F&B', 'Teknologi', 'Pakaian'].map((tag, index) => (
             <span
               key={tag}
-              className={`rounded-lg px-3.5 py-1.5 text-xs font-medium ring-1 ring-inset ${
+              className={`rounded-xl px-3.5 py-1.5 text-xs font-medium ring-1 ring-inset ${
                 index === 0 ? 'bg-blue-600 text-white ring-blue-600' : 'bg-white text-gray-600 ring-gray-200'
               }`}
             >

@@ -23,7 +23,7 @@ const variantStyles: Record<ToastVariant, string> = {
 
 const variantIcon: Record<ToastVariant, ReactNode> = {
   success: (
-    <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600">
+    <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600">
       <svg viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4">
         <path
           fillRule="evenodd"
@@ -34,7 +34,7 @@ const variantIcon: Record<ToastVariant, ReactNode> = {
     </span>
   ),
   error: (
-    <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-red-50 text-red-600">
+    <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-red-50 text-red-600">
       <svg viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4">
         <path
           fillRule="evenodd"
@@ -45,7 +45,7 @@ const variantIcon: Record<ToastVariant, ReactNode> = {
     </span>
   ),
   info: (
-    <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
+    <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
       <svg viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4">
         <path
           fillRule="evenodd"
@@ -94,7 +94,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
               type="button"
               onClick={() => removeToast(toast.id)}
               aria-label="Tutup notifikasi"
-              className="rounded-lg p-1 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2"
+              className="rounded-xl p-1 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2"
             >
               <svg viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4">
                 <path d="M6.28 5.22a.75.75 0 0 0-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 1 0 1.06 1.06L10 11.06l3.72 3.72a.75.75 0 1 0 1.06-1.06L11.06 10l3.72-3.72a.75.75 0 0 0-1.06-1.06L10 8.94 6.28 5.22Z" />

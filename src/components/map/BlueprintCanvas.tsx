@@ -63,7 +63,7 @@ function BoothRect({ booth }: BoothRectProps) {
         x={booth.positionX + 12}
         y={booth.positionY + 22}
         className={`pointer-events-none text-[11px] font-semibold ${
-          isSelected ? 'fill-white' : isUnavailable ? 'fill-gray-400' : 'fill-gray-900'
+          isSelected ? 'fill-white' : isUnavailable ? 'fill-gray-600' : 'fill-gray-900'
         }`}
       >
         {booth.category}
@@ -73,7 +73,7 @@ function BoothRect({ booth }: BoothRectProps) {
         x={booth.positionX + 12}
         y={booth.positionY + 38}
         className={`pointer-events-none text-[9px] font-medium ${
-          isSelected ? 'fill-blue-100' : isUnavailable ? 'fill-gray-400' : 'fill-gray-500'
+          isSelected ? 'fill-blue-50' : 'fill-gray-500'
         }`}
       >
         {booth.width} × {booth.height} px

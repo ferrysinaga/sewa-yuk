@@ -70,7 +70,7 @@ export default function TenantSidebar({
                 type="button"
                 onClick={() => onCategoryChange(filter.value)}
                 aria-pressed={isActive}
-                className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium ring-1 ring-inset transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 ${
+                className={`inline-flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-medium ring-1 ring-inset transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 ${
                   isActive
                     ? 'bg-blue-600 text-white ring-blue-600'
                     : 'bg-white text-gray-600 ring-gray-200 hover:border-gray-300 hover:bg-gray-50'
@@ -115,21 +115,21 @@ export default function TenantSidebar({
             </div>
 
             <dl className="mt-3 grid grid-cols-2 gap-2 text-xs">
-              <div className="rounded-lg border border-gray-200 p-2.5">
+              <div className="rounded-xl border border-gray-200 p-2.5">
                 <dt className="text-gray-500">Dimensi</dt>
                 <dd className="mt-0.5 font-semibold text-gray-900">
                   {activeBooth.width} × {activeBooth.height} px
                 </dd>
               </div>
-              <div className="rounded-lg border border-gray-200 p-2.5">
+              <div className="rounded-xl border border-gray-200 p-2.5">
                 <dt className="text-gray-500">Kategori</dt>
                 <dd className="mt-0.5 font-semibold text-gray-900">{activeBooth.category}</dd>
               </div>
-              <div className="rounded-lg border border-gray-200 p-2.5">
+              <div className="rounded-xl border border-gray-200 p-2.5">
                 <dt className="text-gray-500">Posisi X</dt>
                 <dd className="mt-0.5 font-semibold text-gray-900">{Math.round(activeBooth.positionX)} px</dd>
               </div>
-              <div className="rounded-lg border border-gray-200 p-2.5">
+              <div className="rounded-xl border border-gray-200 p-2.5">
                 <dt className="text-gray-500">Posisi Y</dt>
                 <dd className="mt-0.5 font-semibold text-gray-900">{Math.round(activeBooth.positionY)} px</dd>
               </div>
