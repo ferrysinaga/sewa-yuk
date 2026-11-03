@@ -134,7 +134,7 @@ function PaletteItem({ template }: { template: BoothTemplate }) {
       {...listeners}
       {...attributes}
       aria-label={`Tarik booth kategori ${template.category}`}
-      className={`cursor-grab rounded-xl border bg-white p-3 shadow-sm transition-all hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 active:cursor-grabbing ${
+      className={`cursor-grab touch-none select-none rounded-xl border bg-white p-3 shadow-sm transition-all hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 active:cursor-grabbing ${
         isDragging ? 'border-blue-300 opacity-40' : 'border-gray-200'
       }`}
     >
