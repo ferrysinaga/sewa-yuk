@@ -5,9 +5,12 @@ import AppHeader from '../../components/layout/AppHeader'
 import InteractiveMap from '../../components/map/InteractiveMap'
 import TenantSidebar from '../../components/map/TenantSidebar'
 import { useToast } from '../../components/ui/Toast'
+import { createChannelName } from '../../lib/id'
 import { isSupabaseConfigured, supabase } from '../../lib/supabase'
 import { useAuthStore } from '../../store/useAuthStore'
 import { useBoothStore } from '../../store/useBoothStore'
+import { BLUEPRINT_STATUS_BADGE, BLUEPRINT_STATUS_LABEL } from '../../types/blueprint'
+import type { BlueprintStatus } from '../../types/blueprint'
 import type { Booth, BoothCategory, BoothStatus } from '../../types/booth'
 
 interface BlueprintRow {
@@ -16,6 +19,7 @@ interface BlueprintRow {
   venue: string | null
   event_date: string | null
   description: string | null
+  status: BlueprintStatus
 }
 
 interface BoothRow {
@@ -57,6 +61,7 @@ function getLoadErrorMessage(error: { message?: string } | null): string {
 export default function TenantEventView() {
   const { eventId } = useParams<{ eventId: string }>()
   const session = useAuthStore((state) => state.session)
+  const role = useAuthStore((state) => state.role)
   const setBooths = useBoothStore((state) => state.setBooths)
   const { showToast } = useToast()
   const navigate = useNavigate()
@@ -109,7 +114,7 @@ export default function TenantEventView() {
       }
 
       if (!blueprintResult.data) {
-        setError('Event tidak ditemukan atau sudah tidak aktif.')
+        setError('Event tidak ditemukan atau belum dipublikasikan.')
         setLoading(false)
         return
       }
@@ -136,7 +141,7 @@ export default function TenantEventView() {
     if (!eventId || !isSupabaseConfigured) return
 
     const channel = supabase
-      .channel(`tenant-booths-${eventId}-${crypto.randomUUID()}`)
+      .channel(createChannelName(`tenant-booths-${eventId}`))
       .on(
         'postgres_changes',
         {
@@ -290,6 +295,18 @@ export default function TenantEventView() {
               <h1 className="text-2xl font-semibold tracking-tight text-gray-900 sm:text-3xl">
                 {blueprint?.name ?? 'Memuat event…'}
               </h1>
+              {blueprint && blueprint.status !== 'published' && (
+                <span
+                  className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold ring-1 ring-inset ${BLUEPRINT_STATUS_BADGE[blueprint.status]}`}
+                >
+                  <span
+                    className={`h-1.5 w-1.5 rounded-full ${
+                      blueprint.status === 'draft' ? 'bg-amber-500' : 'bg-gray-400'
+                    }`}
+                  />
+                  {role === 'organizer' ? 'Pratinjau organizer' : BLUEPRINT_STATUS_LABEL[blueprint.status]}
+                </span>
+              )}
               <span className="inline-flex items-center gap-2 rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-100">
                 <span className="h-1.5 w-1.5 rounded-full bg-blue-600" />
                 Sinkron real-time

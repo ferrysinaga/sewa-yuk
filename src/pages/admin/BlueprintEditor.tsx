@@ -1,10 +1,17 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useParams } from 'react-router-dom'
 import AppHeader from '../../components/layout/AppHeader'
 import BlueprintWorkspace from '../../components/map/BlueprintWorkspace'
 import { useToast } from '../../components/ui/Toast'
+import { getBlueprintErrorMessage, mapBlueprintRowToDraft } from '../../lib/blueprint'
 import { isSupabaseConfigured, supabase } from '../../lib/supabase'
-import { DEFAULT_BLUEPRINT_ID, useBoothStore } from '../../store/useBoothStore'
+import { useBoothStore } from '../../store/useBoothStore'
+import {
+  BLUEPRINT_STATUS_BADGE,
+  BLUEPRINT_STATUS_LABEL,
+  BLUEPRINT_STATUS_OPTIONS,
+} from '../../types/blueprint'
+import type { BlueprintDraft, BlueprintRow, BlueprintStatus } from '../../types/blueprint'
 import type { Booth, BoothCategory, BoothStatus } from '../../types/booth'
 
 interface BoothRow {
@@ -33,37 +40,15 @@ function mapRowToBooth(row: BoothRow): Booth {
   }
 }
 
-function getErrorMessage(error: unknown): string {
-  if (error instanceof Error) return error.message
-  if (typeof error === 'object' && error !== null && 'message' in error) {
-    return String(error.message)
-  }
-  return 'Terjadi kesalahan yang tidak diketahui.'
-}
-
-function getFriendlyErrorMessage(error: unknown): string {
-  const message = getErrorMessage(error)
-
-  if (/could not find the table|relation .* does not exist|schema cache/i.test(message)) {
-    return 'Tabel "booths" belum tersedia di Supabase. Jalankan migrasi skema terlebih dahulu.'
-  }
-
-  if (/row-level security|permission denied|not authorized/i.test(message)) {
-    return 'Akun Anda tidak memiliki izin untuk mengubah denah ini. Pastikan akun memiliki role organizer.'
-  }
-
-  if (/failed to fetch|network|timeout/i.test(message)) {
-    return 'Tidak dapat terhubung ke Supabase. Periksa koneksi internet Anda lalu coba lagi.'
-  }
-
-  return message || 'Terjadi kesalahan saat menghubungi Supabase.'
-}
-
 export default function BlueprintEditor() {
+  const { blueprintId = '' } = useParams<{ blueprintId: string }>()
+  const draft = useBoothStore((state) => state.blueprintDraft)
   const isDirty = useBoothStore((state) => state.isDirty)
   const boothCount = useBoothStore((state) => state.booths.length)
-  const setBooths = useBoothStore((state) => state.setBooths)
+  const loadBlueprint = useBoothStore((state) => state.loadBlueprint)
+  const setBlueprintDraft = useBoothStore((state) => state.setBlueprintDraft)
   const markSaved = useBoothStore((state) => state.markSaved)
+  const resetBooths = useBoothStore((state) => state.resetBooths)
   const { showToast } = useToast()
 
   const [loading, setLoading] = useState(true)
@@ -74,48 +59,80 @@ export default function BlueprintEditor() {
   useEffect(() => {
     let cancelled = false
 
-    setLoadError(null)
-
-    if (!isSupabaseConfigured) {
+    if (!blueprintId) {
+      resetBooths()
+      setLoadError('ID denah tidak valid.')
       setLoading(false)
       return
     }
 
-    // Jangan timpa perubahan yang belum disimpan ketika pengguna membuka kembali editor.
-    if (useBoothStore.getState().isDirty) {
+    if (!isSupabaseConfigured) {
+      resetBooths()
+      setLoadError(
+        'Supabase belum dikonfigurasi. Isi VITE_SUPABASE_URL dan VITE_SUPABASE_ANON_KEY pada file .env.',
+      )
+      setLoading(false)
+      return
+    }
+
+    const state = useBoothStore.getState()
+
+    // Pertahankan perubahan yang belum disimpan hanya untuk denah yang sama.
+    if (state.isDirty && state.blueprintId === blueprintId && state.blueprintDraft) {
+      setLoadError(null)
       setLoading(false)
       return
     }
 
     setLoading(true)
+    setLoadError(null)
 
-    const loadBlueprint = async () => {
-      const { data, error } = await supabase
-        .from('booths')
-        .select('*')
-        .eq('blueprint_id', DEFAULT_BLUEPRINT_ID)
+    const loadBlueprintData = async () => {
+      const [blueprintResult, boothsResult] = await Promise.all([
+        supabase.from('blueprints').select('*').eq('id', blueprintId).maybeSingle(),
+        supabase.from('booths').select('*').eq('blueprint_id', blueprintId),
+      ])
 
       if (cancelled) return
 
-      if (error) {
-        const message = getFriendlyErrorMessage(error)
-        setLoadError(message)
-        // Hindari menampilkan/menyimpan data event lain yang mungkin masih ada di store.
-        setBooths([])
+      if (blueprintResult.error) {
+        resetBooths()
+        setLoadError(getBlueprintErrorMessage(blueprintResult.error))
         setLoading(false)
         return
       }
 
-      setBooths(Array.isArray(data) ? (data as BoothRow[]).map(mapRowToBooth) : [])
+      if (!blueprintResult.data) {
+        resetBooths()
+        setLoadError('Denah tidak ditemukan atau belum dipublikasikan.')
+        setLoading(false)
+        return
+      }
+
+      if (boothsResult.error) {
+        resetBooths()
+        setLoadError(getBlueprintErrorMessage(boothsResult.error))
+        setLoading(false)
+        return
+      }
+
+      const blueprintRow = blueprintResult.data as BlueprintRow
+      const boothRows = (boothsResult.data ?? []) as BoothRow[]
+
+      loadBlueprint(
+        blueprintRow.id,
+        boothRows.map(mapRowToBooth),
+        mapBlueprintRowToDraft(blueprintRow),
+      )
       setLoading(false)
     }
 
-    void loadBlueprint()
+    void loadBlueprintData()
 
     return () => {
       cancelled = true
     }
-  }, [reloadToken, setBooths])
+  }, [blueprintId, loadBlueprint, reloadToken, resetBooths])
 
   useEffect(() => {
     if (!isDirty) return
@@ -132,7 +149,25 @@ export default function BlueprintEditor() {
     }
   }, [isDirty])
 
+  const updateDraft = (patch: Partial<BlueprintDraft>) => {
+    if (!draft) return
+    setBlueprintDraft({ ...draft, ...patch })
+  }
+
   const handleSave = async () => {
+    const store = useBoothStore.getState()
+    const currentDraft = store.blueprintDraft
+
+    if (!blueprintId) {
+      showToast('ID denah tidak valid. Kembali ke daftar denah.', 'error')
+      return
+    }
+
+    if (!currentDraft) {
+      showToast('Data denah belum siap disimpan.', 'error')
+      return
+    }
+
     if (!isSupabaseConfigured) {
       showToast(
         'Supabase belum dikonfigurasi. Isi VITE_SUPABASE_URL dan VITE_SUPABASE_ANON_KEY pada file .env.',
@@ -141,21 +176,22 @@ export default function BlueprintEditor() {
       return
     }
 
+    if (!currentDraft.name.trim()) {
+      showToast('Nama denah wajib diisi sebelum menyimpan.', 'error')
+      return
+    }
+
     if (loadError) {
       showToast('Denah belum berhasil dimuat. Muat ulang data sebelum menyimpan.', 'error')
       return
     }
 
-    const store = useBoothStore.getState()
-    const booths = store.booths
-    const deletedBoothIds = store.deletedBoothIds
-
-    if (booths.length === 0 && deletedBoothIds.length === 0) {
-      showToast('Tambahkan minimal satu booth sebelum menyimpan denah.', 'error')
+    if (currentDraft.status === 'published' && store.booths.length === 0) {
+      showToast('Tambahkan minimal satu booth sebelum mempublikasikan denah.', 'error')
       return
     }
 
-    const invalidBooth = booths.find(
+    const invalidBooth = store.booths.find(
       (booth) =>
         !Number.isFinite(booth.price) ||
         booth.price < 0 ||
@@ -176,74 +212,114 @@ export default function BlueprintEditor() {
     setSaving(true)
 
     try {
-      const payload = booths.map((booth) => ({
+      const now = new Date().toISOString()
+
+      const payload = store.booths.map((booth) => ({
         id: booth.id,
-        blueprint_id: booth.blueprintId || store.blueprintId,
+        blueprint_id: blueprintId,
         category: booth.category,
         position_x: Math.round(booth.positionX),
         position_y: Math.round(booth.positionY),
         width: booth.width,
         height: booth.height,
         price: Math.round(booth.price),
-        updated_at: new Date().toISOString(),
+        updated_at: now,
         // `status` sengaja tidak dikirim agar penyimpanan denah tidak menimpa
         // status Reserved/Booked yang baru saja diubah oleh penyewa (realtime).
       }))
 
       if (payload.length > 0) {
-        const { error } = await supabase.from('booths').upsert(payload, { onConflict: 'id' })
-        if (error) throw error
+        const { error: boothError } = await supabase
+          .from('booths')
+          .upsert(payload, { onConflict: 'id' })
+
+        if (boothError) throw boothError
       }
 
-      if (deletedBoothIds.length > 0) {
+      if (store.deletedBoothIds.length > 0) {
         const { error: deleteError } = await supabase
           .from('booths')
           .delete()
-          .in('id', deletedBoothIds)
+          .in('id', store.deletedBoothIds)
 
         if (deleteError) throw deleteError
       }
 
+      // Metadata dan status publikasi disimpan terakhir agar denah tidak
+      // tampil ke tenant sebelum seluruh perubahan booth berhasil tersimpan.
+      const { error: blueprintError } = await supabase.from('blueprints').upsert(
+        {
+          id: blueprintId,
+          name: currentDraft.name.trim(),
+          venue: currentDraft.venue.trim() || null,
+          event_date: currentDraft.eventDate.trim() || null,
+          description: currentDraft.description.trim() || null,
+          status: currentDraft.status,
+          updated_at: now,
+        },
+        { onConflict: 'id' },
+      )
+
+      if (blueprintError) throw blueprintError
+
       markSaved()
 
       showToast(
-        payload.length > 0
-          ? `Denah berhasil disimpan. ${payload.length} booth tersimpan permanen.`
-          : 'Denah berhasil diperbarui. Semua booth telah dihapus dari blueprint ini.',
+        currentDraft.status === 'published'
+          ? `Denah "${currentDraft.name.trim()}" tersimpan dan sudah dipublikasikan ke tenant.`
+          : `Denah "${currentDraft.name.trim()}" tersimpan sebagai draft.`,
         'success',
       )
-    } catch (error) {
-      showToast(`Gagal menyimpan denah: ${getFriendlyErrorMessage(error)}`, 'error')
+    } catch (saveError) {
+      showToast(`Gagal menyimpan denah: ${getBlueprintErrorMessage(saveError)}`, 'error')
     } finally {
       setSaving(false)
     }
   }
+
+  const statusLabel = draft ? BLUEPRINT_STATUS_LABEL[draft.status] : null
 
   return (
     <div className="min-h-screen bg-gray-50/60">
       <AppHeader />
 
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
-          <div>
-            <Link
-              to="/admin"
-              className="inline-flex items-center gap-1.5 text-sm font-medium text-gray-500 transition-colors hover:text-gray-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2"
-            >
-              <svg viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4">
-                <path
-                  fillRule="evenodd"
-                  d="M12.79 5.23a.75.75 0 0 1-.02 1.06L8.832 10l3.938 3.71a.75.75 0 1 1-1.04 1.08l-4.5-4.25a.75.75 0 0 1 0-1.08l4.5-4.25a.75.75 0 0 1 1.06.02Z"
-                  clipRule="evenodd"
-                />
-              </svg>
-              Kembali ke dashboard
-            </Link>
+        <Link
+          to="/admin/blueprint"
+          className="inline-flex items-center gap-1.5 text-sm font-medium text-gray-500 transition-colors hover:text-gray-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2"
+        >
+          <svg viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4">
+            <path
+              fillRule="evenodd"
+              d="M12.79 5.23a.75.75 0 0 1-.02 1.06L8.832 10l3.938 3.71a.75.75 0 1 1-1.04 1.08l-4.5-4.25a.75.75 0 0 1 0-1.08l4.5-4.25a.75.75 0 0 1 1.06.02Z"
+              clipRule="evenodd"
+            />
+          </svg>
+          Kembali ke daftar denah
+        </Link>
 
-            <div className="mt-2 flex flex-wrap items-center gap-3">
+        <div className="mt-3 flex flex-col justify-between gap-4 lg:flex-row lg:items-end">
+          <div>
+            <div className="flex flex-wrap items-center gap-3">
               <h1 className="text-2xl font-semibold tracking-tight text-gray-900 sm:text-3xl">
-                Blueprint Editor
+                {draft?.name || 'Blueprint Editor'}
               </h1>
+              {draft && (
+                <span
+                  className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold ring-1 ring-inset ${BLUEPRINT_STATUS_BADGE[draft.status]}`}
+                >
+                  <span
+                    className={`h-1.5 w-1.5 rounded-full ${
+                      draft.status === 'published'
+                        ? 'bg-emerald-500'
+                        : draft.status === 'draft'
+                          ? 'bg-amber-500'
+                          : 'bg-gray-400'
+                    }`}
+                  />
+                  {statusLabel}
+                </span>
+              )}
               {isDirty && (
                 <span className="inline-flex items-center gap-2 rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-100">
                   <span className="h-1.5 w-1.5 rounded-full bg-blue-600" />
@@ -253,79 +329,192 @@ export default function BlueprintEditor() {
               {!loading && !loadError && (
                 <span className="text-xs font-medium text-gray-500">{boothCount} booth</span>
               )}
-              {loading && <span className="text-xs text-gray-500">Memuat denah…</span>}
+              {loading && <span className="text-xs text-gray-500">Memuat denah...</span>}
             </div>
 
-            <p className="mt-2 max-w-2xl text-sm leading-relaxed text-gray-500">
-              Tarik kategori booth ke kanvas, atur posisi dengan snap-to-grid, lalu simpan konfigurasi ke
-              Supabase.
+            <p className="mt-1.5 text-sm text-gray-500">
+              {[draft?.venue, draft?.eventDate].filter(Boolean).join(' · ') ||
+                (loading ? 'Memuat informasi event...' : 'Lengkapi informasi denah di bawah.')}
             </p>
+            <p className="mt-1 font-mono text-[11px] text-gray-400">/event/{blueprintId}</p>
           </div>
 
-          <button
-            type="button"
-            onClick={handleSave}
-            disabled={saving || loading || Boolean(loadError)}
-            className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            {saving ? (
-              <>
-                <span
-                  aria-hidden="true"
-                  className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white"
-                />
-                Menyimpan…
-              </>
-            ) : (
-              <>
+          <div className="flex flex-col gap-2 sm:flex-row">
+            {!loading && !loadError && (
+              <Link
+                to={`/event/${blueprintId}`}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-5 py-2.5 text-sm font-semibold text-gray-900 shadow-sm transition-colors hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2"
+              >
                 <svg viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4">
-                  <path d="M3.5 3.75A1.75 1.75 0 0 1 5.25 2h7.69a1.75 1.75 0 0 1 1.237.513l2.31 2.31A1.75 1.75 0 0 1 17 6.06v10.19A1.75 1.75 0 0 1 15.25 18H5.25A1.75 1.75 0 0 1 3.5 16.25V3.75Zm3.25-.25a.75.75 0 0 0-.75.75v2.5c0 .414.336.75.75.75h5.5a.75.75 0 0 0 .75-.75v-2.5a.75.75 0 0 0-.75-.75H6.75Zm8.5 6.5H5.25a.75.75 0 0 0 0 1.5h10a.75.75 0 0 0 0-1.5h-10Z" />
+                  <path d="M10 12.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z" />
+                  <path
+                    fillRule="evenodd"
+                    d="M.664 10.59a1.65 1.65 0 0 1 0-1.18 10.05 10.05 0 0 1 18.672 0 1.65 1.65 0 0 1 0 1.18 10.05 10.05 0 0 1-18.672 0ZM14.5 10a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0Z"
+                    clipRule="evenodd"
+                  />
                 </svg>
-                Simpan Perubahan Denah
-              </>
+                Pratinjau
+              </Link>
             )}
-          </button>
+            <button
+              type="button"
+              onClick={() => void handleSave()}
+              disabled={saving || loading || Boolean(loadError) || !draft}
+              className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {saving ? (
+                <>
+                  <span
+                    aria-hidden="true"
+                    className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white"
+                  />
+                  Menyimpan...
+                </>
+              ) : (
+                <>
+                  <svg viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4">
+                    <path d="M3.5 3.75A1.75 1.75 0 0 1 5.25 2h7.69a1.75 1.75 0 0 1 1.237.513l2.31 2.31A1.75 1.75 0 0 1 17 6.06v10.19A1.75 1.75 0 0 1 15.25 18H5.25A1.75 1.75 0 0 1 3.5 16.25V3.75Zm3.25-.25a.75.75 0 0 0-.75.75v2.5c0 .414.336.75.75.75h5.5a.75.75 0 0 0 .75-.75v-2.5a.75.75 0 0 0-.75-.75H6.75Zm8.5 6.5H5.25a.75.75 0 0 0 0 1.5h10a.75.75 0 0 0 0-1.5h-10Z" />
+                  </svg>
+                  Simpan Perubahan
+                </>
+              )}
+            </button>
+          </div>
         </div>
 
-        {!isSupabaseConfigured && (
-          <div className="mt-6 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-relaxed text-amber-800">
-            Supabase belum dikonfigurasi. Isi <code className="font-semibold">VITE_SUPABASE_URL</code>{' '}
-            dan <code className="font-semibold">VITE_SUPABASE_ANON_KEY</code> pada file{' '}
-            <code className="font-semibold">.env</code> agar denah dapat dimuat dan disimpan.
+        {!loading && !loadError && draft && (
+          <section className="mt-6 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm sm:p-6">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="text-base font-semibold text-gray-900">Informasi denah</h2>
+                <p className="mt-1 text-xs text-gray-500">
+                  Metadata ini tampil di halaman event tenant.
+                </p>
+              </div>
+              <select
+                value={draft.status}
+                onChange={(event) => updateDraft({ status: event.target.value as BlueprintStatus })}
+                aria-label="Status publikasi denah"
+                className="rounded-xl border border-gray-200 bg-white px-3 py-2 text-xs font-semibold text-gray-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100"
+              >
+                {BLUEPRINT_STATUS_OPTIONS.map((status) => (
+                  <option key={status} value={status}>
+                    {BLUEPRINT_STATUS_LABEL[status]}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="mt-4 grid gap-4 sm:grid-cols-2">
+              <div className="sm:col-span-2">
+                <label htmlFor="editor-blueprint-name" className="text-xs font-medium text-gray-700">
+                  Nama denah / event
+                </label>
+                <input
+                  id="editor-blueprint-name"
+                  type="text"
+                  value={draft.name}
+                  onChange={(event) => updateDraft({ name: event.target.value })}
+                  className="mt-1.5 w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="editor-blueprint-venue" className="text-xs font-medium text-gray-700">
+                  Venue
+                </label>
+                <input
+                  id="editor-blueprint-venue"
+                  type="text"
+                  value={draft.venue}
+                  onChange={(event) => updateDraft({ venue: event.target.value })}
+                  placeholder="Nama venue dan hall"
+                  className="mt-1.5 w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 shadow-sm placeholder:text-gray-500 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="editor-blueprint-date" className="text-xs font-medium text-gray-700">
+                  Tanggal event
+                </label>
+                <input
+                  id="editor-blueprint-date"
+                  type="text"
+                  value={draft.eventDate}
+                  onChange={(event) => updateDraft({ eventDate: event.target.value })}
+                  placeholder="12 - 15 Maret 2026"
+                  className="mt-1.5 w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 shadow-sm placeholder:text-gray-500 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100"
+                />
+              </div>
+
+              <div className="sm:col-span-2">
+                <label htmlFor="editor-blueprint-description" className="text-xs font-medium text-gray-700">
+                  Deskripsi
+                </label>
+                <textarea
+                  id="editor-blueprint-description"
+                  value={draft.description}
+                  onChange={(event) => updateDraft({ description: event.target.value })}
+                  rows={3}
+                  placeholder="Deskripsi singkat event untuk tenant."
+                  className="mt-1.5 w-full resize-y rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 shadow-sm placeholder:text-gray-500 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100"
+                />
+              </div>
+            </div>
+
+            <p className="mt-3 text-[11px] leading-relaxed text-gray-500">
+              {draft.status === 'published'
+                ? 'Denah berstatus Dipublikasikan dan dapat dilihat tenant setelah perubahan disimpan.'
+                : draft.status === 'archived'
+                  ? 'Denah Diarsipkan tidak tampil di halaman event tenant.'
+                  : 'Denah masih Draft. Publikasikan agar tenant dapat melihat dan memilih booth.'}
+            </p>
+          </section>
+        )}
+
+        {loading && (
+          <div className="mt-6 flex min-h-[360px] items-center justify-center rounded-2xl border border-gray-200 bg-white shadow-sm">
+            <div className="flex flex-col items-center gap-3">
+              <span
+                aria-hidden="true"
+                className="h-8 w-8 animate-spin rounded-full border-2 border-gray-200 border-t-blue-600"
+              />
+              <p className="text-sm text-gray-500">Memuat denah dari Supabase...</p>
+            </div>
           </div>
         )}
 
-        {loadError && !loading && (
+        {!loading && loadError && (
           <div
             role="alert"
             className="mt-6 flex flex-col gap-3 rounded-2xl border border-red-200 bg-red-50 px-4 py-4 text-sm text-red-800 sm:flex-row sm:items-center sm:justify-between"
           >
             <p className="leading-relaxed">Gagal memuat denah: {loadError}</p>
-            <button
-              type="button"
-              onClick={() => setReloadToken((token) => token + 1)}
-              className="inline-flex shrink-0 items-center justify-center rounded-xl border border-red-200 bg-white px-4 py-2 text-sm font-semibold text-red-700 shadow-sm transition-colors hover:bg-red-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2"
-            >
-              Coba lagi
-            </button>
+            <div className="flex flex-col gap-2 sm:flex-row">
+              <button
+                type="button"
+                onClick={() => setReloadToken((token) => token + 1)}
+                className="inline-flex shrink-0 items-center justify-center rounded-xl border border-red-200 bg-white px-4 py-2 text-sm font-semibold text-red-700 shadow-sm transition-colors hover:bg-red-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2"
+              >
+                Coba lagi
+              </button>
+              <Link
+                to="/admin/blueprint"
+                className="inline-flex shrink-0 items-center justify-center rounded-xl border border-red-200 bg-white px-4 py-2 text-sm font-semibold text-red-700 shadow-sm transition-colors hover:bg-red-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2"
+              >
+                Daftar denah
+              </Link>
+            </div>
           </div>
         )}
 
-        <div className="mt-6">
-          {loading ? (
-            <div className="flex min-h-[360px] items-center justify-center rounded-2xl border border-gray-200 bg-white shadow-sm">
-              <div className="flex flex-col items-center gap-3">
-                <span
-                  aria-hidden="true"
-                  className="h-8 w-8 animate-spin rounded-full border-2 border-gray-200 border-t-blue-600"
-                />
-                <p className="text-sm text-gray-500">Memuat denah dari Supabase…</p>
-              </div>
-            </div>
-          ) : (
-            !loadError && <BlueprintWorkspace />
-          )}
-        </div>
+        {!loading && !loadError && draft && (
+          <div className="mt-6">
+            <BlueprintWorkspace />
+          </div>
+        )}
       </main>
     </div>
   )
