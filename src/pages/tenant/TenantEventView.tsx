@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
+import CheckoutModal from '../../components/checkout/CheckoutModal'
 import AppHeader from '../../components/layout/AppHeader'
 import InteractiveMap from '../../components/map/InteractiveMap'
 import TenantSidebar from '../../components/map/TenantSidebar'
@@ -67,6 +68,7 @@ export default function TenantEventView() {
   const [reloadToken, setReloadToken] = useState(0)
   const [reserving, setReserving] = useState(false)
   const [reservedBoothId, setReservedBoothId] = useState<string | null>(null)
+  const [checkoutOpen, setCheckoutOpen] = useState(false)
   const locallyReservedRef = useRef<Set<string>>(new Set())
 
   useEffect(() => {
@@ -88,6 +90,7 @@ export default function TenantEventView() {
     setError(null)
     setActiveCategory('all')
     setReservedBoothId(null)
+    setCheckoutOpen(false)
     locallyReservedRef.current.clear()
     setBooths([])
 
@@ -177,7 +180,7 @@ export default function TenantEventView() {
     }
   }, [eventId, showToast])
 
-  const handleReserve = async () => {
+  const handleOpenCheckout = () => {
     const store = useBoothStore.getState()
     const activeBooth = store.booths.find((booth) => booth.id === store.activeBoothId)
 
@@ -185,6 +188,32 @@ export default function TenantEventView() {
 
     if (!session) {
       showToast('Silakan masuk terlebih dahulu untuk mengunci booth.', 'info')
+      navigate('/login', { state: { from: `/event/${eventId ?? ''}` } })
+      return
+    }
+
+    if (!isSupabaseConfigured) {
+      showToast('Supabase belum dikonfigurasi. Tidak dapat mengunci booth.', 'error')
+      return
+    }
+
+    setCheckoutOpen(true)
+  }
+
+  const handleCloseCheckout = () => {
+    if (reserving) return
+    setCheckoutOpen(false)
+  }
+
+  const handleConfirmCheckout = async () => {
+    const store = useBoothStore.getState()
+    const activeBooth = store.booths.find((booth) => booth.id === store.activeBoothId)
+
+    if (!activeBooth || activeBooth.status !== 'Available') return
+
+    if (!session) {
+      showToast('Silakan masuk terlebih dahulu untuk mengunci booth.', 'info')
+      setCheckoutOpen(false)
       navigate('/login', { state: { from: `/event/${eventId ?? ''}` } })
       return
     }
@@ -208,6 +237,7 @@ export default function TenantEventView() {
       if (updateError) throw updateError
 
       if (!data || data.length === 0) {
+        locallyReservedRef.current.delete(activeBooth.id)
         store.updateBoothStatus(activeBooth.id, 'Reserved')
         showToast('Booth ini baru saja diambil penyewa lain. Silakan pilih booth lain.', 'error')
         return
@@ -217,6 +247,7 @@ export default function TenantEventView() {
       setReservedBoothId(activeBooth.id)
       showToast('Booth berhasil dikunci. Silakan lanjutkan ke pembayaran.', 'success')
     } catch (reserveError) {
+      locallyReservedRef.current.delete(activeBooth.id)
       const message = reserveError instanceof Error ? reserveError.message : String(reserveError)
       showToast(`Gagal mengunci booth: ${message}`, 'error')
     } finally {
@@ -224,6 +255,11 @@ export default function TenantEventView() {
     }
   }
 
+  const activeBooth = useBoothStore((state) =>
+    state.activeBoothId
+      ? (state.booths.find((booth) => booth.id === state.activeBoothId) ?? null)
+      : null,
+  )
   const availableCount = useBoothStore(
     (state) => state.booths.filter((booth) => booth.status === 'Available').length,
   )
@@ -331,13 +367,24 @@ export default function TenantEventView() {
             <TenantSidebar
               activeCategory={activeCategory}
               onCategoryChange={setActiveCategory}
-              onReserve={handleReserve}
+              onReserve={handleOpenCheckout}
               reserving={reserving}
               reservedBoothId={reservedBoothId}
             />
           </div>
         )}
       </main>
+
+      {checkoutOpen && activeBooth && (
+        <CheckoutModal
+          booth={activeBooth}
+          eventName={blueprint?.name}
+          reserved={reservedBoothId === activeBooth.id}
+          confirming={reserving}
+          onClose={handleCloseCheckout}
+          onConfirm={handleConfirmCheckout}
+        />
+      )}
     </div>
   )
 }
