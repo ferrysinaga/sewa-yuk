@@ -46,12 +46,20 @@ export default function AppHeader() {
               Jelajahi Event
             </Link>
             {role === 'organizer' && (
-              <Link
-                to="/admin"
-                className="rounded-lg px-3 py-2 text-sm font-medium text-gray-600 transition-colors hover:text-gray-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2"
-              >
-                Dashboard
-              </Link>
+              <>
+                <Link
+                  to="/admin"
+                  className="rounded-lg px-3 py-2 text-sm font-medium text-gray-600 transition-colors hover:text-gray-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2"
+                >
+                  Dashboard
+                </Link>
+                <Link
+                  to="/admin/blueprint"
+                  className="rounded-lg px-3 py-2 text-sm font-medium text-gray-600 transition-colors hover:text-gray-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2"
+                >
+                  Editor Denah
+                </Link>
+              </>
             )}
           </nav>
         </div>
