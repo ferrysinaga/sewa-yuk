@@ -1,6 +1,6 @@
 import { memo } from 'react'
 import type { RefObject } from 'react'
-import { useDraggable } from '@dnd-kit/core'
+import { useDraggable, useDroppable } from '@dnd-kit/core'
 import { useBoothStore } from '../../store/useBoothStore'
 import type { Booth } from '../../types/booth'
 
@@ -97,14 +97,16 @@ const BoothRect = memo(function BoothRect({ booth }: BoothRectProps) {
 })
 
 interface BlueprintCanvasProps {
-  setNodeRef: (element: HTMLElement | null) => void
-  isOver: boolean
   svgRef: RefObject<SVGSVGElement | null>
 }
 
-export default function BlueprintCanvas({ setNodeRef, isOver, svgRef }: BlueprintCanvasProps) {
+export default function BlueprintCanvas({ svgRef }: BlueprintCanvasProps) {
   const booths = useBoothStore((state) => state.booths)
   const setActiveBooth = useBoothStore((state) => state.setActiveBooth)
+  // `useDroppable` harus dipanggil dari komponen yang benar-benar berada di dalam
+  // <DndContext>. Memanggilnya di komponen yang merender <DndContext> membuat
+  // hook tersebut membaca context default (no-op) sehingga drop tidak pernah terdeteksi.
+  const { setNodeRef, isOver } = useDroppable({ id: 'blueprint-canvas' })
 
   return (
     <div className="min-w-0 flex-1">
