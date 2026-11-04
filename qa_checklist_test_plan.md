@@ -1,6 +1,6 @@
 # Dokumen Pengujian Kualitas (QA Checklist & Test Plan)
-**Proyek:** sewa-yuk — Platform Booking Booth Event Interaktif 2D  
-**Versi:** 1.0.0  
+**Proyek:** sewa-yuk — Platform Booking Booth Event Interaktif 2D
+**Versi:** 1.0.0
 **Stack Utama:** Vite, React, TypeScript, Tailwind CSS, Zustand, Supabase (Auth, DB, Realtime), `@dnd-kit/core`
 
 ---

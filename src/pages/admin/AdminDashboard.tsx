@@ -45,26 +45,32 @@ const statusMeta: Record<
 > = {
   Available: {
     label: 'Tersedia',
-    dot: 'bg-emerald-500',
-    badge: 'bg-emerald-50 text-emerald-700 ring-emerald-100',
-    bar: 'bg-emerald-500',
+    dot: 'bg-pine',
+    badge: 'border border-line bg-pine-soft text-pine',
+    bar: 'bg-pine',
   },
   Reserved: {
-    label: 'Reserved',
-    dot: 'bg-amber-500',
-    badge: 'bg-amber-50 text-amber-700 ring-amber-100',
-    bar: 'bg-amber-500',
+    label: 'Dipesan',
+    dot: 'bg-clay',
+    badge: 'border border-line bg-clay-soft text-clay-dark',
+    bar: 'bg-clay',
   },
   Booked: {
-    label: 'Booked',
-    dot: 'bg-gray-500',
-    badge: 'bg-gray-100 text-gray-700 ring-gray-200',
-    bar: 'bg-gray-500',
+    label: 'Terisi',
+    dot: 'bg-ink',
+    badge: 'border border-line bg-unavailable-deep text-ink',
+    bar: 'bg-ink',
   },
 }
 
 const statusOptions: BoothStatus[] = ['Available', 'Reserved', 'Booked']
 const categoryOptions: BoothCategory[] = ['Tech', 'F&B', 'Apparel']
+
+const categoryLabel: Record<BoothCategory, string> = {
+  Tech: 'Teknologi',
+  'F&B': 'F&B',
+  Apparel: 'Pakaian',
+}
 
 const formatPrice = (price: number) =>
   new Intl.NumberFormat('id-ID', {
@@ -264,6 +270,11 @@ export default function AdminDashboard() {
     [blueprints, booths],
   )
 
+  const activeEvent =
+    blueprintFilter === 'all'
+      ? null
+      : (blueprints.find((blueprint) => blueprint.id === blueprintFilter) ?? null)
+
   const activeEventLabel =
     blueprintFilter === 'all'
       ? `${blueprints.length} event`
@@ -313,27 +324,63 @@ export default function AdminDashboard() {
     return { status, count, percentage }
   })
 
+  const summaryCards = [
+    {
+      label: 'Total booth',
+      value: String(metrics.total),
+      sub: `Cakupan: ${activeEventLabel}`,
+      title: undefined,
+    },
+    {
+      label: 'Terisi',
+      value: String(metrics.booked),
+      sub: `${metrics.occupancy}% okupansi`,
+      title: undefined,
+    },
+    {
+      label: 'Tersedia',
+      value: String(metrics.available),
+      sub: `${metrics.reserved} booth menunggu pembayaran`,
+      title: undefined,
+    },
+    {
+      label: 'Estimasi pendapatan',
+      value: formatCompactPrice(metrics.revenue),
+      sub: `Dari ${metrics.booked} booth terjual`,
+      title: formatPrice(metrics.revenue),
+    },
+  ]
+
   return (
-    <div className="min-h-screen bg-gray-50/60">
+    <div className="min-h-screen bg-canvas text-ink">
       <AppHeader />
 
-      <main className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
-        <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
-          <div>
-            <p className="text-sm font-medium text-gray-500">Dashboard Penyelenggara</p>
-            <h1 className="mt-1 text-2xl font-semibold tracking-tight text-gray-900 sm:text-3xl">
-              Selamat datang, {displayName}
+      <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
+        <div className="flex flex-col justify-between gap-6 border-b border-line pb-6 sm:flex-row sm:items-end">
+          <div className="max-w-2xl">
+            <div className="flex items-center gap-2.5">
+              <span aria-hidden="true" className="h-px w-6 bg-clay" />
+              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted">
+                Dashboard penyelenggara
+              </p>
+            </div>
+            <h1 className="mt-3 text-3xl font-semibold leading-tight tracking-[-0.02em] text-ink sm:text-4xl">
+              {activeEvent?.name ?? 'Inventaris semua event'}
             </h1>
-            <p className="mt-2 text-sm text-gray-500">
-              Pantau okupansi dan kelola status seluruh booth dari satu tempat.
+            <p className="mt-2 text-sm leading-relaxed text-muted">
+              {activeEvent
+                ? [activeEvent.venue, activeEvent.event_date].filter(Boolean).join(' · ') ||
+                  'Venue dan tanggal belum diatur.'
+                : `Selamat datang, ${displayName}. Pantau okupansi dan kelola status booth dari satu tempat.`}
             </p>
           </div>
+
           <div className="flex flex-col gap-2 sm:flex-row">
             <Link
               to="/event"
-              className="inline-flex items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-5 py-2.5 text-sm font-semibold text-gray-900 shadow-sm transition-colors hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2"
+              className="inline-flex items-center justify-center rounded-[6px] border border-line bg-surface px-4 py-2.5 text-sm font-semibold text-ink transition-colors hover:bg-pine-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 focus-visible:ring-offset-canvas motion-reduce:transition-none"
             >
-              Lihat Halaman Publik
+              Lihat halaman publik
             </Link>
             <Link
               to="/admin/bookings"
@@ -343,9 +390,9 @@ export default function AdminDashboard() {
             </Link>
             <Link
               to="/admin/blueprint"
-              className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2"
+              className="inline-flex items-center justify-center gap-2 rounded-[6px] bg-pine px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-pine-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 focus-visible:ring-offset-canvas motion-reduce:transition-none"
             >
-              <svg viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4">
+              <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true" className="h-4 w-4">
                 <path d="M10.75 4.75a.75.75 0 0 0-1.5 0v4.5h-4.5a.75.75 0 0 0 0 1.5h4.5v4.5a.75.75 0 0 0 1.5 0v-4.5h4.5a.75.75 0 0 0 0-1.5h-4.5v-4.5Z" />
               </svg>
               Kelola Denah
@@ -354,37 +401,40 @@ export default function AdminDashboard() {
         </div>
 
         {loading && (
-          <div className="mt-8 flex min-h-[320px] items-center justify-center rounded-2xl border border-gray-200 bg-white shadow-sm">
-            <div className="flex flex-col items-center gap-3">
+          <div className="mt-6 flex min-h-[320px] items-center justify-center rounded-[10px] border border-line bg-surface px-6">
+            <div className="flex flex-col items-center gap-3 text-center">
               <span
                 aria-hidden="true"
-                className="h-8 w-8 animate-spin rounded-full border-2 border-gray-200 border-t-blue-600"
+                className="h-8 w-8 animate-spin rounded-full border-2 border-line border-t-pine"
               />
-              <p className="text-sm text-gray-500">Memuat inventaris booth…</p>
+              <p className="text-sm font-medium text-ink">Memuat inventaris booth…</p>
+              <p className="max-w-xs text-xs leading-relaxed text-muted">
+                Mengambil data blueprint dan status booth terbaru.
+              </p>
             </div>
           </div>
         )}
 
         {!loading && error && (
-          <div className="mt-8 rounded-2xl border border-gray-200 bg-white p-8 text-center shadow-sm">
-            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-red-50 text-red-600">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-6 w-6">
+          <div className="mt-6 rounded-[10px] border border-line bg-surface p-8 text-center">
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-[8px] bg-clay-soft text-clay-dark">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true" className="h-6 w-6">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m0 3.75h.008v.008H12v-.008ZM10.34 3.94 2.7 17.54A1.5 1.5 0 0 0 4 19.75h16a1.5 1.5 0 0 0 1.3-2.21L13.66 3.94a1.5 1.5 0 0 0-2.62 0Z" />
               </svg>
             </div>
-            <h2 className="mt-4 text-lg font-semibold text-gray-900">Gagal memuat dashboard</h2>
-            <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-gray-500">{error}</p>
+            <h2 className="mt-4 text-lg font-semibold text-ink">Gagal memuat dashboard</h2>
+            <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-muted">{error}</p>
             <div className="mt-5 flex flex-col justify-center gap-2 sm:flex-row">
               <button
                 type="button"
                 onClick={() => setReloadToken((token) => token + 1)}
-                className="inline-flex items-center justify-center rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2"
+                className="inline-flex items-center justify-center rounded-[6px] bg-pine px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-pine-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 focus-visible:ring-offset-surface motion-reduce:transition-none"
               >
                 Coba lagi
               </button>
               <Link
                 to="/admin/blueprint"
-                className="inline-flex items-center justify-center rounded-xl border border-gray-200 bg-white px-5 py-2.5 text-sm font-semibold text-gray-900 shadow-sm transition-colors hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2"
+                className="inline-flex items-center justify-center rounded-[6px] border border-line bg-surface px-5 py-2.5 text-sm font-semibold text-ink transition-colors hover:bg-canvas focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 focus-visible:ring-offset-surface motion-reduce:transition-none"
               >
                 Buka Kelola Denah
               </Link>
@@ -394,73 +444,60 @@ export default function AdminDashboard() {
 
         {!loading && !error && (
           <>
-            <div className="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-              <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-                <p className="text-xs font-medium text-gray-500">Total booth</p>
-                <p className="mt-2 text-2xl font-semibold tracking-tight text-gray-900">
-                  {metrics.total}
-                </p>
-                <p className="mt-1 text-xs text-gray-500">Cakupan: {activeEventLabel}</p>
-              </div>
-              <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-                <p className="text-xs font-medium text-gray-500">Booked</p>
-                <p className="mt-2 text-2xl font-semibold tracking-tight text-gray-900">
-                  {metrics.booked}
-                </p>
-                <p className="mt-1 text-xs text-gray-500">{metrics.occupancy}% okupansi</p>
-              </div>
-              <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-                <p className="text-xs font-medium text-gray-500">Tersedia</p>
-                <p className="mt-2 text-2xl font-semibold tracking-tight text-gray-900">
-                  {metrics.available}
-                </p>
-                <p className="mt-1 text-xs text-gray-500">
-                  {metrics.reserved} booth menunggu pembayaran
-                </p>
-              </div>
-              <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-                <p className="text-xs font-medium text-gray-500">Estimasi pendapatan</p>
-                <p
-                  className="mt-2 text-2xl font-semibold tracking-tight text-gray-900"
-                  title={formatPrice(metrics.revenue)}
+            <div className="mt-6 grid border-y border-line sm:grid-cols-2 xl:grid-cols-4">
+              {summaryCards.map((stat, index) => (
+                <div
+                  key={stat.label}
+                  className={`px-1 py-5 sm:px-5 ${
+                    index === 1 ? 'border-t border-line sm:border-l sm:border-t-0' : ''
+                  } ${index === 2 ? 'border-t border-line xl:border-l xl:border-t-0' : ''} ${
+                    index === 3 ? 'border-t border-line sm:border-l xl:border-t-0' : ''
+                  }`}
                 >
-                  {formatCompactPrice(metrics.revenue)}
-                </p>
-                <p className="mt-1 text-xs text-gray-500">Dari {metrics.booked} booth terjual</p>
-              </div>
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted">
+                    {stat.label}
+                  </p>
+                  <p
+                    className="mt-2 text-2xl font-semibold tabular-nums tracking-tight text-ink"
+                    title={stat.title}
+                  >
+                    {stat.value}
+                  </p>
+                  <p className="mt-1 text-xs leading-relaxed text-muted">{stat.sub}</p>
+                </div>
+              ))}
             </div>
 
             <div className="mt-6 grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_320px]">
-              <section className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
-                <div className="flex flex-wrap items-center justify-between gap-3 border-b border-gray-200 px-5 py-4">
+              <section className="overflow-hidden rounded-[10px] border border-line bg-surface">
+                <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line px-5 py-4">
                   <div>
                     <div className="flex flex-wrap items-center gap-2.5">
-                      <h2 className="text-base font-semibold text-gray-900">Inventaris booth</h2>
+                      <h2 className="text-base font-semibold text-ink">Inventaris booth</h2>
                       <span
-                        className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-medium ring-1 ring-inset ${
+                        className={`inline-flex items-center gap-1.5 rounded-[4px] border px-2.5 py-1 text-[11px] font-medium ${
                           isLive
-                            ? 'bg-blue-50 text-blue-700 ring-blue-100'
-                            : 'bg-gray-100 text-gray-600 ring-gray-200'
+                            ? 'border-line bg-pine-soft text-pine'
+                            : 'border-line bg-unavailable text-muted'
                         }`}
                       >
                         <span
-                          className={`h-1.5 w-1.5 rounded-full ${
-                            isLive ? 'animate-pulse bg-blue-600' : 'bg-gray-400'
-                          }`}
+                          aria-hidden="true"
+                          className={`h-1.5 w-1.5 rounded-full ${isLive ? 'bg-pine' : 'bg-muted'}`}
                         />
                         {isLive ? 'Live' : 'Menghubungkan…'}
                       </span>
                     </div>
-                    <p className="mt-1 text-xs text-gray-500">
+                    <p className="mt-1 text-xs tabular-nums text-muted">
                       {filteredBooths.length} dari {scopeBooths.length} booth ditampilkan
                     </p>
                   </div>
                   <button
                     type="button"
                     onClick={() => setReloadToken((token) => token + 1)}
-                    className="inline-flex items-center gap-1.5 rounded-xl border border-gray-200 bg-white px-3 py-2 text-xs font-semibold text-gray-700 shadow-sm transition-colors hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2"
+                    className="inline-flex items-center gap-1.5 rounded-[6px] border border-line bg-surface px-3 py-2 text-xs font-semibold text-ink transition-colors hover:bg-canvas focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 focus-visible:ring-offset-surface motion-reduce:transition-none"
                   >
-                    <svg viewBox="0 0 20 20" fill="currentColor" className="h-3.5 w-3.5">
+                    <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true" className="h-3.5 w-3.5">
                       <path
                         fillRule="evenodd"
                         d="M15.312 11.424a5.5 5.5 0 0 1-9.201 2.466l-.312-.311h2.433a.75.75 0 0 0 0-1.5H3.989a.75.75 0 0 0-.75.75v4.242a.75.75 0 0 0 1.5 0v-2.43l.31.31a7 7 0 0 0 11.712-3.138.75.75 0 0 0-1.449-.39Zm1.23-3.723a.75.75 0 0 0 .219-.53V2.929a.75.75 0 0 0-1.5 0V5.36l-.31-.31A7 7 0 0 0 3.239 8.188a.75.75 0 1 0 1.448.389A5.5 5.5 0 0 1 13.89 6.11l.311.31h-2.432a.75.75 0 0 0 0 1.5h4.243a.75.75 0 0 0 .53-.219Z"
@@ -471,7 +508,7 @@ export default function AdminDashboard() {
                   </button>
                 </div>
 
-                <div className="grid gap-2 border-b border-gray-200 px-5 py-3 sm:grid-cols-2 lg:grid-cols-4">
+                <div className="grid gap-2 border-b border-line px-5 py-3 sm:grid-cols-2 lg:grid-cols-4">
                   <div>
                     <label htmlFor="admin-search" className="sr-only">
                       Cari booth
@@ -482,7 +519,7 @@ export default function AdminDashboard() {
                       value={search}
                       onChange={(event) => setSearch(event.target.value)}
                       placeholder="Cari ID, kategori, event…"
-                      className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 shadow-sm placeholder:text-gray-500 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100"
+                      className="w-full rounded-[6px] border border-line bg-surface px-3 py-2 text-sm text-ink outline-none transition-colors placeholder:text-muted focus:border-pine focus:ring-2 focus:ring-pine-soft motion-reduce:transition-none"
                     />
                   </div>
                   <div>
@@ -493,7 +530,7 @@ export default function AdminDashboard() {
                       id="admin-event-filter"
                       value={blueprintFilter}
                       onChange={(event) => setBlueprintFilter(event.target.value)}
-                      className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100"
+                      className="w-full rounded-[6px] border border-line bg-surface px-3 py-2 text-sm text-ink outline-none transition-colors focus:border-pine focus:ring-2 focus:ring-pine-soft motion-reduce:transition-none"
                     >
                       <option value="all">Semua event</option>
                       {blueprints.map((blueprint) => (
@@ -513,12 +550,12 @@ export default function AdminDashboard() {
                       onChange={(event) =>
                         setCategoryFilter(event.target.value as BoothCategory | 'all')
                       }
-                      className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100"
+                      className="w-full rounded-[6px] border border-line bg-surface px-3 py-2 text-sm text-ink outline-none transition-colors focus:border-pine focus:ring-2 focus:ring-pine-soft motion-reduce:transition-none"
                     >
                       <option value="all">Semua kategori</option>
                       {categoryOptions.map((category) => (
                         <option key={category} value={category}>
-                          {category}
+                          {categoryLabel[category]}
                         </option>
                       ))}
                     </select>
@@ -531,7 +568,7 @@ export default function AdminDashboard() {
                       id="admin-status-filter"
                       value={statusFilter}
                       onChange={(event) => setStatusFilter(event.target.value as BoothStatus | 'all')}
-                      className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100"
+                      className="w-full rounded-[6px] border border-line bg-surface px-3 py-2 text-sm text-ink outline-none transition-colors focus:border-pine focus:ring-2 focus:ring-pine-soft motion-reduce:transition-none"
                     >
                       <option value="all">Semua status</option>
                       {statusOptions.map((status) => (
@@ -544,8 +581,8 @@ export default function AdminDashboard() {
                 </div>
 
                 <div className="overflow-x-auto">
-                  <table className="min-w-[860px] w-full divide-y divide-gray-200 text-left text-sm">
-                    <thead className="bg-gray-50/80 text-[11px] font-semibold uppercase tracking-wide text-gray-500">
+                  <table className="min-w-[860px] w-full divide-y divide-line text-left text-sm">
+                    <thead className="bg-canvas text-[10px] font-semibold uppercase tracking-[0.12em] text-muted">
                       <tr>
                         <th scope="col" className="px-5 py-3">
                           Booth
@@ -567,39 +604,39 @@ export default function AdminDashboard() {
                         </th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-100">
+                    <tbody className="divide-y divide-line">
                       {filteredBooths.map((booth) => {
                         const meta = statusMeta[booth.status]
                         const isUpdating = updatingIds.includes(booth.id)
 
                         return (
-                          <tr key={booth.id} className="transition-colors hover:bg-gray-50/70">
+                          <tr key={booth.id} className="transition-colors hover:bg-canvas motion-reduce:transition-none">
                             <td className="whitespace-nowrap px-5 py-3.5">
-                              <p className="font-mono text-xs font-semibold text-gray-900" title={booth.id}>
+                              <p className="font-mono text-xs font-semibold text-ink" title={booth.id}>
                                 {booth.id.slice(0, 8)}
                               </p>
-                              <p className="mt-0.5 text-[11px] text-gray-500">
+                              <p className="mt-0.5 text-[11px] tabular-nums text-muted">
                                 {booth.width} × {booth.height} px
                               </p>
                             </td>
                             <td className="px-5 py-3.5">
-                              <p className="max-w-[220px] truncate text-xs font-medium text-gray-900">
+                              <p className="max-w-[220px] truncate text-xs font-medium text-ink">
                                 {blueprintNameById.get(booth.blueprint_id) ?? booth.blueprint_id}
                               </p>
                             </td>
                             <td className="whitespace-nowrap px-5 py-3.5">
-                              <span className="inline-flex rounded-full bg-gray-100 px-2.5 py-1 text-[11px] font-medium text-gray-700 ring-1 ring-inset ring-gray-200">
-                                {booth.category}
+                              <span className="inline-flex rounded-[4px] border border-line bg-canvas px-2 py-0.5 text-[11px] font-medium text-muted">
+                                {categoryLabel[booth.category]}
                               </span>
                             </td>
-                            <td className="whitespace-nowrap px-5 py-3.5 text-right text-xs font-medium text-gray-900">
+                            <td className="whitespace-nowrap px-5 py-3.5 text-right text-xs font-medium tabular-nums text-ink">
                               {formatPrice(booth.price)}
                             </td>
                             <td className="whitespace-nowrap px-5 py-3.5">
                               <span
-                                className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold ring-1 ring-inset ${meta.badge}`}
+                                className={`inline-flex items-center gap-1.5 rounded-[4px] px-2.5 py-1 text-[11px] font-semibold ${meta.badge}`}
                               >
-                                <span className={`h-1.5 w-1.5 rounded-full ${meta.dot}`} />
+                                <span aria-hidden="true" className={`h-1.5 w-1.5 rounded-full ${meta.dot}`} />
                                 {meta.label}
                               </span>
                             </td>
@@ -615,7 +652,7 @@ export default function AdminDashboard() {
                                     void handleStatusChange(booth, event.target.value as BoothStatus)
                                   }
                                   disabled={isUpdating}
-                                  className="rounded-xl border border-gray-200 bg-white px-2.5 py-1.5 text-xs font-medium text-gray-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100 disabled:cursor-not-allowed disabled:opacity-60"
+                                  className="rounded-[6px] border border-line bg-surface px-2.5 py-1.5 text-xs font-medium text-ink outline-none transition-colors focus:border-pine focus:ring-2 focus:ring-pine-soft disabled:cursor-not-allowed disabled:opacity-60 motion-reduce:transition-none"
                                 >
                                   {statusOptions.map((status) => (
                                     <option key={status} value={status}>
@@ -628,7 +665,7 @@ export default function AdminDashboard() {
                                     type="button"
                                     onClick={() => void handleStatusChange(booth, 'Available')}
                                     disabled={isUpdating}
-                                    className="rounded-xl px-2 py-1.5 text-[11px] font-semibold text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+                                    className="rounded-[4px] px-2 py-1.5 text-[11px] font-semibold text-muted transition-colors hover:bg-pine-soft hover:text-pine focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 focus-visible:ring-offset-surface disabled:cursor-not-allowed disabled:opacity-60 motion-reduce:transition-none"
                                   >
                                     Batalkan
                                   </button>
@@ -643,11 +680,11 @@ export default function AdminDashboard() {
                 </div>
 
                 {filteredBooths.length === 0 && (
-                  <div className="border-t border-gray-200 px-6 py-10 text-center">
-                    <p className="text-sm font-semibold text-gray-900">
+                  <div className="border-t border-line px-6 py-10 text-center">
+                    <p className="text-sm font-semibold text-ink">
                       {booths.length === 0 ? 'Belum ada booth terdaftar' : 'Tidak ada booth yang cocok'}
                     </p>
-                    <p className="mx-auto mt-1 max-w-sm text-xs leading-relaxed text-gray-500">
+                    <p className="mx-auto mt-1 max-w-sm text-xs leading-relaxed text-muted">
                       {booths.length === 0
                         ? 'Tambahkan booth melalui halaman Kelola Denah agar inventaris muncul di sini.'
                         : 'Coba ubah kata kunci atau filter event, kategori, dan status.'}
@@ -655,7 +692,7 @@ export default function AdminDashboard() {
                     {booths.length === 0 && (
                       <Link
                         to="/admin/blueprint"
-                        className="mt-4 inline-flex items-center justify-center rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2"
+                        className="mt-4 inline-flex items-center justify-center rounded-[6px] bg-pine px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-pine-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 focus-visible:ring-offset-surface motion-reduce:transition-none"
                       >
                         Buka Kelola Denah
                       </Link>
@@ -665,26 +702,26 @@ export default function AdminDashboard() {
               </section>
 
               <aside className="space-y-5">
-                <section className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-                  <h2 className="text-base font-semibold text-gray-900">Distribusi status</h2>
-                  <p className="mt-1 text-xs text-gray-500">{activeEventLabel}</p>
+                <section className="rounded-[10px] border border-line bg-surface p-5">
+                  <h2 className="text-base font-semibold text-ink">Distribusi status</h2>
+                  <p className="mt-1 text-xs text-muted">{activeEventLabel}</p>
 
                   <dl className="mt-4 space-y-3.5">
                     {statusDistribution.map((item) => (
                       <div key={item.status}>
                         <div className="flex items-center justify-between gap-3 text-xs">
-                          <dt className="flex items-center gap-2 font-medium text-gray-700">
-                            <span className={`h-1.5 w-1.5 rounded-full ${statusMeta[item.status].dot}`} />
+                          <dt className="flex items-center gap-2 font-medium text-ink">
+                            <span aria-hidden="true" className={`h-1.5 w-1.5 rounded-full ${statusMeta[item.status].dot}`} />
                             {statusMeta[item.status].label}
                           </dt>
-                          <dd className="font-semibold text-gray-900">
+                          <dd className="font-semibold tabular-nums text-ink">
                             {item.count}
-                            <span className="ml-1 font-normal text-gray-500">({item.percentage}%)</span>
+                            <span className="ml-1 font-normal text-muted">({item.percentage}%)</span>
                           </dd>
                         </div>
-                        <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-gray-100">
+                        <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-[2px] bg-unavailable">
                           <div
-                            className={`h-full rounded-full ${statusMeta[item.status].bar}`}
+                            className={`h-full rounded-[2px] ${statusMeta[item.status].bar}`}
                             style={{ width: `${item.percentage}%` }}
                           />
                         </div>
@@ -693,10 +730,10 @@ export default function AdminDashboard() {
                   </dl>
                 </section>
 
-                <section className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
+                <section className="rounded-[10px] border border-line bg-surface p-5">
                   <div className="flex items-center justify-between gap-3">
-                    <h2 className="text-base font-semibold text-gray-900">Ringkasan event</h2>
-                    <span className="text-xs text-gray-500">{blueprints.length}</span>
+                    <h2 className="text-base font-semibold text-ink">Ringkasan event</h2>
+                    <span className="text-xs tabular-nums text-muted">{blueprints.length}</span>
                   </div>
 
                   <ul className="mt-4 space-y-2">
@@ -709,15 +746,15 @@ export default function AdminDashboard() {
                             type="button"
                             onClick={() => setBlueprintFilter(isActive ? 'all' : event.id)}
                             aria-pressed={isActive}
-                            className={`w-full rounded-xl border p-3 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 ${
+                            className={`w-full rounded-[6px] border p-3 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 focus-visible:ring-offset-surface motion-reduce:transition-none ${
                               isActive
-                                ? 'border-blue-200 bg-blue-50/60'
-                                : 'border-gray-200 bg-white hover:bg-gray-50'
+                                ? 'border-pine bg-pine-soft'
+                                : 'border-line bg-surface hover:border-pine'
                             }`}
                           >
                             <span className="flex items-center justify-between gap-2">
                               <span className="flex min-w-0 items-center gap-2">
-                                <span className="truncate text-xs font-semibold text-gray-900">
+                                <span className="truncate text-xs font-semibold text-ink">
                                   {event.name}
                                 </span>
                                 <span
@@ -726,20 +763,20 @@ export default function AdminDashboard() {
                                   {BLUEPRINT_STATUS_LABEL[event.status]}
                                 </span>
                               </span>
-                              <span className="shrink-0 text-[11px] font-medium text-gray-500">
+                              <span className="shrink-0 text-[11px] font-medium tabular-nums text-muted">
                                 {event.booked}/{event.total}
                               </span>
                             </span>
-                            <span className="mt-1 block truncate text-[11px] text-gray-500">
+                            <span className="mt-1 block truncate text-[11px] text-muted">
                               {event.venue ?? 'Venue belum diatur'}
                             </span>
-                            <span className="mt-2 block h-1.5 w-full overflow-hidden rounded-full bg-gray-100">
+                            <span className="mt-2 block h-1.5 w-full overflow-hidden rounded-[2px] bg-unavailable">
                               <span
-                                className="block h-full rounded-full bg-blue-600"
+                                className="block h-full rounded-[2px] bg-pine"
                                 style={{ width: `${event.occupancy}%` }}
                               />
                             </span>
-                            <span className="mt-1.5 block text-[11px] text-gray-500">
+                            <span className="mt-1.5 block text-[11px] tabular-nums text-muted">
                               {event.occupancy}% terjual · {event.available} tersedia
                             </span>
                           </button>
@@ -755,8 +792,8 @@ export default function AdminDashboard() {
                   </ul>
 
                   {eventSummaries.length === 0 && (
-                    <p className="mt-4 rounded-xl border border-dashed border-gray-300 bg-gray-50/60 px-4 py-6 text-center text-xs text-gray-500">
-                      Belum ada event/blueprint aktif.
+                    <p className="mt-4 rounded-[6px] border border-dashed border-line bg-canvas px-4 py-6 text-center text-xs leading-relaxed text-muted">
+                      Belum ada event atau blueprint aktif.
                     </p>
                   )}
                 </section>
