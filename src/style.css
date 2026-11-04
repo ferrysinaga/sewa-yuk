@@ -10,6 +10,33 @@
   -moz-osx-font-smoothing: grayscale;
   color: #111827;
   background: #fff;
+
+  --color-canvas: #f7f6f2;
+  --color-surface: #ffffff;
+  --color-map: #fbfaf6;
+  --color-ink: #222923;
+  --color-muted: #5a625b;
+  --color-line: #ddd9cf;
+  --color-grid: #e8e4da;
+  --color-pine: #285c4d;
+  --color-pine-dark: #1f493d;
+  --color-pine-soft: #e9f0ec;
+  --color-clay: #c66b4e;
+  --color-clay-dark: #9b4a32;
+  --color-clay-soft: #f6ebe5;
+  --color-unavailable: #efede6;
+  --color-unavailable-deep: #e4e0d6;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
 body {
