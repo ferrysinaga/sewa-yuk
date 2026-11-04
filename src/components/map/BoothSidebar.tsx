@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
-import { useDraggable } from '@dnd-kit/core'
 import type { ReactNode } from 'react'
+import { useDraggable } from '@dnd-kit/core'
 import { useBoothStore } from '../../store/useBoothStore'
-import type { BoothCategory, BoothStatus, BoothTemplate } from '../../types/booth'
+import type { Booth, BoothCategory, BoothStatus, BoothTemplate } from '../../types/booth'
 
 export const boothTemplates: BoothTemplate[] = [
   { category: 'Tech', width: 160, height: 120, price: 4500000 },
@@ -53,6 +53,87 @@ const formatPrice = (price: number) =>
     maximumFractionDigits: 0,
   }).format(price)
 
+const categoryOptions: BoothCategory[] = ['Tech', 'F&B', 'Apparel']
+
+function BoothProperties({ booth }: { booth: Booth }) {
+  const updateBoothDetails = useBoothStore((state) => state.updateBoothDetails)
+  const [priceDraft, setPriceDraft] = useState(String(booth.price))
+
+  useEffect(() => {
+    setPriceDraft(String(booth.price))
+  }, [booth.id, booth.price])
+
+  const handlePriceChange = (value: string) => {
+    const digitsOnly = value.replace(/[^\d]/g, '')
+    setPriceDraft(digitsOnly)
+
+    if (digitsOnly === '') return
+
+    const parsed = Number(digitsOnly)
+    if (Number.isFinite(parsed)) {
+      updateBoothDetails(booth.id, { price: parsed })
+    }
+  }
+
+  const handlePriceBlur = () => {
+    if (priceDraft === '') {
+      setPriceDraft(String(booth.price))
+    }
+  }
+
+  return (
+    <div className="mt-3 space-y-3">
+      <div>
+        <label
+          htmlFor={`booth-category-${booth.id}`}
+          className="text-xs font-medium text-gray-700"
+        >
+          Kategori
+        </label>
+        <select
+          id={`booth-category-${booth.id}`}
+          value={booth.category}
+          onChange={(event) =>
+            updateBoothDetails(booth.id, {
+              category: event.target.value as BoothCategory,
+            })
+          }
+          className="mt-1.5 w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100"
+        >
+          {categoryOptions.map((category) => (
+            <option key={category} value={category}>
+              {category}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <div>
+        <label
+          htmlFor={`booth-price-${booth.id}`}
+          className="text-xs font-medium text-gray-700"
+        >
+          Harga sewa (IDR)
+        </label>
+        <input
+          id={`booth-price-${booth.id}`}
+          type="text"
+          inputMode="numeric"
+          autoComplete="off"
+          value={priceDraft}
+          onChange={(event) => handlePriceChange(event.target.value)}
+          onBlur={handlePriceBlur}
+          placeholder="Contoh: 4500000"
+          className="mt-1.5 w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 shadow-sm placeholder:text-gray-500 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100"
+        />
+        <p className="mt-1 text-[11px] text-gray-500">
+          Terbaca sebagai {formatPrice(booth.price)}
+        </p>
+      </div>
+    </div>
+  )
+}
+
 function PaletteItem({ template }: { template: BoothTemplate }) {
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id: `palette-${template.category}`,
@@ -65,7 +146,7 @@ function PaletteItem({ template }: { template: BoothTemplate }) {
       {...listeners}
       {...attributes}
       aria-label={`Tarik booth kategori ${categoryLabel[template.category]}`}
-      className={`cursor-grab rounded-[8px] border p-3 transition-colors hover:border-pine focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 focus-visible:ring-offset-surface active:cursor-grabbing motion-reduce:transition-none ${
+      className={`cursor-grab touch-none select-none rounded-[8px] border p-3 transition-colors hover:border-pine focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 focus-visible:ring-offset-surface active:cursor-grabbing motion-reduce:transition-none ${
         isDragging ? 'border-pine bg-pine-soft opacity-60' : 'border-line bg-surface'
       }`}
     >
@@ -138,6 +219,8 @@ export default function BoothSidebar() {
               </span>
             </div>
 
+            <BoothProperties key={activeBooth.id} booth={activeBooth} />
+
             <dl className="mt-3 grid grid-cols-2 gap-2 text-xs">
               <div className="rounded-[6px] border border-line bg-canvas p-2">
                 <dt className="text-[10px] uppercase tracking-[0.1em] text-muted">Harga</dt>
@@ -164,6 +247,11 @@ export default function BoothSidebar() {
                 </dd>
               </div>
             </dl>
+
+            <p className="mt-3 text-[11px] leading-relaxed text-muted">
+              Perubahan kategori dan harga langsung diterapkan ke state. Klik “Simpan Perubahan
+              Denah” untuk menyimpannya permanen.
+            </p>
 
             <div className="mt-4 border-t border-line pt-4">
               <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted">

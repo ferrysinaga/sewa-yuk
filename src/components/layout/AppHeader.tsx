@@ -14,13 +14,21 @@ function AppNavLinks({ role }: { role: UserRole | null }) {
       <NavLink to="/event" className={navLinkClass}>
         Jelajahi event
       </NavLink>
+      {role === 'tenant' && (
+        <NavLink to="/bookings" className={navLinkClass}>
+          Pesanan Saya
+        </NavLink>
+      )}
       {role === 'organizer' && (
         <>
           <NavLink to="/admin" end className={navLinkClass}>
             Dashboard
           </NavLink>
+          <NavLink to="/admin/bookings" className={navLinkClass}>
+            Pemesanan
+          </NavLink>
           <NavLink to="/admin/blueprint" className={navLinkClass}>
-            Editor denah
+            Kelola Denah
           </NavLink>
         </>
       )}

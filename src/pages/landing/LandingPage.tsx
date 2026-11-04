@@ -10,6 +10,7 @@ interface Booth {
   category: Category
   price: number
   size: string
+  note: string
   x: number
   y: number
   width: number
@@ -23,13 +24,13 @@ const MIN_ZOOM = 1
 const MAX_ZOOM = 2
 
 const booths: Booth[] = [
-  { id: 'A-01', label: 'Booth A-01', category: 'Tech', price: 4500000, size: '3 × 3 m', x: 24, y: 64, width: 120, height: 76, status: 'Available' },
-  { id: 'A-02', label: 'Booth A-02', category: 'F&B', price: 3800000, size: '3 × 3 m', x: 24, y: 152, width: 120, height: 76, status: 'Available' },
-  { id: 'A-03', label: 'Booth A-03', category: 'Apparel', price: 3200000, size: '3 × 3 m', x: 24, y: 240, width: 120, height: 76, status: 'Booked' },
-  { id: 'A-04', label: 'Booth A-04', category: 'Tech', price: 2900000, size: '2 × 3 m', x: 24, y: 320, width: 120, height: 64, status: 'Available' },
-  { id: 'B-01', label: 'Booth B-01', category: 'F&B', price: 6200000, size: '4 × 3 m', x: 300, y: 64, width: 196, height: 88, status: 'Available' },
-  { id: 'B-02', label: 'Booth B-02', category: 'Tech', price: 7400000, size: '4 × 3 m', x: 300, y: 164, width: 196, height: 88, status: 'Available' },
-  { id: 'B-03', label: 'Booth B-03', category: 'Apparel', price: 5100000, size: '4 × 3 m', x: 300, y: 264, width: 196, height: 88, status: 'Reserved' },
+  { id: 'A-01', label: 'Booth A-01', category: 'Tech', price: 4500000, size: '3 × 3 m', note: 'Sayap kiri · dekat aisle utama', x: 24, y: 64, width: 120, height: 76, status: 'Available' },
+  { id: 'A-02', label: 'Booth A-02', category: 'F&B', price: 3800000, size: '3 × 3 m', note: 'Sayap kiri · dekat area makanan', x: 24, y: 152, width: 120, height: 76, status: 'Available' },
+  { id: 'A-03', label: 'Booth A-03', category: 'Apparel', price: 3200000, size: '3 × 3 m', note: 'Sayap kiri · dekat area fashion', x: 24, y: 240, width: 120, height: 76, status: 'Booked' },
+  { id: 'A-04', label: 'Booth A-04', category: 'Tech', price: 2900000, size: '2 × 3 m', note: 'Sayap kiri · dekat pintu masuk', x: 24, y: 320, width: 120, height: 64, status: 'Available' },
+  { id: 'B-01', label: 'Booth B-01', category: 'F&B', price: 6200000, size: '4 × 3 m', note: 'Area tengah · posisi premium', x: 300, y: 64, width: 196, height: 88, status: 'Available' },
+  { id: 'B-02', label: 'Booth B-02', category: 'Tech', price: 7400000, size: '4 × 3 m', note: 'Area tengah · paling strategis', x: 300, y: 164, width: 196, height: 88, status: 'Available' },
+  { id: 'B-03', label: 'Booth B-03', category: 'Apparel', price: 5100000, size: '4 × 3 m', note: 'Area tengah · dekat pintu masuk', x: 300, y: 264, width: 196, height: 88, status: 'Reserved' },
 ]
 
 const formatPrice = (price: number) =>
@@ -449,7 +450,7 @@ function BoothMap() {
                   role="button"
                   tabIndex={0}
                   aria-pressed={isSelected}
-                  aria-label={`${booth.label}, ${categoryLabel[booth.category]}, ${booth.size}, ${formatPrice(
+                  aria-label={`${booth.label}, ${categoryLabel[booth.category]}, ${booth.size}, ${booth.note}, ${formatPrice(
                     booth.price,
                   )}, ${statusLabel[booth.status]}`}
                   onClick={() => selectBooth(booth.id)}
@@ -591,9 +592,9 @@ function BoothMap() {
       <div className="border-t border-line bg-surface px-4 py-4 sm:px-5">
         <p className="sr-only" aria-live="polite">
           {activeBooth
-            ? `Booth ${activeBooth.id} dipilih. Status ${statusLabel[activeBooth.status]}. Harga ${formatPrice(
-                activeBooth.price,
-              )}.`
+            ? `Booth ${activeBooth.id} dipilih. ${activeBooth.note}. Status ${
+                statusLabel[activeBooth.status]
+              }. Harga ${formatPrice(activeBooth.price)}.`
             : 'Tidak ada booth yang dipilih.'}
         </p>
         {activeBooth ? (
@@ -611,6 +612,7 @@ function BoothMap() {
                   <p className="mt-1 text-xs tabular-nums text-muted">
                     {categoryLabel[activeBooth.category]} · {activeBooth.size} · Hall A
                   </p>
+                  <p className="mt-1 text-xs leading-relaxed text-muted">{activeBooth.note}</p>
                 </div>
               </div>
 
@@ -1091,5 +1093,4 @@ export default function LandingPage() {
     </div>
   )
 }
-
 

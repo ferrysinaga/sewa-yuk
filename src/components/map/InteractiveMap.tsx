@@ -82,6 +82,7 @@ interface InteractiveMapProps {
 
 export default function InteractiveMap({ activeCategory }: InteractiveMapProps) {
   const booths = useBoothStore((state) => state.booths)
+  const blueprintImageUrl = useBoothStore((state) => state.blueprintImageUrl)
   const activeBoothId = useBoothStore((state) => state.activeBoothId)
   const setActiveBooth = useBoothStore((state) => state.setActiveBooth)
 
@@ -363,12 +364,18 @@ export default function InteractiveMap({ activeCategory }: InteractiveMapProps) 
             {availableCount} tersedia dari {booths.length} booth
           </p>
         </div>
-
-        <div
-          role="group"
-          aria-label="Kontrol zoom peta"
-          className="flex items-center gap-0.5 rounded-[6px] border border-line bg-surface p-0.5"
-        >
+        <div className="flex flex-wrap items-center justify-end gap-3">
+          {blueprintImageUrl && (
+            <span className="inline-flex items-center gap-2 text-xs text-muted">
+              <span aria-hidden="true" className="h-3 w-3 rounded border border-line bg-map" />
+              Gambar denah
+            </span>
+          )}
+          <div
+            role="group"
+            aria-label="Kontrol zoom peta"
+            className="flex items-center gap-0.5 rounded-[6px] border border-line bg-surface p-0.5"
+          >
           <button
             type="button"
             onClick={() => zoomBy(1.25)}
@@ -403,6 +410,7 @@ export default function InteractiveMap({ activeCategory }: InteractiveMapProps) 
           >
             1×
           </button>
+        </div>
         </div>
       </div>
 
@@ -456,33 +464,57 @@ export default function InteractiveMap({ activeCategory }: InteractiveMapProps) 
                 </pattern>
               </defs>
 
-              <rect x="0" y="0" width={CANVAS_WIDTH} height={CANVAS_HEIGHT} fill="var(--color-map)" />
+              <rect
+                x="0"
+                y="0"
+                width={CANVAS_WIDTH}
+                height={CANVAS_HEIGHT}
+                fill="var(--color-map)"
+              />
+
+              {blueprintImageUrl && (
+                <image
+                  href={blueprintImageUrl}
+                  x="0"
+                  y="0"
+                  width={CANVAS_WIDTH}
+                  height={CANVAS_HEIGHT}
+                  preserveAspectRatio="xMidYMid meet"
+                  opacity="0.92"
+                  className="pointer-events-none"
+                />
+              )}
+
               <rect
                 x="0"
                 y="0"
                 width={CANVAS_WIDTH}
                 height={CANVAS_HEIGHT}
                 fill="url(#tenant-blueprint-grid)"
-                opacity="0.8"
+                opacity={blueprintImageUrl ? '0.35' : '0.8'}
               />
 
-              <text
-                x={CANVAS_WIDTH / 2}
-                y="32"
-                textAnchor="middle"
-                className="pointer-events-none fill-muted text-[11px] font-semibold tracking-[0.3em]"
-              >
-                AREA PAMERAN
-              </text>
+              {!blueprintImageUrl && (
+                <text
+                  x={CANVAS_WIDTH / 2}
+                  y="32"
+                  textAnchor="middle"
+                  className="pointer-events-none fill-gray-500 text-[11px] font-semibold tracking-[0.3em]"
+                >
+                  AREA PAMERAN
+                </text>
+              )}
 
-              <text
-                x={CANVAS_WIDTH / 2}
-                y={CANVAS_HEIGHT - 20}
-                textAnchor="middle"
-                className="pointer-events-none fill-muted text-[11px] font-semibold tracking-[0.3em]"
-              >
-                PINTU MASUK
-              </text>
+              {!blueprintImageUrl && (
+                <text
+                  x={CANVAS_WIDTH / 2}
+                  y={CANVAS_HEIGHT - 20}
+                  textAnchor="middle"
+                  className="pointer-events-none fill-gray-500 text-[11px] font-semibold tracking-[0.3em]"
+                >
+                  PINTU MASUK
+                </text>
+              )}
 
               {booths.map((booth) => {
                 const isSelected = booth.id === activeBoothId

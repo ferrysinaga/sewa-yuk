@@ -1,5 +1,6 @@
+import { memo } from 'react'
 import type { RefObject } from 'react'
-import { useDraggable } from '@dnd-kit/core'
+import { useDraggable, useDroppable } from '@dnd-kit/core'
 import { useBoothStore } from '../../store/useBoothStore'
 import type { Booth, BoothStatus } from '../../types/booth'
 
@@ -24,7 +25,7 @@ interface BoothRectProps {
   booth: Booth
 }
 
-function BoothRect({ booth }: BoothRectProps) {
+const BoothRect = memo(function BoothRect({ booth }: BoothRectProps) {
   const isSelected = useBoothStore((state) => state.activeBoothId === booth.id)
   const setActiveBooth = useBoothStore((state) => state.setActiveBooth)
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
@@ -52,6 +53,7 @@ function BoothRect({ booth }: BoothRectProps) {
       {...listeners}
       {...attributes}
       onClick={() => setActiveBooth(booth.id)}
+      aria-pressed={isSelected}
       aria-label={`Booth ${booth.category}, ${formatPrice(booth.price)}, status ${statusLabel[booth.status]}`}
       className={`group touch-none focus-visible:outline-none ${isDragging ? 'opacity-80' : ''} ${
         isSelected ? 'cursor-grabbing' : 'cursor-grab'
@@ -112,17 +114,20 @@ function BoothRect({ booth }: BoothRectProps) {
       </text>
     </g>
   )
-}
+})
 
 interface BlueprintCanvasProps {
-  setNodeRef: (element: HTMLElement | null) => void
-  isOver: boolean
   svgRef: RefObject<SVGSVGElement | null>
 }
 
-export default function BlueprintCanvas({ setNodeRef, isOver, svgRef }: BlueprintCanvasProps) {
+export default function BlueprintCanvas({ svgRef }: BlueprintCanvasProps) {
   const booths = useBoothStore((state) => state.booths)
+  const blueprintImageUrl = useBoothStore((state) => state.blueprintImageUrl)
   const setActiveBooth = useBoothStore((state) => state.setActiveBooth)
+  // `useDroppable` harus dipanggil dari komponen yang benar-benar berada di dalam
+  // <DndContext>. Memanggilnya di komponen yang merender <DndContext> membuat
+  // hook tersebut membaca context default (no-op) sehingga drop tidak pernah terdeteksi.
+  const { setNodeRef, isOver } = useDroppable({ id: 'blueprint-canvas' })
 
   return (
     <div className="min-w-0 flex-1">
@@ -135,6 +140,12 @@ export default function BlueprintCanvas({ setNodeRef, isOver, svgRef }: Blueprin
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-4 text-[11px] text-muted">
+            {blueprintImageUrl && (
+              <span className="inline-flex items-center gap-1.5 text-pine">
+                <span aria-hidden="true" className="h-2.5 w-2.5 rounded-[2px] border border-pine bg-pine-soft" />
+                Gambar latar aktif
+              </span>
+            )}
             <span className="inline-flex items-center gap-1.5">
               <span aria-hidden="true" className="h-2.5 w-2.5 rounded-[2px] border border-pine bg-surface" />
               Tersedia
@@ -187,33 +198,59 @@ export default function BlueprintCanvas({ setNodeRef, isOver, svgRef }: Blueprin
                 </pattern>
               </defs>
 
-              <rect x="0" y="0" width={CANVAS_WIDTH} height={CANVAS_HEIGHT} fill="var(--color-map)" />
+              <rect
+                x="0"
+                y="0"
+                width={CANVAS_WIDTH}
+                height={CANVAS_HEIGHT}
+                fill="var(--color-map)"
+                onClick={() => setActiveBooth(null)}
+              />
+
+              {blueprintImageUrl && (
+                <image
+                  href={blueprintImageUrl}
+                  x="0"
+                  y="0"
+                  width={CANVAS_WIDTH}
+                  height={CANVAS_HEIGHT}
+                  preserveAspectRatio="xMidYMid meet"
+                  opacity="0.92"
+                  className="pointer-events-none"
+                  aria-hidden="true"
+                />
+              )}
               <rect
                 x="0"
                 y="0"
                 width={CANVAS_WIDTH}
                 height={CANVAS_HEIGHT}
                 fill="url(#blueprint-grid)"
-                opacity="0.8"
+                opacity={blueprintImageUrl ? '0.35' : '0.8'}
+                onClick={() => setActiveBooth(null)}
               />
 
-              <text
-                x={CANVAS_WIDTH / 2}
-                y="32"
-                textAnchor="middle"
-                className="pointer-events-none fill-muted text-[11px] font-semibold tracking-[0.3em]"
-              >
-                AREA PAMERAN
-              </text>
+              {!blueprintImageUrl && (
+                <text
+                  x={CANVAS_WIDTH / 2}
+                  y="32"
+                  textAnchor="middle"
+                  className="pointer-events-none fill-muted text-[11px] font-semibold tracking-[0.3em]"
+                >
+                  AREA PAMERAN
+                </text>
+              )}
 
-              <text
-                x={CANVAS_WIDTH / 2}
-                y={CANVAS_HEIGHT - 20}
-                textAnchor="middle"
-                className="pointer-events-none fill-muted text-[11px] font-semibold tracking-[0.3em]"
-              >
-                PINTU MASUK
-              </text>
+              {!blueprintImageUrl && (
+                <text
+                  x={CANVAS_WIDTH / 2}
+                  y={CANVAS_HEIGHT - 20}
+                  textAnchor="middle"
+                  className="pointer-events-none fill-muted text-[11px] font-semibold tracking-[0.3em]"
+                >
+                  PINTU MASUK
+                </text>
+              )}
 
               {booths.map((booth) => (
                 <BoothRect key={booth.id} booth={booth} />

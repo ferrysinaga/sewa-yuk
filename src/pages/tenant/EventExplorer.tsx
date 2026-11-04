@@ -1,65 +1,31 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import AppHeader from '../../components/layout/AppHeader'
+import { getBlueprintErrorMessage } from '../../lib/blueprint'
+import { isSupabaseConfigured, supabase } from '../../lib/supabase'
+import type { BlueprintRow } from '../../types/blueprint'
+import type { BoothCategory, BoothStatus } from '../../types/booth'
 
-type EventCategory = 'Teknologi' | 'F&B' | 'Pakaian'
-
-interface EventItem {
-  id: string
-  title: string
-  venue: string
-  day: string
-  month: string
-  date: string
-  category: EventCategory
-  available: number
-  total: number
+interface BoothSummaryRow {
+  blueprint_id: string
+  category: BoothCategory
+  status: BoothStatus
 }
 
-const events: EventItem[] = [
-  {
-    id: 'hall-a',
-    title: 'Pameran Teknologi Nusantara 2026',
-    venue: 'Jakarta Convention Center · Hall A',
-    day: '12–15',
-    month: 'Mar 2026',
-    date: '12 — 15 Maret 2026',
-    category: 'Teknologi',
-    available: 42,
-    total: 120,
-  },
-  {
-    id: 'hall-b',
-    title: 'Festival Kuliner Merdeka',
-    venue: 'Grand City Convention · Hall B',
-    day: '2–5',
-    month: 'Apr 2026',
-    date: '2 — 5 April 2026',
-    category: 'F&B',
-    available: 18,
-    total: 90,
-  },
-  {
-    id: 'hall-5',
-    title: 'Indonesia Fashion Week',
-    venue: 'ICE BSD · Hall 5',
-    day: '21–26',
-    month: 'Apr 2026',
-    date: '21 — 26 April 2026',
-    category: 'Pakaian',
-    available: 31,
-    total: 140,
-  },
-]
+interface EventSummary extends BlueprintRow {
+  totalBooths: number
+  availableBooths: number
+  categories: BoothCategory[]
+}
 
-const categoryFilters: Array<EventCategory | 'all'> = ['all', 'F&B', 'Teknologi', 'Pakaian']
-
-const filterLabel: Record<EventCategory | 'all', string> = {
+const categoryLabel: Record<BoothCategory | 'all', string> = {
   all: 'Semua',
   'F&B': 'F&B',
-  Teknologi: 'Teknologi',
-  Pakaian: 'Pakaian',
+  Tech: 'Teknologi',
+  Apparel: 'Pakaian',
 }
+
+const categoryFilters: (BoothCategory | 'all')[] = ['all', 'F&B', 'Tech', 'Apparel']
 
 function ArrowRight({ className = 'h-4 w-4' }: { className?: string }) {
   return (
@@ -76,12 +42,86 @@ function ArrowRight({ className = 'h-4 w-4' }: { className?: string }) {
 }
 
 export default function EventExplorer() {
-  const [category, setCategory] = useState<EventCategory | 'all'>('all')
+  const [blueprints, setBlueprints] = useState<BlueprintRow[]>([])
+  const [booths, setBooths] = useState<BoothSummaryRow[]>([])
+  const [activeCategory, setActiveCategory] = useState<BoothCategory | 'all'>('all')
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [reloadToken, setReloadToken] = useState(0)
 
-  const visibleEvents = useMemo(
-    () => (category === 'all' ? events : events.filter((event) => event.category === category)),
-    [category],
+  useEffect(() => {
+    let cancelled = false
+
+    if (!isSupabaseConfigured) {
+      setError('Supabase belum dikonfigurasi. Isi kredensial pada file .env terlebih dahulu.')
+      setLoading(false)
+      return
+    }
+
+    setLoading(true)
+    setError(null)
+
+    const loadEvents = async () => {
+      try {
+        const [blueprintResult, boothResult] = await Promise.all([
+          supabase
+            .from('blueprints')
+            .select('id, name, venue, event_date, description, status, image_url, image_path')
+            .eq('status', 'published')
+            .order('created_at', { ascending: false }),
+          supabase.from('booths').select('blueprint_id, category, status'),
+        ])
+
+        if (cancelled) return
+
+        if (blueprintResult.error) {
+          setError(getBlueprintErrorMessage(blueprintResult.error))
+          setLoading(false)
+          return
+        }
+
+        if (boothResult.error) {
+          setError(getBlueprintErrorMessage(boothResult.error))
+          setLoading(false)
+          return
+        }
+
+        setBlueprints((blueprintResult.data ?? []) as BlueprintRow[])
+        setBooths((boothResult.data ?? []) as BoothSummaryRow[])
+        setLoading(false)
+      } catch (loadError) {
+        if (cancelled) return
+        setError(getBlueprintErrorMessage(loadError))
+        setLoading(false)
+      }
+    }
+
+    void loadEvents()
+
+    return () => {
+      cancelled = true
+    }
+  }, [reloadToken])
+
+  const events = useMemo<EventSummary[]>(
+    () =>
+      blueprints.map((blueprint) => {
+        const eventBooths = booths.filter((booth) => booth.blueprint_id === blueprint.id)
+
+        return {
+          ...blueprint,
+          totalBooths: eventBooths.length,
+          availableBooths: eventBooths.filter((booth) => booth.status === 'Available').length,
+          categories: Array.from(new Set(eventBooths.map((booth) => booth.category))),
+        }
+      }),
+    [blueprints, booths],
   )
+
+  const visibleEvents =
+    activeCategory === 'all'
+      ? events
+      : events.filter((event) => event.categories.includes(activeCategory))
 
   return (
     <div className="min-h-screen bg-canvas text-ink">
@@ -110,7 +150,7 @@ export default function EventExplorer() {
               Acara tersedia
             </p>
             <p className="mt-1 text-2xl font-semibold tabular-nums text-ink">
-              {events.length}
+              {loading ? '—' : events.length}
               <span className="ml-1 text-sm font-medium text-muted">event</span>
             </p>
           </div>
@@ -122,61 +162,142 @@ export default function EventExplorer() {
           </span>
           <div className="flex flex-wrap items-center gap-1.5">
             {categoryFilters.map((item) => {
-              const isActive = category === item
+              const isActive = activeCategory === item
 
               return (
                 <button
                   key={item}
                   type="button"
                   aria-pressed={isActive}
-                  onClick={() => setCategory(item)}
+                  onClick={() => setActiveCategory(item)}
                   className={`inline-flex min-h-[38px] items-center rounded-[6px] border px-3 py-1.5 text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 focus-visible:ring-offset-canvas motion-reduce:transition-none ${
                     isActive
                       ? 'border-pine bg-pine text-white'
                       : 'border-line bg-surface text-muted hover:border-pine hover:text-pine'
                   }`}
                 >
-                  {filterLabel[item]}
+                  {categoryLabel[item]}
                 </button>
               )
             })}
           </div>
           <p className="ml-auto text-xs tabular-nums text-muted">
-            {visibleEvents.length} dari {events.length} acara
+            {loading ? 'Memuat acara…' : `${visibleEvents.length} dari ${events.length} acara`}
           </p>
         </div>
 
-        {visibleEvents.length > 0 ? (
+        {loading && (
+          <div className="mt-6 flex min-h-[260px] items-center justify-center rounded-[10px] border border-line bg-surface px-6">
+            <div className="flex flex-col items-center gap-3 text-center">
+              <span
+                aria-hidden="true"
+                className="h-8 w-8 animate-spin rounded-full border-2 border-line border-t-pine"
+              />
+              <p className="text-sm font-medium text-ink">Memuat event yang tersedia…</p>
+            </div>
+          </div>
+        )}
+
+        {!loading && error && (
+          <div className="mt-6 rounded-[10px] border border-line bg-surface p-8 text-center">
+            <h2 className="text-lg font-semibold text-ink">Gagal memuat event</h2>
+            <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-muted">{error}</p>
+            <button
+              type="button"
+              onClick={() => setReloadToken((token) => token + 1)}
+              className="mt-5 inline-flex items-center justify-center rounded-[6px] bg-pine px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-pine-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 focus-visible:ring-offset-surface motion-reduce:transition-none"
+            >
+              Coba lagi
+            </button>
+          </div>
+        )}
+
+        {!loading && !error && events.length === 0 && (
+          <div className="mt-6 rounded-[10px] border border-dashed border-line bg-surface px-6 py-12 text-center">
+            <h2 className="text-base font-semibold text-ink">Belum ada event aktif</h2>
+            <p className="mx-auto mt-2 max-w-sm text-sm leading-relaxed text-muted">
+              Penyelenggara belum mempublikasikan denah event. Cek kembali dalam beberapa waktu.
+            </p>
+          </div>
+        )}
+
+        {!loading && !error && events.length > 0 && visibleEvents.length === 0 && (
+          <div className="mt-8 rounded-[10px] border border-dashed border-line bg-surface px-6 py-12 text-center">
+            <p className="text-sm font-semibold text-ink">
+              Tidak ada event dengan kategori {categoryLabel[activeCategory]}
+            </p>
+            <p className="mx-auto mt-1 max-w-sm text-xs leading-relaxed text-muted">
+              Coba pilih kategori lain untuk melihat event yang tersedia.
+            </p>
+            <button
+              type="button"
+              onClick={() => setActiveCategory('all')}
+              className="mt-4 inline-flex items-center justify-center rounded-[6px] bg-pine px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-pine-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 focus-visible:ring-offset-surface motion-reduce:transition-none"
+            >
+              Tampilkan semua acara
+            </button>
+          </div>
+        )}
+
+        {!loading && !error && visibleEvents.length > 0 && (
           <div className="divide-y divide-line border-b border-line">
             {visibleEvents.map((event) => {
-              const occupied = event.total - event.available
-              const occupancy = Math.round((occupied / event.total) * 100)
+              const sold = event.totalBooths - event.availableBooths
+              const occupancy =
+                event.totalBooths > 0 ? Math.round((sold / event.totalBooths) * 100) : 0
+              const categoryText =
+                event.categories.length === 0
+                  ? 'Belum ada booth'
+                  : event.categories.length === 1
+                    ? categoryLabel[event.categories[0]]
+                    : `${event.categories.length} kategori`
 
               return (
                 <Link
                   key={event.id}
                   to={`/event/${event.id}`}
-                  className="group grid gap-4 px-1 py-6 transition-colors hover:bg-pine-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-pine sm:grid-cols-[104px_minmax(0,1fr)_200px] sm:items-center sm:gap-6 sm:px-4 motion-reduce:transition-none"
+                  className="group grid gap-4 px-1 py-6 transition-colors hover:bg-pine-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-pine sm:grid-cols-[112px_minmax(0,1fr)_200px] sm:items-center sm:gap-6 sm:px-4 motion-reduce:transition-none"
                 >
-                  <div className="flex items-baseline gap-2 sm:block">
-                    <p className="text-2xl font-semibold tabular-nums tracking-tight text-ink">
-                      {event.day}
-                    </p>
-                    <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted">
-                      {event.month}
-                    </p>
+                  <div className="relative h-24 overflow-hidden rounded-[6px] border border-line bg-map sm:h-20">
+                    {event.image_url ? (
+                      <img
+                        src={event.image_url}
+                        alt={`Gambar denah ${event.name}`}
+                        loading="lazy"
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      <svg viewBox="0 0 320 128" aria-hidden="true" className="h-full w-full">
+                        <rect x="16" y="16" width="70" height="42" rx="6" fill="var(--color-surface)" stroke="var(--color-line)" />
+                        <rect x="96" y="16" width="80" height="42" rx="6" fill="var(--color-surface)" stroke="var(--color-line)" />
+                        <rect x="186" y="16" width="118" height="42" rx="6" fill="var(--color-pine)" />
+                        <rect x="16" y="68" width="140" height="44" rx="6" fill="var(--color-unavailable)" stroke="var(--color-line)" />
+                        <rect x="166" y="68" width="138" height="44" rx="6" fill="var(--color-surface)" stroke="var(--color-line)" />
+                      </svg>
+                    )}
+                    {event.image_url && (
+                      <span className="absolute left-1.5 top-1.5 rounded-[3px] bg-ink/75 px-1.5 py-0.5 text-[9px] font-semibold text-white">
+                        Gambar denah
+                      </span>
+                    )}
                   </div>
 
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
-                      <h2 className="text-base font-semibold text-ink sm:text-lg">{event.title}</h2>
+                      <h2 className="text-base font-semibold text-ink sm:text-lg">{event.name}</h2>
                       <span className="rounded-[4px] border border-line bg-surface px-1.5 py-0.5 text-[10px] font-medium text-muted">
-                        {event.category}
+                        {categoryText}
                       </span>
                     </div>
-                    <p className="mt-1 text-xs text-muted">{event.venue}</p>
-                    <p className="mt-0.5 text-xs tabular-nums text-muted">{event.date}</p>
-
+                    <p className="mt-1 text-xs text-muted">{event.venue || 'Venue belum diatur'}</p>
+                    <p className="mt-0.5 text-xs tabular-nums text-muted">
+                      {event.event_date || 'Tanggal belum diatur'}
+                    </p>
+                    {event.description && (
+                      <p className="mt-2 line-clamp-2 text-xs leading-relaxed text-muted">
+                        {event.description}
+                      </p>
+                    )}
                     <div className="mt-3 flex items-center gap-3">
                       <div className="h-1.5 w-full max-w-[220px] overflow-hidden rounded-[2px] bg-unavailable">
                         <div
@@ -193,8 +314,8 @@ export default function EventExplorer() {
                   <div className="flex items-center justify-between gap-4 sm:flex-col sm:items-end sm:gap-2 sm:text-right">
                     <div>
                       <p className="text-sm font-semibold tabular-nums text-ink">
-                        {event.available}{' '}
-                        <span className="font-normal text-muted">dari {event.total}</span>
+                        {event.availableBooths}{' '}
+                        <span className="font-normal text-muted">dari {event.totalBooths}</span>
                       </p>
                       <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted">
                         booth tersedia
@@ -208,20 +329,6 @@ export default function EventExplorer() {
                 </Link>
               )
             })}
-          </div>
-        ) : (
-          <div className="mt-8 rounded-[10px] border border-dashed border-line bg-surface px-6 py-12 text-center">
-            <p className="text-sm font-semibold text-ink">Belum ada acara pada kategori ini</p>
-            <p className="mx-auto mt-1 max-w-sm text-xs leading-relaxed text-muted">
-              Coba pilih kategori lain atau tampilkan semua acara untuk melihat denah yang tersedia.
-            </p>
-            <button
-              type="button"
-              onClick={() => setCategory('all')}
-              className="mt-4 inline-flex items-center justify-center rounded-[6px] bg-pine px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-pine-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 focus-visible:ring-offset-surface motion-reduce:transition-none"
-            >
-              Tampilkan semua acara
-            </button>
           </div>
         )}
 

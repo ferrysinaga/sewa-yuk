@@ -1,14 +1,13 @@
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import type { Booth } from '../../types/booth'
-
-const paymentMethods = [
-  { id: 'va', label: 'Virtual Account', description: 'BCA, BNI, Mandiri' },
-  { id: 'transfer', label: 'Transfer Bank', description: 'Konfirmasi manual' },
-  { id: 'qris', label: 'QRIS', description: 'Semua e-wallet' },
-] as const
-
-type PaymentMethod = (typeof paymentMethods)[number]['id']
+import {
+  PAYMENT_METHOD_DESCRIPTION,
+  PAYMENT_METHOD_LABEL,
+  PAYMENT_METHOD_OPTIONS,
+} from '../../types/booking'
+import type { PaymentMethod } from '../../types/booking'
+import { formatCurrency } from '../../lib/booking'
 
 const categoryLabel: Record<Booth['category'], string> = {
   Tech: 'Teknologi',
@@ -16,29 +15,26 @@ const categoryLabel: Record<Booth['category'], string> = {
   Apparel: 'Pakaian',
 }
 
-const formatPrice = (price: number) =>
-  new Intl.NumberFormat('id-ID', {
-    style: 'currency',
-    currency: 'IDR',
-    maximumFractionDigits: 0,
-  }).format(price)
-
 interface CheckoutModalProps {
   booth: Booth
   eventName?: string
   reserved: boolean
+  bookingCode?: string | null
   confirming: boolean
   onClose: () => void
-  onConfirm: () => void
+  onConfirm: (paymentMethod: PaymentMethod) => void
+  onViewBookings: () => void
 }
 
 export default function CheckoutModal({
   booth,
   eventName,
   reserved,
+  bookingCode,
   confirming,
   onClose,
   onConfirm,
+  onViewBookings,
 }: CheckoutModalProps) {
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('va')
   const closeButtonRef = useRef<HTMLButtonElement>(null)
@@ -161,11 +157,17 @@ export default function CheckoutModal({
               </div>
               <h3 className="mt-4 text-lg font-semibold text-ink">Booth aman untuk Anda</h3>
               <p className="mx-auto mt-1.5 max-w-sm text-sm leading-relaxed text-muted">
-                Booth {categoryLabel[booth.category]} telah dikunci sementara dan langsung ditandai
-                terisi untuk penyewa lain di peta.
+                Booth {categoryLabel[booth.category]} telah dikunci sementara dan ditandai tidak
+                tersedia untuk penyewa lain di peta.
               </p>
 
               <dl className="mt-5 space-y-2 rounded-[6px] border border-line bg-canvas p-4 text-left text-sm">
+                {bookingCode && (
+                  <div className="flex items-center justify-between gap-3">
+                    <dt className="text-muted">Kode pesanan</dt>
+                    <dd className="font-mono text-xs font-semibold text-ink">{bookingCode}</dd>
+                  </div>
+                )}
                 <div className="flex items-center justify-between gap-3">
                   <dt className="text-muted">Booth</dt>
                   <dd className="font-semibold tabular-nums text-ink">
@@ -180,13 +182,13 @@ export default function CheckoutModal({
                 </div>
                 <div className="flex items-center justify-between gap-3 border-t border-line pt-2">
                   <dt className="text-muted">Total</dt>
-                  <dd className="font-semibold tabular-nums text-ink">{formatPrice(booth.price)}</dd>
+                  <dd className="font-semibold tabular-nums text-ink">{formatCurrency(booth.price)}</dd>
                 </div>
               </dl>
 
               <p className="mt-4 text-xs leading-relaxed text-muted">
                 Status booth: <span className="font-semibold text-ink">Dipesan</span>. Selesaikan
-                pembayaran untuk mengubahnya menjadi terisi.
+                pembayaran dalam 24 jam melalui halaman Pesanan Saya.
               </p>
             </div>
           ) : (
@@ -222,16 +224,16 @@ export default function CheckoutModal({
               <dl className="mt-4 space-y-2.5 text-sm">
                 <div className="flex items-center justify-between gap-3">
                   <dt className="text-muted">Harga sewa booth</dt>
-                  <dd className="font-medium tabular-nums text-ink">{formatPrice(booth.price)}</dd>
+                  <dd className="font-medium tabular-nums text-ink">{formatCurrency(booth.price)}</dd>
                 </div>
                 <div className="flex items-center justify-between gap-3">
                   <dt className="text-muted">Biaya layanan</dt>
-                  <dd className="font-medium tabular-nums text-ink">{formatPrice(0)}</dd>
+                  <dd className="font-medium tabular-nums text-ink">{formatCurrency(0)}</dd>
                 </div>
                 <div className="flex items-center justify-between gap-3 border-t border-line pt-2.5">
                   <dt className="font-semibold text-ink">Total pembayaran</dt>
                   <dd className="text-base font-semibold tabular-nums text-ink">
-                    {formatPrice(booth.price)}
+                    {formatCurrency(booth.price)}
                   </dd>
                 </div>
               </dl>
@@ -239,12 +241,12 @@ export default function CheckoutModal({
               <fieldset className="mt-5">
                 <legend className="text-sm font-medium text-ink">Metode pembayaran</legend>
                 <div className="mt-2 grid gap-2 sm:grid-cols-3">
-                  {paymentMethods.map((method) => {
-                    const isSelected = paymentMethod === method.id
+                  {PAYMENT_METHOD_OPTIONS.map((method) => {
+                    const isSelected = paymentMethod === method
 
                     return (
                       <label
-                        key={method.id}
+                        key={method}
                         className={`cursor-pointer rounded-[6px] border p-3 transition-colors focus-within:ring-2 focus-within:ring-pine focus-within:ring-offset-2 focus-within:ring-offset-surface motion-reduce:transition-none ${
                           isSelected
                             ? 'border-pine bg-pine-soft'
@@ -254,13 +256,15 @@ export default function CheckoutModal({
                         <input
                           type="radio"
                           name="payment-method"
-                          value={method.id}
+                          value={method}
                           checked={isSelected}
-                          onChange={() => setPaymentMethod(method.id)}
+                          onChange={() => setPaymentMethod(method)}
                           className="sr-only"
                         />
                         <span className="flex items-center justify-between gap-2">
-                          <span className="text-xs font-semibold text-ink">{method.label}</span>
+                          <span className="text-xs font-semibold text-ink">
+                            {PAYMENT_METHOD_LABEL[method]}
+                          </span>
                           <span
                             aria-hidden="true"
                             className={`flex h-3.5 w-3.5 items-center justify-center rounded-full border ${
@@ -271,7 +275,7 @@ export default function CheckoutModal({
                           </span>
                         </span>
                         <span className="mt-1 block text-[11px] leading-snug text-muted">
-                          {method.description}
+                          {PAYMENT_METHOD_DESCRIPTION[method]}
                         </span>
                       </label>
                     )
@@ -287,8 +291,8 @@ export default function CheckoutModal({
                     clipRule="evenodd"
                   />
                 </svg>
-                Saat dikonfirmasi, status booth langsung berubah menjadi dipesan dan tidak dapat
-                diambil penyewa lain.
+                Saat dikonfirmasi, pesanan dibuat dan booth dikunci untuk Anda. Selesaikan
+                pembayaran dalam 24 jam agar booth dapat terisi.
               </p>
             </>
           )}
@@ -296,13 +300,22 @@ export default function CheckoutModal({
 
         <div className="border-t border-line px-5 py-4 sm:px-6">
           {reserved ? (
-            <button
-              type="button"
-              onClick={onClose}
-              className="inline-flex w-full items-center justify-center rounded-[6px] bg-pine px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-pine-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 focus-visible:ring-offset-surface motion-reduce:transition-none"
-            >
-              Selesai
-            </button>
+            <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+              <button
+                type="button"
+                onClick={onClose}
+                className="inline-flex items-center justify-center rounded-[6px] border border-line bg-surface px-5 py-3 text-sm font-semibold text-ink transition-colors hover:bg-canvas focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 focus-visible:ring-offset-surface motion-reduce:transition-none"
+              >
+                Selesai
+              </button>
+              <button
+                type="button"
+                onClick={onViewBookings}
+                className="inline-flex items-center justify-center gap-2 rounded-[6px] bg-pine px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-pine-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 focus-visible:ring-offset-surface motion-reduce:transition-none"
+              >
+                Lihat Pesanan Saya
+              </button>
+            </div>
           ) : (
             <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
               <button
@@ -315,7 +328,13 @@ export default function CheckoutModal({
               </button>
               <button
                 type="button"
-                onClick={isAvailable ? onConfirm : onClose}
+                onClick={() => {
+                  if (isAvailable) {
+                    onConfirm(paymentMethod)
+                  } else {
+                    onClose()
+                  }
+                }}
                 disabled={confirming}
                 className="inline-flex items-center justify-center gap-2 rounded-[6px] bg-pine px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-pine-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 focus-visible:ring-offset-surface disabled:cursor-not-allowed disabled:opacity-60 motion-reduce:transition-none"
               >
@@ -325,10 +344,10 @@ export default function CheckoutModal({
                       aria-hidden="true"
                       className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white"
                     />
-                    Mengunci booth…
+                    Membuat Pesanan…
                   </>
                 ) : isAvailable ? (
-                  'Kunci booth & lanjut bayar'
+                  'Buat Pesanan & Kunci Booth'
                 ) : (
                   'Pilih booth lain'
                 )}
