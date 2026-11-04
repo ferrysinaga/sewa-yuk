@@ -6,9 +6,11 @@ import LandingPage from './pages/landing/LandingPage'
 import Login from './pages/Login'
 import Register from './pages/Register'
 import AdminDashboard from './pages/admin/AdminDashboard'
+import AdminBookings from './pages/admin/AdminBookings'
 import BlueprintEditor from './pages/admin/BlueprintEditor'
 import BlueprintList from './pages/admin/BlueprintList'
 import EventExplorer from './pages/tenant/EventExplorer'
+import TenantBookings from './pages/tenant/TenantBookings'
 import TenantEventView from './pages/tenant/TenantEventView'
 import { useAuthStore } from './store/useAuthStore'
 
@@ -28,8 +30,13 @@ function AppRoutes() {
       <Route path="/event" element={<EventExplorer />} />
       <Route path="/event/:eventId" element={<TenantEventView />} />
 
+      <Route element={<ProtectedRoute allowedRoles={['tenant']} />}>
+        <Route path="/bookings" element={<TenantBookings />} />
+      </Route>
+
       <Route element={<ProtectedRoute allowedRoles={['organizer']} />}>
         <Route path="/admin" element={<AdminDashboard />} />
+        <Route path="/admin/bookings" element={<AdminBookings />} />
         <Route path="/admin/blueprint" element={<BlueprintList />} />
         <Route path="/admin/blueprint/:blueprintId" element={<BlueprintEditor />} />
         <Route path="/admin/*" element={<Navigate to="/admin" replace />} />

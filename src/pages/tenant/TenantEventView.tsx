@@ -5,12 +5,14 @@ import AppHeader from '../../components/layout/AppHeader'
 import InteractiveMap from '../../components/map/InteractiveMap'
 import TenantSidebar from '../../components/map/TenantSidebar'
 import { useToast } from '../../components/ui/Toast'
+import { getBookingErrorMessage } from '../../lib/booking'
 import { createChannelName } from '../../lib/id'
 import { isSupabaseConfigured, supabase } from '../../lib/supabase'
 import { useAuthStore } from '../../store/useAuthStore'
 import { useBoothStore } from '../../store/useBoothStore'
 import { BLUEPRINT_STATUS_BADGE, BLUEPRINT_STATUS_LABEL } from '../../types/blueprint'
 import type { BlueprintStatus } from '../../types/blueprint'
+import type { BookingRow, PaymentMethod } from '../../types/booking'
 import type { Booth, BoothCategory, BoothStatus } from '../../types/booth'
 
 interface BlueprintRow {
@@ -75,6 +77,7 @@ export default function TenantEventView() {
   const [reloadToken, setReloadToken] = useState(0)
   const [reserving, setReserving] = useState(false)
   const [reservedBoothId, setReservedBoothId] = useState<string | null>(null)
+  const [reservedBooking, setReservedBooking] = useState<BookingRow | null>(null)
   const [checkoutOpen, setCheckoutOpen] = useState(false)
   const locallyReservedRef = useRef<Set<string>>(new Set())
 
@@ -97,6 +100,7 @@ export default function TenantEventView() {
     setError(null)
     setActiveCategory('all')
     setReservedBoothId(null)
+    setReservedBooking(null)
     setCheckoutOpen(false)
     locallyReservedRef.current.clear()
     setBooths([])
@@ -217,7 +221,7 @@ export default function TenantEventView() {
     setCheckoutOpen(false)
   }
 
-  const handleConfirmCheckout = async () => {
+  const handleConfirmCheckout = async (paymentMethod: PaymentMethod) => {
     const store = useBoothStore.getState()
     const activeBooth = store.booths.find((booth) => booth.id === store.activeBoothId)
 
@@ -239,29 +243,26 @@ export default function TenantEventView() {
     locallyReservedRef.current.add(activeBooth.id)
 
     try {
-      const { data, error: updateError } = await supabase
-        .from('booths')
-        .update({ status: 'Reserved' })
-        .eq('id', activeBooth.id)
-        .eq('status', 'Available')
-        .select('*')
+      const { data, error: bookingError } = await supabase.rpc('create_booking', {
+        p_booth_id: activeBooth.id,
+        p_payment_method: paymentMethod,
+      })
 
-      if (updateError) throw updateError
+      if (bookingError) throw bookingError
 
-      if (!data || data.length === 0) {
-        locallyReservedRef.current.delete(activeBooth.id)
-        store.updateBoothStatus(activeBooth.id, 'Reserved')
-        showToast('Booth ini baru saja diambil penyewa lain. Silakan pilih booth lain.', 'error')
-        return
+      const booking = (Array.isArray(data) ? data[0] : data) as BookingRow | null
+
+      if (!booking) {
+        throw new Error('Pemesanan gagal dibuat. Silakan coba lagi.')
       }
 
       store.updateBoothStatus(activeBooth.id, 'Reserved')
       setReservedBoothId(activeBooth.id)
-      showToast('Booth berhasil dikunci. Silakan lanjutkan ke pembayaran.', 'success')
+      setReservedBooking(booking)
+      showToast(`Pesanan ${booking.booking_code} berhasil dibuat.`, 'success')
     } catch (reserveError) {
       locallyReservedRef.current.delete(activeBooth.id)
-      const message = reserveError instanceof Error ? reserveError.message : String(reserveError)
-      showToast(`Gagal mengunci booth: ${message}`, 'error')
+      showToast(`Gagal membuat pesanan: ${getBookingErrorMessage(reserveError)}`, 'error')
     } finally {
       setReserving(false)
     }
@@ -404,9 +405,11 @@ export default function TenantEventView() {
           booth={activeBooth}
           eventName={blueprint?.name}
           reserved={reservedBoothId === activeBooth.id}
+          bookingCode={reservedBooking?.booking_code ?? null}
           confirming={reserving}
           onClose={handleCloseCheckout}
           onConfirm={handleConfirmCheckout}
+          onViewBookings={() => navigate('/bookings')}
         />
       )}
     </div>
