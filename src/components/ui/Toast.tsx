@@ -16,15 +16,15 @@ interface ToastContextValue {
 const ToastContext = createContext<ToastContextValue | null>(null)
 
 const variantStyles: Record<ToastVariant, string> = {
-  success: 'border-emerald-200 bg-white text-gray-900',
-  error: 'border-red-200 bg-white text-gray-900',
-  info: 'border-gray-200 bg-white text-gray-900',
+  success: 'border-line border-l-2 border-l-pine bg-surface text-ink',
+  error: 'border-line border-l-2 border-l-red-500 bg-surface text-ink',
+  info: 'border-line border-l-2 border-l-clay bg-surface text-ink',
 }
 
 const variantIcon: Record<ToastVariant, ReactNode> = {
   success: (
-    <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600">
-      <svg viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4">
+    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[6px] bg-pine-soft text-pine">
+      <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true" className="h-4 w-4">
         <path
           fillRule="evenodd"
           d="M16.704 5.29a1 1 0 0 1 .006 1.414l-7.5 7.5a1 1 0 0 1-1.42 0l-3.5-3.5a1 1 0 1 1 1.414-1.414l2.793 2.793 6.793-6.793a1 1 0 0 1 1.414 0Z"
@@ -34,8 +34,8 @@ const variantIcon: Record<ToastVariant, ReactNode> = {
     </span>
   ),
   error: (
-    <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-red-50 text-red-600">
-      <svg viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4">
+    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[6px] bg-red-50 text-red-600">
+      <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true" className="h-4 w-4">
         <path
           fillRule="evenodd"
           d="M18 10a8 8 0 1 1-16 0 8 8 0 0 1 16 0Zm-8-5a.75.75 0 0 1 .75.75v4.5a.75.75 0 0 1-1.5 0v-4.5A.75.75 0 0 1 10 5Zm0 10a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z"
@@ -45,8 +45,8 @@ const variantIcon: Record<ToastVariant, ReactNode> = {
     </span>
   ),
   info: (
-    <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
-      <svg viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4">
+    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[6px] bg-clay-soft text-clay-dark">
+      <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true" className="h-4 w-4">
         <path
           fillRule="evenodd"
           d="M18 10a8 8 0 1 1-16 0 8 8 0 0 1 16 0Zm-7-4a1 1 0 1 1-2 0 1 1 0 0 1 2 0ZM9 9a.75.75 0 0 0 0 1.5h.25v3.25a.75.75 0 0 0 1.5 0V9.75A.75.75 0 0 0 10 9H9Z"
@@ -86,17 +86,17 @@ export function ToastProvider({ children }: { children: ReactNode }) {
           <div
             key={toast.id}
             role={toast.variant === 'error' ? 'alert' : 'status'}
-            className={`pointer-events-auto flex items-start gap-3 rounded-2xl border p-3.5 shadow-lg ${variantStyles[toast.variant]}`}
+            className={`pointer-events-auto flex items-start gap-3 rounded-[8px] border p-3.5 shadow-md ${variantStyles[toast.variant]}`}
           >
             {variantIcon[toast.variant]}
-            <p className="flex-1 pt-1 text-sm leading-snug text-gray-700">{toast.message}</p>
+            <p className="flex-1 pt-1 text-sm leading-snug text-ink">{toast.message}</p>
             <button
               type="button"
               onClick={() => removeToast(toast.id)}
               aria-label="Tutup notifikasi"
-              className="rounded-xl p-1 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2"
+              className="rounded-[4px] p-1 text-muted transition-colors hover:bg-canvas hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine motion-reduce:transition-none"
             >
-              <svg viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4">
+              <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true" className="h-4 w-4">
                 <path d="M6.28 5.22a.75.75 0 0 0-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 1 0 1.06 1.06L10 11.06l3.72 3.72a.75.75 0 1 0 1.06-1.06L11.06 10l3.72-3.72a.75.75 0 0 0-1.06-1.06L10 8.94 6.28 5.22Z" />
               </svg>
             </button>

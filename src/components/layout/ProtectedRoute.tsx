@@ -15,13 +15,13 @@ export default function ProtectedRoute({ allowedRoles }: ProtectedRouteProps) {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-white">
+      <div className="flex min-h-screen items-center justify-center bg-canvas">
         <div className="flex flex-col items-center gap-3">
           <span
             aria-hidden="true"
-            className="h-8 w-8 animate-spin rounded-full border-2 border-gray-200 border-t-blue-600"
+            className="h-8 w-8 animate-spin rounded-full border-2 border-line border-t-pine"
           />
-          <p className="text-sm text-gray-500">Memeriksa sesi Anda…</p>
+          <p className="text-sm text-muted">Memeriksa sesi Anda…</p>
         </div>
       </div>
     )

@@ -9,13 +9,13 @@ import { useAuthStore } from '../store/useAuthStore'
 import type { UserRole } from '../types/auth'
 
 const baseInputClass =
-  'w-full rounded-xl border bg-white px-4 py-3 text-sm text-gray-900 shadow-sm outline-none transition-colors placeholder:text-gray-500 focus:ring-2 disabled:cursor-not-allowed disabled:bg-gray-50'
+  'w-full rounded-[6px] border bg-surface px-3.5 py-2.5 text-sm text-ink outline-none transition-colors placeholder:text-muted focus:ring-2 disabled:cursor-not-allowed disabled:bg-canvas'
 
 function inputClass(hasError: boolean) {
   return `${baseInputClass} ${
     hasError
       ? 'border-red-300 focus:border-red-400 focus:ring-red-100'
-      : 'border-gray-200 focus:border-blue-600 focus:ring-blue-100'
+      : 'border-line focus:border-pine focus:ring-pine-soft'
   }`
 }
 
@@ -103,16 +103,24 @@ export default function Register() {
 
   return (
     <AuthLayout>
-      <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-md sm:p-8">
+      <div className="rounded-[10px] border border-line bg-surface p-6 sm:p-8">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-gray-900 sm:text-3xl">Buat akun baru</h1>
-          <p className="mt-2 text-sm leading-relaxed text-gray-500">
+          <div className="flex items-center gap-2.5">
+            <span aria-hidden="true" className="h-1.5 w-1.5 bg-clay" />
+            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted">
+              Akun baru
+            </p>
+          </div>
+          <h1 className="mt-3 text-2xl font-semibold tracking-tight text-ink sm:text-3xl">
+            Buat akun baru
+          </h1>
+          <p className="mt-2 text-sm leading-relaxed text-muted">
             Pilih peran Anda untuk mendapatkan pengalaman yang sesuai.
           </p>
         </div>
 
         {!isSupabaseConfigured && (
-          <div className="mt-6 rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-xs leading-relaxed text-blue-800">
+          <div className="mt-6 rounded-[6px] border border-line bg-clay-soft px-4 py-3 text-xs leading-relaxed text-clay-dark">
             Supabase belum dikonfigurasi. Salin <code className="font-semibold">.env.example</code> menjadi{' '}
             <code className="font-semibold">.env</code> lalu isi kredensial proyek Anda.
           </div>
@@ -120,7 +128,7 @@ export default function Register() {
 
         <form onSubmit={handleSubmit} noValidate className="mt-6 space-y-5">
           <fieldset>
-            <legend className="text-sm font-medium text-gray-900">Daftar sebagai</legend>
+            <legend className="text-sm font-medium text-ink">Daftar sebagai</legend>
             <div className="mt-2 grid gap-2 sm:grid-cols-2">
               {roleOptions.map((option) => {
                 const isSelected = role === option.value
@@ -128,10 +136,10 @@ export default function Register() {
                 return (
                   <label
                     key={option.value}
-                    className={`cursor-pointer rounded-xl border p-3 text-left shadow-sm transition-colors focus-within:ring-2 focus-within:ring-blue-600 focus-within:ring-offset-2 ${
+                    className={`cursor-pointer rounded-[8px] border p-3 text-left transition-colors focus-within:ring-2 focus-within:ring-pine focus-within:ring-offset-2 focus-within:ring-offset-surface motion-reduce:transition-none ${
                       isSelected
-                        ? 'border-blue-600 bg-blue-50/60'
-                        : 'border-gray-200 bg-white hover:border-gray-300'
+                        ? 'border-pine bg-pine-soft'
+                        : 'border-line bg-surface hover:border-pine'
                     }`}
                   >
                     <input
@@ -143,17 +151,17 @@ export default function Register() {
                       className="sr-only"
                     />
                     <span className="flex items-center justify-between gap-2">
-                      <span className="text-sm font-semibold text-gray-900">{option.title}</span>
+                      <span className="text-sm font-semibold text-ink">{option.title}</span>
                       <span
                         aria-hidden="true"
                         className={`flex h-4 w-4 items-center justify-center rounded-full border ${
-                          isSelected ? 'border-blue-600 bg-blue-600' : 'border-gray-300 bg-white'
+                          isSelected ? 'border-pine bg-pine' : 'border-line bg-surface'
                         }`}
                       >
                         {isSelected && <span className="h-1.5 w-1.5 rounded-full bg-white" />}
                       </span>
                     </span>
-                    <span className="mt-1 block text-xs text-gray-500">{option.description}</span>
+                    <span className="mt-1 block text-xs text-muted">{option.description}</span>
                   </label>
                 )
               })}
@@ -161,7 +169,7 @@ export default function Register() {
           </fieldset>
 
           <div>
-            <label htmlFor="email" className="text-sm font-medium text-gray-900">
+            <label htmlFor="email" className="text-sm font-medium text-ink">
               Email
             </label>
             <input
@@ -185,7 +193,7 @@ export default function Register() {
           </div>
 
           <div>
-            <label htmlFor="password" className="text-sm font-medium text-gray-900">
+            <label htmlFor="password" className="text-sm font-medium text-ink">
               Kata sandi
             </label>
             <div className="relative mt-1.5">
@@ -206,7 +214,7 @@ export default function Register() {
                 type="button"
                 onClick={() => setShowPassword((current) => !current)}
                 aria-label={showPassword ? 'Sembunyikan kata sandi' : 'Tampilkan kata sandi'}
-                className="absolute right-1 top-1/2 -translate-y-1/2 rounded-xl p-2 text-gray-500 transition-colors hover:text-gray-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600"
+                className="absolute right-1 top-1/2 -translate-y-1/2 rounded-[4px] p-2 text-muted transition-colors hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine motion-reduce:transition-none"
               >
                 {showPassword ? (
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5">
@@ -228,7 +236,7 @@ export default function Register() {
           </div>
 
           <div>
-            <label htmlFor="confirm-password" className="text-sm font-medium text-gray-900">
+            <label htmlFor="confirm-password" className="text-sm font-medium text-ink">
               Konfirmasi kata sandi
             </label>
             <input
@@ -254,7 +262,7 @@ export default function Register() {
           <button
             type="submit"
             disabled={submitting}
-            className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-70"
+            className="inline-flex w-full items-center justify-center gap-2 rounded-[6px] bg-pine px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-pine-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 focus-visible:ring-offset-surface disabled:cursor-not-allowed disabled:opacity-70 motion-reduce:transition-none"
           >
             {submitting ? (
               <>
@@ -270,11 +278,11 @@ export default function Register() {
           </button>
         </form>
 
-        <p className="mt-6 text-center text-sm text-gray-500">
+        <p className="mt-6 border-t border-line pt-5 text-center text-sm text-muted">
           Sudah punya akun?{' '}
           <Link
             to="/login"
-            className="font-semibold text-blue-600 transition-colors hover:text-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2"
+            className="rounded-[4px] font-semibold text-pine transition-colors hover:text-pine-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 focus-visible:ring-offset-surface motion-reduce:transition-none"
           >
             Masuk
           </Link>
@@ -284,9 +292,9 @@ export default function Register() {
       <p className="mt-6 text-center text-sm">
         <Link
           to="/"
-          className="inline-flex items-center gap-1.5 text-gray-500 transition-colors hover:text-gray-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2"
+          className="inline-flex items-center gap-1.5 rounded-[4px] text-muted transition-colors hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 focus-visible:ring-offset-surface motion-reduce:transition-none"
         >
-          <svg viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4">
+          <svg viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4" aria-hidden="true">
             <path
               fillRule="evenodd"
               d="M12.79 5.23a.75.75 0 0 1-.02 1.06L8.832 10l3.938 3.71a.75.75 0 1 1-1.04 1.08l-4.5-4.25a.75.75 0 0 1 0-1.08l4.5-4.25a.75.75 0 0 1 1.06.02Z"
