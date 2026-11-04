@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import type { BlueprintDraft } from '../types/blueprint'
 import type { Booth, BoothCategory, BoothStatus } from '../types/booth'
 
 export const DEFAULT_BLUEPRINT_ID = 'hall-a'
@@ -12,9 +13,12 @@ interface BoothStore {
   booths: Booth[]
   activeBoothId: string | null
   blueprintId: string
+  blueprintDraft: BlueprintDraft | null
   isDirty: boolean
   deletedBoothIds: string[]
   setBooths: (booths: Booth[]) => void
+  loadBlueprint: (blueprintId: string, booths: Booth[], draft: BlueprintDraft) => void
+  setBlueprintDraft: (draft: BlueprintDraft) => void
   addBooth: (booth: Booth) => void
   updateBoothPosition: (id: string, x: number, y: number) => void
   updateBoothDetails: (id: string, patch: BoothDetailsPatch) => void
@@ -29,6 +33,7 @@ export const useBoothStore = create<BoothStore>((set) => ({
   booths: [],
   activeBoothId: null,
   blueprintId: DEFAULT_BLUEPRINT_ID,
+  blueprintDraft: null,
   isDirty: false,
   deletedBoothIds: [],
 
@@ -39,6 +44,18 @@ export const useBoothStore = create<BoothStore>((set) => ({
       isDirty: false,
       deletedBoothIds: [],
     }),
+
+  loadBlueprint: (blueprintId, booths, draft) =>
+    set({
+      blueprintId,
+      blueprintDraft: draft,
+      booths,
+      activeBoothId: null,
+      isDirty: false,
+      deletedBoothIds: [],
+    }),
+
+  setBlueprintDraft: (draft) => set({ blueprintDraft: draft, isDirty: true }),
 
   addBooth: (booth) =>
     set((state) => ({
@@ -95,6 +112,7 @@ export const useBoothStore = create<BoothStore>((set) => ({
     set({
       booths: [],
       activeBoothId: null,
+      blueprintDraft: null,
       isDirty: false,
       deletedBoothIds: [],
     }),
