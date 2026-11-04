@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 
 type Category = 'Tech' | 'F&B' | 'Apparel'
 type BoothStatus = 'Available' | 'Reserved' | 'Booked'
@@ -12,17 +13,19 @@ interface Booth {
   y: number
   width: number
   height: number
+  size: string
+  note: string
   status: BoothStatus
 }
 
 const booths: Booth[] = [
-  { id: 'A-01', label: 'Booth A-01', category: 'Tech', price: 4500000, x: 24, y: 64, width: 120, height: 76, status: 'Available' },
-  { id: 'A-02', label: 'Booth A-02', category: 'F&B', price: 3800000, x: 24, y: 152, width: 120, height: 76, status: 'Available' },
-  { id: 'A-03', label: 'Booth A-03', category: 'Apparel', price: 3200000, x: 24, y: 240, width: 120, height: 76, status: 'Booked' },
-  { id: 'A-04', label: 'Booth A-04', category: 'Tech', price: 2900000, x: 24, y: 328, width: 120, height: 56, status: 'Available' },
-  { id: 'B-01', label: 'Booth B-01', category: 'F&B', price: 6200000, x: 300, y: 64, width: 196, height: 88, status: 'Available' },
-  { id: 'B-02', label: 'Booth B-02', category: 'Tech', price: 7400000, x: 300, y: 164, width: 196, height: 88, status: 'Available' },
-  { id: 'B-03', label: 'Booth B-03', category: 'Apparel', price: 5100000, x: 300, y: 264, width: 196, height: 88, status: 'Reserved' },
+  { id: 'A-01', label: 'Booth A-01', category: 'Tech', price: 4500000, x: 24, y: 64, width: 120, height: 76, size: '3 × 2 m', note: 'Sayap kiri · dekat aisle utama', status: 'Available' },
+  { id: 'A-02', label: 'Booth A-02', category: 'F&B', price: 3800000, x: 24, y: 152, width: 120, height: 76, size: '3 × 2 m', note: 'Sayap kiri · dekat area makanan', status: 'Available' },
+  { id: 'A-03', label: 'Booth A-03', category: 'Apparel', price: 3200000, x: 24, y: 240, width: 120, height: 76, size: '3 × 2 m', note: 'Sayap kiri · dekat area fashion', status: 'Booked' },
+  { id: 'A-04', label: 'Booth A-04', category: 'Tech', price: 2900000, x: 24, y: 328, width: 120, height: 56, size: '3 × 1.5 m', note: 'Sayap kiri · dekat pintu masuk', status: 'Available' },
+  { id: 'B-01', label: 'Booth B-01', category: 'F&B', price: 6200000, x: 300, y: 64, width: 196, height: 88, size: '5 × 2 m', note: 'Area tengah · posisi premium', status: 'Available' },
+  { id: 'B-02', label: 'Booth B-02', category: 'Tech', price: 7400000, x: 300, y: 164, width: 196, height: 88, size: '5 × 2 m', note: 'Area tengah · paling strategis', status: 'Available' },
+  { id: 'B-03', label: 'Booth B-03', category: 'Apparel', price: 5100000, x: 300, y: 264, width: 196, height: 88, size: '5 × 2 m', note: 'Area tengah · dekat pintu masuk', status: 'Reserved' },
 ]
 
 const formatPrice = (price: number) =>
@@ -144,6 +147,7 @@ function BoothMap() {
                   isUnavailable ? 'sudah dipesan' : 'tersedia'
                 }`}
                 aria-pressed={isActive}
+                aria-disabled={isUnavailable}
                 onClick={() => !isUnavailable && setActiveId(booth.id)}
                 onKeyDown={(event) => {
                   if (!isUnavailable && (event.key === 'Enter' || event.key === ' ')) {
@@ -151,7 +155,9 @@ function BoothMap() {
                     setActiveId(booth.id)
                   }
                 }}
-                className={isUnavailable ? 'cursor-not-allowed' : 'cursor-pointer focus-visible:outline-none'}
+                className={`group ${
+                  isUnavailable ? 'cursor-not-allowed' : 'cursor-pointer focus-visible:outline-none'
+                }`}
               >
                 <rect
                   x={booth.x}
@@ -159,13 +165,13 @@ function BoothMap() {
                   width={booth.width}
                   height={booth.height}
                   rx="8"
-                  className={
+                  className={`${
                     isActive
                       ? 'fill-blue-600 stroke-blue-700 transition-colors'
                       : isUnavailable
                         ? 'fill-gray-100 stroke-gray-300'
                         : 'fill-white stroke-gray-300 transition-colors hover:fill-blue-50 hover:stroke-blue-400'
-                  }
+                  } group-focus-visible:stroke-blue-600 group-focus-visible:stroke-2`}
                   strokeWidth={isActive ? 2 : 1.2}
                 />
 
@@ -218,7 +224,7 @@ function BoothMap() {
         </div>
       </div>
 
-      <div className="border-t border-gray-200 px-5 py-4">
+      <div className="border-t border-gray-200 px-5 py-4" aria-live="polite">
         {activeBooth ? (
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div className="flex items-center gap-3">
@@ -228,7 +234,7 @@ function BoothMap() {
               <div>
                 <p className="text-sm font-semibold text-gray-900">{activeBooth.label}</p>
                 <p className="text-xs text-gray-500">
-                  {activeBooth.category} · 3 × 3 m · Sudut strategis
+                  {activeBooth.category} · {activeBooth.size} · {activeBooth.note}
                 </p>
               </div>
             </div>
@@ -237,12 +243,13 @@ function BoothMap() {
                 <p className="text-xs text-gray-500">Harga mulai</p>
                 <p className="text-sm font-semibold text-gray-900">{formatPrice(activeBooth.price)}</p>
               </div>
-              <button
-                type="button"
+              <Link
+                to="/event"
+                aria-label={`Lihat detail ${activeBooth.label}`}
                 className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2"
               >
                 Lihat Detail
-              </button>
+              </Link>
             </div>
           </div>
         ) : (
@@ -268,16 +275,26 @@ function CheckIcon() {
 export default function LandingPage() {
   return (
     <div className="min-h-screen bg-white text-gray-900">
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-[60] focus:rounded-xl focus:bg-white focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-gray-900 focus:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
+      >
+        Lewati ke konten utama
+      </a>
+
       <header className="sticky top-0 z-50 border-b border-gray-200 bg-white/80 backdrop-blur">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-          <a href="/" className="flex items-center gap-2.5 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2">
+          <Link
+            to="/"
+            className="flex items-center gap-2.5 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2"
+          >
             <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-600 text-white">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M4 9V6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v3M4 9h16M4 9v9a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9M9 9v11M15 9v11" />
               </svg>
             </span>
             <span className="text-base font-semibold tracking-tight">sewa-yuk</span>
-          </a>
+          </Link>
 
           <nav className="hidden items-center gap-1 md:flex" aria-label="Navigasi utama">
             {navItems.map((item) => (
@@ -292,23 +309,23 @@ export default function LandingPage() {
           </nav>
 
           <div className="flex items-center gap-2">
-            <a
-              href="/login"
-              className="hidden rounded-xl px-4 py-2 text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 sm:inline-flex"
+            <Link
+              to="/login"
+              className="inline-flex items-center justify-center rounded-xl px-3 py-2 text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 sm:px-4"
             >
               Masuk
-            </a>
-            <a
-              href="/event"
+            </Link>
+            <Link
+              to="/event"
               className="inline-flex items-center justify-center rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2"
             >
               Cari Booth
-            </a>
+            </Link>
           </div>
         </div>
       </header>
 
-      <main>
+      <main id="main-content" tabIndex={-1} className="focus:outline-none">
         <section className="relative overflow-hidden">
           <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10">
             <div className="absolute -top-32 right-1/4 h-96 w-96 rounded-full bg-blue-100/60 blur-3xl" />
@@ -332,8 +349,8 @@ export default function LandingPage() {
               </p>
 
               <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-                <a
-                  href="/event"
+                <Link
+                  to="/event"
                   className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-6 py-3.5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-blue-700 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2"
                 >
                   Cari Lokasi Booth
@@ -344,13 +361,13 @@ export default function LandingPage() {
                       clipRule="evenodd"
                     />
                   </svg>
-                </a>
-                <a
-                  href="/admin"
+                </Link>
+                <Link
+                  to="/admin"
                   className="inline-flex items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-6 py-3.5 text-sm font-semibold text-gray-900 shadow-sm transition-all hover:border-gray-300 hover:bg-gray-50 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2"
                 >
                   Jadi Penyelenggara Acara
-                </a>
+                </Link>
               </div>
 
               <dl className="mt-10 grid max-w-lg grid-cols-3 gap-6 border-t border-gray-200 pt-8">
@@ -374,7 +391,7 @@ export default function LandingPage() {
           </div>
         </section>
 
-        <section id="nilai-jual" className="border-y border-gray-200 bg-gray-50/60 py-16 sm:py-20 lg:py-24">
+        <section id="nilai-jual" className="scroll-mt-20 border-y border-gray-200 bg-gray-50/60 py-16 sm:py-20 lg:py-24">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="max-w-2xl">
               <p className="text-sm font-semibold uppercase tracking-widest text-blue-600">Nilai Jual Utama</p>
@@ -403,7 +420,7 @@ export default function LandingPage() {
           </div>
         </section>
 
-        <section id="fitur" className="py-16 sm:py-20 lg:py-24">
+        <section id="fitur" className="scroll-mt-20 py-16 sm:py-20 lg:py-24">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="max-w-2xl">
               <p className="text-sm font-semibold uppercase tracking-widest text-blue-600">Untuk Setiap Peran</p>
@@ -442,8 +459,8 @@ export default function LandingPage() {
                     </li>
                   ))}
                 </ul>
-                <a
-                  href="/admin"
+                <Link
+                  to="/admin"
                   className="mt-8 inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-5 py-2.5 text-sm font-semibold text-gray-900 shadow-sm transition-colors hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2"
                 >
                   Buka Ruang Kerja
@@ -454,7 +471,7 @@ export default function LandingPage() {
                       clipRule="evenodd"
                     />
                   </svg>
-                </a>
+                </Link>
               </article>
 
               <article className="relative overflow-hidden rounded-2xl border border-gray-200 bg-white p-6 shadow-md transition-shadow hover:shadow-lg sm:p-8">
@@ -499,8 +516,8 @@ export default function LandingPage() {
                     </li>
                   ))}
                 </ul>
-                <a
-                  href="/event"
+                <Link
+                  to="/event"
                   className="mt-8 inline-flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2"
                 >
                   Jelajahi Event
@@ -511,13 +528,13 @@ export default function LandingPage() {
                       clipRule="evenodd"
                     />
                   </svg>
-                </a>
+                </Link>
               </article>
             </div>
           </div>
         </section>
 
-        <section id="cara-kerja" className="border-y border-gray-200 bg-gray-50/60 py-16 sm:py-20 lg:py-24">
+        <section id="cara-kerja" className="scroll-mt-20 border-y border-gray-200 bg-gray-50/60 py-16 sm:py-20 lg:py-24">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="mx-auto max-w-2xl text-center">
               <p className="text-sm font-semibold uppercase tracking-widest text-blue-600">Alur Kerja</p>
@@ -576,8 +593,8 @@ export default function LandingPage() {
                   hitungan menit, tanpa instalasi.
                 </p>
                 <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-                  <a
-                    href="/event"
+                  <Link
+                    to="/event"
                     className="inline-flex items-center justify-center gap-2 rounded-xl bg-white px-6 py-3.5 text-sm font-semibold text-gray-900 shadow-sm transition-colors hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-gray-900"
                   >
                     Mulai Eksplorasi Event
@@ -588,13 +605,13 @@ export default function LandingPage() {
                         clipRule="evenodd"
                       />
                     </svg>
-                  </a>
-                  <a
-                    href="/admin"
+                  </Link>
+                  <Link
+                    to="/admin"
                     className="inline-flex items-center justify-center rounded-xl border border-white/20 bg-white/5 px-6 py-3.5 text-sm font-semibold text-white transition-colors hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-gray-900"
                   >
                     Jadi Penyelenggara
-                  </a>
+                  </Link>
                 </div>
               </div>
             </div>
@@ -604,14 +621,17 @@ export default function LandingPage() {
 
       <footer className="border-t border-gray-200">
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-6 px-4 py-8 sm:px-6 md:flex-row lg:px-8">
-          <div className="flex items-center gap-2.5">
+          <Link
+            to="/"
+            className="flex items-center gap-2.5 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2"
+          >
             <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-blue-600 text-white">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-4 w-4">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M4 9V6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v3M4 9h16M4 9v9a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9M9 9v11M15 9v11" />
               </svg>
             </span>
             <span className="text-sm font-semibold text-gray-900">sewa-yuk</span>
-          </div>
+          </Link>
           <nav className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2" aria-label="Navigasi footer">
             {navItems.map((item) => (
               <a
@@ -622,12 +642,12 @@ export default function LandingPage() {
                 {item.label}
               </a>
             ))}
-            <a
-              href="/admin"
+            <Link
+              to="/admin"
               className="text-sm text-gray-500 transition-colors hover:text-gray-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2"
             >
               Untuk Organizer
-            </a>
+            </Link>
           </nav>
           <p className="text-xs text-gray-500">© 2026 sewa-yuk. Semua hak dilindungi.</p>
         </div>
