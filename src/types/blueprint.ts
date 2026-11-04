@@ -7,6 +7,8 @@ export interface BlueprintRow {
   event_date: string | null
   description: string | null
   status: BlueprintStatus
+  image_url: string | null
+  image_path: string | null
 }
 
 export interface BlueprintDraft {
@@ -15,6 +17,8 @@ export interface BlueprintDraft {
   eventDate: string
   description: string
   status: BlueprintStatus
+  imageUrl: string
+  imagePath: string
 }
 
 export const BLUEPRINT_STATUS_OPTIONS: BlueprintStatus[] = ['draft', 'published', 'archived']

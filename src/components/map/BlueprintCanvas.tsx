@@ -102,6 +102,7 @@ interface BlueprintCanvasProps {
 
 export default function BlueprintCanvas({ svgRef }: BlueprintCanvasProps) {
   const booths = useBoothStore((state) => state.booths)
+  const blueprintImageUrl = useBoothStore((state) => state.blueprintImageUrl)
   const setActiveBooth = useBoothStore((state) => state.setActiveBooth)
   // `useDroppable` harus dipanggil dari komponen yang benar-benar berada di dalam
   // <DndContext>. Memanggilnya di komponen yang merender <DndContext> membuat
@@ -119,6 +120,11 @@ export default function BlueprintCanvas({ svgRef }: BlueprintCanvasProps) {
             </p>
           </div>
           <div className="flex items-center gap-4 text-xs text-gray-500">
+            {blueprintImageUrl && (
+              <span className="inline-flex items-center gap-2 text-blue-700">
+                <span className="h-3 w-3 rounded border border-blue-200 bg-blue-50" /> Gambar latar aktif
+              </span>
+            )}
             <span className="inline-flex items-center gap-2">
               <span className="h-3 w-3 rounded border border-gray-300 bg-white" /> Tersedia
             </span>
@@ -171,33 +177,51 @@ export default function BlueprintCanvas({ svgRef }: BlueprintCanvasProps) {
                 fill="white"
                 onClick={() => setActiveBooth(null)}
               />
+
+              {blueprintImageUrl && (
+                <image
+                  href={blueprintImageUrl}
+                  x="0"
+                  y="0"
+                  width={CANVAS_WIDTH}
+                  height={CANVAS_HEIGHT}
+                  preserveAspectRatio="xMidYMid meet"
+                  opacity="0.92"
+                  className="pointer-events-none"
+                />
+              )}
+
               <rect
                 x="0"
                 y="0"
                 width={CANVAS_WIDTH}
                 height={CANVAS_HEIGHT}
                 fill="url(#blueprint-grid)"
-                opacity="0.8"
+                opacity={blueprintImageUrl ? '0.35' : '0.8'}
                 onClick={() => setActiveBooth(null)}
               />
 
-              <text
-                x={CANVAS_WIDTH / 2}
-                y="32"
-                textAnchor="middle"
-                className="pointer-events-none fill-gray-300 text-[11px] font-semibold tracking-[0.3em]"
-              >
-                AREA PAMERAN
-              </text>
+              {!blueprintImageUrl && (
+                <text
+                  x={CANVAS_WIDTH / 2}
+                  y="32"
+                  textAnchor="middle"
+                  className="pointer-events-none fill-gray-300 text-[11px] font-semibold tracking-[0.3em]"
+                >
+                  AREA PAMERAN
+                </text>
+              )}
 
-              <text
-                x={CANVAS_WIDTH / 2}
-                y={CANVAS_HEIGHT - 20}
-                textAnchor="middle"
-                className="pointer-events-none fill-gray-300 text-[11px] font-semibold tracking-[0.3em]"
-              >
-                PINTU MASUK
-              </text>
+              {!blueprintImageUrl && (
+                <text
+                  x={CANVAS_WIDTH / 2}
+                  y={CANVAS_HEIGHT - 20}
+                  textAnchor="middle"
+                  className="pointer-events-none fill-gray-300 text-[11px] font-semibold tracking-[0.3em]"
+                >
+                  PINTU MASUK
+                </text>
+              )}
 
               {booths.map((booth) => (
                 <BoothRect key={booth.id} booth={booth} />

@@ -8,6 +8,8 @@ export function mapBlueprintRowToDraft(row: BlueprintRow): BlueprintDraft {
     eventDate: row.event_date ?? '',
     description: row.description ?? '',
     status: isBlueprintStatus(row.status) ? row.status : 'draft',
+    imageUrl: row.image_url ?? '',
+    imagePath: row.image_path ?? '',
   }
 }
 
@@ -39,6 +41,10 @@ export function getBlueprintErrorMessage(error: unknown): string {
 
   if (/column .*status.* does not exist/i.test(message)) {
     return 'Kolom status publikasi belum tersedia. Jalankan migrasi denah terbaru terlebih dahulu.'
+  }
+
+  if (/column .*image_(url|path).* does not exist/i.test(message)) {
+    return 'Kolom gambar denah belum tersedia. Jalankan migrasi gambar denah terlebih dahulu.'
   }
 
   if (/duplicate key|unique constraint|already exists/i.test(message)) {

@@ -20,6 +20,8 @@ interface BlueprintRow {
   event_date: string | null
   description: string | null
   status: BlueprintStatus
+  image_url: string | null
+  image_path: string | null
 }
 
 interface BoothRow {
@@ -125,8 +127,13 @@ export default function TenantEventView() {
         return
       }
 
-      setBlueprint(blueprintResult.data as BlueprintRow)
-      setBooths(((boothsResult.data ?? []) as BoothRow[]).map(mapRowToBooth))
+      const blueprintRow = blueprintResult.data as BlueprintRow
+
+      setBlueprint(blueprintRow)
+      setBooths(
+        ((boothsResult.data ?? []) as BoothRow[]).map(mapRowToBooth),
+        blueprintRow.image_url,
+      )
       setLoading(false)
     }
 

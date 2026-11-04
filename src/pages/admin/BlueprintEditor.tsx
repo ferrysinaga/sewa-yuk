@@ -1,9 +1,11 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
+import BlueprintImageUploader from '../../components/admin/BlueprintImageUploader'
 import AppHeader from '../../components/layout/AppHeader'
 import BlueprintWorkspace from '../../components/map/BlueprintWorkspace'
 import { useToast } from '../../components/ui/Toast'
 import { getBlueprintErrorMessage, mapBlueprintRowToDraft } from '../../lib/blueprint'
+import { getBlueprintImageErrorMessage, removeBlueprintImage } from '../../lib/storage'
 import { isSupabaseConfigured, supabase } from '../../lib/supabase'
 import { useBoothStore } from '../../store/useBoothStore'
 import {
@@ -55,12 +57,14 @@ export default function BlueprintEditor() {
   const [loadError, setLoadError] = useState<string | null>(null)
   const [reloadToken, setReloadToken] = useState(0)
   const [saving, setSaving] = useState(false)
+  const savedImagePathRef = useRef('')
 
   useEffect(() => {
     let cancelled = false
 
     if (!blueprintId) {
       resetBooths()
+      savedImagePathRef.current = ''
       setLoadError('ID denah tidak valid.')
       setLoading(false)
       return
@@ -68,6 +72,7 @@ export default function BlueprintEditor() {
 
     if (!isSupabaseConfigured) {
       resetBooths()
+      savedImagePathRef.current = ''
       setLoadError(
         'Supabase belum dikonfigurasi. Isi VITE_SUPABASE_URL dan VITE_SUPABASE_ANON_KEY pada file .env.',
       )
@@ -86,6 +91,7 @@ export default function BlueprintEditor() {
 
     setLoading(true)
     setLoadError(null)
+    savedImagePathRef.current = ''
 
     const loadBlueprintData = async () => {
       const [blueprintResult, boothsResult] = await Promise.all([
@@ -124,6 +130,7 @@ export default function BlueprintEditor() {
         boothRows.map(mapRowToBooth),
         mapBlueprintRowToDraft(blueprintRow),
       )
+      savedImagePathRef.current = blueprintRow.image_path ?? ''
       setLoading(false)
     }
 
@@ -150,8 +157,9 @@ export default function BlueprintEditor() {
   }, [isDirty])
 
   const updateDraft = (patch: Partial<BlueprintDraft>) => {
-    if (!draft) return
-    setBlueprintDraft({ ...draft, ...patch })
+    const current = useBoothStore.getState().blueprintDraft
+    if (!current) return
+    setBlueprintDraft({ ...current, ...patch })
   }
 
   const handleSave = async () => {
@@ -255,12 +263,29 @@ export default function BlueprintEditor() {
           event_date: currentDraft.eventDate.trim() || null,
           description: currentDraft.description.trim() || null,
           status: currentDraft.status,
+          image_url: currentDraft.imageUrl.trim() || null,
+          image_path: currentDraft.imagePath.trim() || null,
           updated_at: now,
         },
         { onConflict: 'id' },
       )
 
       if (blueprintError) throw blueprintError
+
+      const previousImagePath = savedImagePathRef.current
+      const nextImagePath = currentDraft.imagePath.trim()
+
+      // Hapus file lama hanya setelah metadata baru tersimpan, agar gambar
+      // yang masih dipakai tidak hilang ketika penyimpanan gagal.
+      if (previousImagePath && previousImagePath !== nextImagePath) {
+        try {
+          await removeBlueprintImage(previousImagePath)
+        } catch (cleanupError) {
+          console.warn('Gagal menghapus gambar lama:', getBlueprintImageErrorMessage(cleanupError))
+        }
+      }
+
+      savedImagePathRef.current = nextImagePath
 
       markSaved()
 
@@ -460,6 +485,22 @@ export default function BlueprintEditor() {
                   rows={3}
                   placeholder="Deskripsi singkat event untuk tenant."
                   className="mt-1.5 w-full resize-y rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 shadow-sm placeholder:text-gray-500 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100"
+                />
+              </div>
+
+              <div className="border-t border-gray-100 pt-4 sm:col-span-2">
+                <BlueprintImageUploader
+                  blueprintId={blueprintId}
+                  imageUrl={draft.imageUrl}
+                  imagePath={draft.imagePath}
+                  savedImagePath={savedImagePathRef.current}
+                  onChange={(image) =>
+                    updateDraft({
+                      imageUrl: image?.url ?? '',
+                      imagePath: image?.path ?? '',
+                    })
+                  }
+                  disabled={saving}
                 />
               </div>
             </div>
