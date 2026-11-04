@@ -14,9 +14,10 @@ interface BoothStore {
   activeBoothId: string | null
   blueprintId: string
   blueprintDraft: BlueprintDraft | null
+  blueprintImageUrl: string | null
   isDirty: boolean
   deletedBoothIds: string[]
-  setBooths: (booths: Booth[]) => void
+  setBooths: (booths: Booth[], imageUrl?: string | null) => void
   loadBlueprint: (blueprintId: string, booths: Booth[], draft: BlueprintDraft) => void
   setBlueprintDraft: (draft: BlueprintDraft) => void
   addBooth: (booth: Booth) => void
@@ -34,12 +35,14 @@ export const useBoothStore = create<BoothStore>((set) => ({
   activeBoothId: null,
   blueprintId: DEFAULT_BLUEPRINT_ID,
   blueprintDraft: null,
+  blueprintImageUrl: null,
   isDirty: false,
   deletedBoothIds: [],
 
-  setBooths: (booths) =>
+  setBooths: (booths, imageUrl = null) =>
     set({
       booths,
+      blueprintImageUrl: imageUrl,
       activeBoothId: null,
       isDirty: false,
       deletedBoothIds: [],
@@ -49,13 +52,19 @@ export const useBoothStore = create<BoothStore>((set) => ({
     set({
       blueprintId,
       blueprintDraft: draft,
+      blueprintImageUrl: draft.imageUrl || null,
       booths,
       activeBoothId: null,
       isDirty: false,
       deletedBoothIds: [],
     }),
 
-  setBlueprintDraft: (draft) => set({ blueprintDraft: draft, isDirty: true }),
+  setBlueprintDraft: (draft) =>
+    set({
+      blueprintDraft: draft,
+      blueprintImageUrl: draft.imageUrl || null,
+      isDirty: true,
+    }),
 
   addBooth: (booth) =>
     set((state) => ({
@@ -113,6 +122,7 @@ export const useBoothStore = create<BoothStore>((set) => ({
       booths: [],
       activeBoothId: null,
       blueprintDraft: null,
+      blueprintImageUrl: null,
       isDirty: false,
       deletedBoothIds: [],
     }),

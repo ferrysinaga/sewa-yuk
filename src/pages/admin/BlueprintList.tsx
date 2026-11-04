@@ -71,7 +71,7 @@ export default function BlueprintList() {
       const [blueprintResult, boothResult] = await Promise.all([
         supabase
           .from('blueprints')
-          .select('id, name, venue, event_date, description, status')
+          .select('id, name, venue, event_date, description, status, image_url, image_path')
           .order('created_at', { ascending: false }),
         supabase.from('booths').select('blueprint_id, status'),
       ])
@@ -482,6 +482,17 @@ export default function BlueprintList() {
                       {blueprint.totalBooths} booth
                     </span>
                   </div>
+
+                  {blueprint.image_url && (
+                    <div className="mt-3 overflow-hidden rounded-xl border border-gray-100 bg-gray-50">
+                      <img
+                        src={blueprint.image_url}
+                        alt={`Gambar denah ${blueprint.name}`}
+                        loading="lazy"
+                        className="aspect-[1000/640] w-full object-cover"
+                      />
+                    </div>
+                  )}
 
                   <h2 className="mt-3 text-base font-semibold text-gray-900">{blueprint.name}</h2>
                   <p className="mt-1 text-xs text-gray-500">

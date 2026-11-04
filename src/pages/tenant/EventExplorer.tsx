@@ -51,7 +51,7 @@ export default function EventExplorer() {
       const [blueprintResult, boothResult] = await Promise.all([
         supabase
           .from('blueprints')
-          .select('id, name, venue, event_date, description, status')
+          .select('id, name, venue, event_date, description, status, image_url, image_path')
           .eq('status', 'published')
           .order('created_at', { ascending: false }),
         supabase.from('booths').select('blueprint_id, category, status'),
@@ -222,20 +222,36 @@ export default function EventExplorer() {
                   key={event.id}
                   className="group flex flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-md transition-shadow hover:shadow-lg"
                 >
-                  <div className="flex h-32 items-center justify-center border-b border-gray-200 bg-gray-50/70">
-                    <svg viewBox="0 0 320 128" aria-hidden="true" className="h-full w-full">
-                      <rect x="16" y="16" width="70" height="42" rx="6" fill="white" stroke="#d1d5db" />
-                      <rect x="96" y="16" width="80" height="42" rx="6" fill="white" stroke="#d1d5db" />
-                      <rect x="186" y="16" width="118" height="42" rx="6" fill="#2563eb" />
-                      <rect x="16" y="68" width="140" height="44" rx="6" fill="#f3f4f6" stroke="#e5e7eb" />
-                      <rect x="166" y="68" width="138" height="44" rx="6" fill="white" stroke="#d1d5db" />
-                      <text x="28" y="38" fill="#111827" fontSize="8" fontWeight="600">
-                        A-01
-                      </text>
-                      <text x="198" y="38" fill="#ffffff" fontSize="8" fontWeight="600">
-                        B-01
-                      </text>
-                    </svg>
+                  <div className="relative h-40 overflow-hidden border-b border-gray-200 bg-gray-50/70">
+                    {event.image_url ? (
+                      <>
+                        <img
+                          src={event.image_url}
+                          alt={`Gambar denah ${event.name}`}
+                          loading="lazy"
+                          className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+                        />
+                        <span className="absolute left-3 top-3 rounded-full bg-gray-900/70 px-2.5 py-1 text-[10px] font-semibold text-white backdrop-blur">
+                          Gambar denah
+                        </span>
+                      </>
+                    ) : (
+                      <div className="flex h-full items-center justify-center">
+                        <svg viewBox="0 0 320 128" aria-hidden="true" className="h-full w-full">
+                          <rect x="16" y="16" width="70" height="42" rx="6" fill="white" stroke="#d1d5db" />
+                          <rect x="96" y="16" width="80" height="42" rx="6" fill="white" stroke="#d1d5db" />
+                          <rect x="186" y="16" width="118" height="42" rx="6" fill="#2563eb" />
+                          <rect x="16" y="68" width="140" height="44" rx="6" fill="#f3f4f6" stroke="#e5e7eb" />
+                          <rect x="166" y="68" width="138" height="44" rx="6" fill="white" stroke="#d1d5db" />
+                          <text x="28" y="38" fill="#111827" fontSize="8" fontWeight="600">
+                            A-01
+                          </text>
+                          <text x="198" y="38" fill="#ffffff" fontSize="8" fontWeight="600">
+                            B-01
+                          </text>
+                        </svg>
+                      </div>
+                    )}
                   </div>
 
                   <div className="flex flex-1 flex-col p-5">
