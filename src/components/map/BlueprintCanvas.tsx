@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import type { RefObject } from 'react'
 import { useDraggable } from '@dnd-kit/core'
 import { useBoothStore } from '../../store/useBoothStore'
@@ -18,7 +19,7 @@ interface BoothRectProps {
   booth: Booth
 }
 
-function BoothRect({ booth }: BoothRectProps) {
+const BoothRect = memo(function BoothRect({ booth }: BoothRectProps) {
   const isSelected = useBoothStore((state) => state.activeBoothId === booth.id)
   const setActiveBooth = useBoothStore((state) => state.setActiveBooth)
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
@@ -38,6 +39,7 @@ function BoothRect({ booth }: BoothRectProps) {
       {...listeners}
       {...attributes}
       onClick={() => setActiveBooth(booth.id)}
+      aria-pressed={isSelected}
       aria-label={`Booth ${booth.category}, ${formatPrice(booth.price)}`}
       className={`touch-none focus-visible:outline-none ${isDragging ? 'opacity-80' : ''} ${
         isSelected ? 'cursor-grabbing' : 'cursor-grab'
@@ -92,7 +94,7 @@ function BoothRect({ booth }: BoothRectProps) {
       )}
     </g>
   )
-}
+})
 
 interface BlueprintCanvasProps {
   setNodeRef: (element: HTMLElement | null) => void
@@ -159,7 +161,14 @@ export default function BlueprintCanvas({ setNodeRef, isOver, svgRef }: Blueprin
                 </pattern>
               </defs>
 
-              <rect x="0" y="0" width={CANVAS_WIDTH} height={CANVAS_HEIGHT} fill="white" />
+              <rect
+                x="0"
+                y="0"
+                width={CANVAS_WIDTH}
+                height={CANVAS_HEIGHT}
+                fill="white"
+                onClick={() => setActiveBooth(null)}
+              />
               <rect
                 x="0"
                 y="0"
@@ -167,6 +176,7 @@ export default function BlueprintCanvas({ setNodeRef, isOver, svgRef }: Blueprin
                 height={CANVAS_HEIGHT}
                 fill="url(#blueprint-grid)"
                 opacity="0.8"
+                onClick={() => setActiveBooth(null)}
               />
 
               <text

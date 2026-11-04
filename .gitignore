@@ -27,3 +27,4 @@ dist-ssr
 *.sw?
 
 .env.example
+qa_checklist_test_plan.md

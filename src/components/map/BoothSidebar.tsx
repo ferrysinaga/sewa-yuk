@@ -1,7 +1,8 @@
-import { useDraggable } from '@dnd-kit/core'
+import { useEffect, useState } from 'react'
 import type { ReactNode } from 'react'
+import { useDraggable } from '@dnd-kit/core'
 import { useBoothStore } from '../../store/useBoothStore'
-import type { BoothCategory, BoothTemplate } from '../../types/booth'
+import type { Booth, BoothCategory, BoothTemplate } from '../../types/booth'
 
 export const boothTemplates: BoothTemplate[] = [
   { category: 'Tech', width: 160, height: 120, price: 4500000 },
@@ -33,6 +34,93 @@ const formatPrice = (price: number) =>
     currency: 'IDR',
     maximumFractionDigits: 0,
   }).format(price)
+
+const categoryOptions: BoothCategory[] = ['Tech', 'F&B', 'Apparel']
+
+const statusLabel = {
+  Available: 'Tersedia',
+  Reserved: 'Dipesan',
+  Booked: 'Terisi',
+} as const
+
+function BoothProperties({ booth }: { booth: Booth }) {
+  const updateBoothDetails = useBoothStore((state) => state.updateBoothDetails)
+  const [priceDraft, setPriceDraft] = useState(String(booth.price))
+
+  useEffect(() => {
+    setPriceDraft(String(booth.price))
+  }, [booth.id, booth.price])
+
+  const handlePriceChange = (value: string) => {
+    const digitsOnly = value.replace(/[^\d]/g, '')
+    setPriceDraft(digitsOnly)
+
+    if (digitsOnly === '') return
+
+    const parsed = Number(digitsOnly)
+    if (Number.isFinite(parsed)) {
+      updateBoothDetails(booth.id, { price: parsed })
+    }
+  }
+
+  const handlePriceBlur = () => {
+    if (priceDraft === '') {
+      setPriceDraft(String(booth.price))
+    }
+  }
+
+  return (
+    <div className="mt-3 space-y-3">
+      <div>
+        <label
+          htmlFor={`booth-category-${booth.id}`}
+          className="text-xs font-medium text-gray-700"
+        >
+          Kategori
+        </label>
+        <select
+          id={`booth-category-${booth.id}`}
+          value={booth.category}
+          onChange={(event) =>
+            updateBoothDetails(booth.id, {
+              category: event.target.value as BoothCategory,
+            })
+          }
+          className="mt-1.5 w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100"
+        >
+          {categoryOptions.map((category) => (
+            <option key={category} value={category}>
+              {category}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <div>
+        <label
+          htmlFor={`booth-price-${booth.id}`}
+          className="text-xs font-medium text-gray-700"
+        >
+          Harga sewa (IDR)
+        </label>
+        <input
+          id={`booth-price-${booth.id}`}
+          type="text"
+          inputMode="numeric"
+          autoComplete="off"
+          value={priceDraft}
+          onChange={(event) => handlePriceChange(event.target.value)}
+          onBlur={handlePriceBlur}
+          placeholder="Contoh: 4500000"
+          className="mt-1.5 w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 shadow-sm placeholder:text-gray-500 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100"
+        />
+        <p className="mt-1 text-[11px] text-gray-500">
+          Terbaca sebagai {formatPrice(booth.price)}
+        </p>
+      </div>
+    </div>
+  )
+}
 
 function PaletteItem({ template }: { template: BoothTemplate }) {
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
@@ -106,9 +194,11 @@ export default function BoothSidebar() {
                 <p className="text-xs text-gray-500">ID: {activeBooth.id.slice(0, 8)}</p>
               </div>
               <span className="rounded-full bg-blue-50 px-2.5 py-1 text-[11px] font-semibold text-blue-700 ring-1 ring-inset ring-blue-100">
-                {activeBooth.status}
+                {statusLabel[activeBooth.status]}
               </span>
             </div>
+
+            <BoothProperties key={activeBooth.id} booth={activeBooth} />
 
             <dl className="mt-3 grid grid-cols-2 gap-2 text-xs">
               <div className="rounded-xl bg-gray-50 p-2">
@@ -130,6 +220,11 @@ export default function BoothSidebar() {
                 <dd className="mt-0.5 font-semibold text-gray-900">{Math.round(activeBooth.positionY)} px</dd>
               </div>
             </dl>
+
+            <p className="mt-3 text-[11px] leading-relaxed text-gray-500">
+              Perubahan kategori dan harga langsung diterapkan ke state. Klik “Simpan Perubahan
+              Denah” untuk menyimpannya permanen.
+            </p>
 
             <button
               type="button"

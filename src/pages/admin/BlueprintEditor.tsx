@@ -41,26 +41,55 @@ function getErrorMessage(error: unknown): string {
   return 'Terjadi kesalahan yang tidak diketahui.'
 }
 
+function getFriendlyErrorMessage(error: unknown): string {
+  const message = getErrorMessage(error)
+
+  if (/could not find the table|relation .* does not exist|schema cache/i.test(message)) {
+    return 'Tabel "booths" belum tersedia di Supabase. Jalankan migrasi skema terlebih dahulu.'
+  }
+
+  if (/row-level security|permission denied|not authorized/i.test(message)) {
+    return 'Akun Anda tidak memiliki izin untuk mengubah denah ini. Pastikan akun memiliki role organizer.'
+  }
+
+  if (/failed to fetch|network|timeout/i.test(message)) {
+    return 'Tidak dapat terhubung ke Supabase. Periksa koneksi internet Anda lalu coba lagi.'
+  }
+
+  return message || 'Terjadi kesalahan saat menghubungi Supabase.'
+}
+
 export default function BlueprintEditor() {
-  const booths = useBoothStore((state) => state.booths)
-  const blueprintId = useBoothStore((state) => state.blueprintId)
   const isDirty = useBoothStore((state) => state.isDirty)
+  const boothCount = useBoothStore((state) => state.booths.length)
   const setBooths = useBoothStore((state) => state.setBooths)
   const markSaved = useBoothStore((state) => state.markSaved)
   const { showToast } = useToast()
 
   const [loading, setLoading] = useState(true)
+  const [loadError, setLoadError] = useState<string | null>(null)
+  const [reloadToken, setReloadToken] = useState(0)
   const [saving, setSaving] = useState(false)
 
   useEffect(() => {
     let cancelled = false
 
-    const loadBlueprint = async () => {
-      if (!isSupabaseConfigured) {
-        setLoading(false)
-        return
-      }
+    setLoadError(null)
 
+    if (!isSupabaseConfigured) {
+      setLoading(false)
+      return
+    }
+
+    // Jangan timpa perubahan yang belum disimpan ketika pengguna membuka kembali editor.
+    if (useBoothStore.getState().isDirty) {
+      setLoading(false)
+      return
+    }
+
+    setLoading(true)
+
+    const loadBlueprint = async () => {
       const { data, error } = await supabase
         .from('booths')
         .select('*')
@@ -69,11 +98,15 @@ export default function BlueprintEditor() {
       if (cancelled) return
 
       if (error) {
-        console.warn('Gagal memuat blueprint dari Supabase:', error.message)
-      } else if (Array.isArray(data)) {
-        setBooths((data as BoothRow[]).map(mapRowToBooth))
+        const message = getFriendlyErrorMessage(error)
+        setLoadError(message)
+        // Hindari menampilkan/menyimpan data event lain yang mungkin masih ada di store.
+        setBooths([])
+        setLoading(false)
+        return
       }
 
+      setBooths(Array.isArray(data) ? (data as BoothRow[]).map(mapRowToBooth) : [])
       setLoading(false)
     }
 
@@ -82,7 +115,22 @@ export default function BlueprintEditor() {
     return () => {
       cancelled = true
     }
-  }, [setBooths])
+  }, [reloadToken, setBooths])
+
+  useEffect(() => {
+    if (!isDirty) return
+
+    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+      event.preventDefault()
+      event.returnValue = ''
+    }
+
+    window.addEventListener('beforeunload', handleBeforeUnload)
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload)
+    }
+  }, [isDirty])
 
   const handleSave = async () => {
     if (!isSupabaseConfigured) {
@@ -93,8 +141,35 @@ export default function BlueprintEditor() {
       return
     }
 
-    if (booths.length === 0) {
+    if (loadError) {
+      showToast('Denah belum berhasil dimuat. Muat ulang data sebelum menyimpan.', 'error')
+      return
+    }
+
+    const store = useBoothStore.getState()
+    const booths = store.booths
+    const deletedBoothIds = store.deletedBoothIds
+
+    if (booths.length === 0 && deletedBoothIds.length === 0) {
       showToast('Tambahkan minimal satu booth sebelum menyimpan denah.', 'error')
+      return
+    }
+
+    const invalidBooth = booths.find(
+      (booth) =>
+        !Number.isFinite(booth.price) ||
+        booth.price < 0 ||
+        !Number.isFinite(booth.positionX) ||
+        !Number.isFinite(booth.positionY) ||
+        booth.width <= 0 ||
+        booth.height <= 0,
+    )
+
+    if (invalidBooth) {
+      showToast(
+        `Data booth ${invalidBooth.id.slice(0, 8)} tidak valid. Periksa harga dan ukurannya.`,
+        'error',
+      )
       return
     }
 
@@ -103,40 +178,42 @@ export default function BlueprintEditor() {
     try {
       const payload = booths.map((booth) => ({
         id: booth.id,
-        blueprint_id: booth.blueprintId || blueprintId,
+        blueprint_id: booth.blueprintId || store.blueprintId,
         category: booth.category,
         position_x: Math.round(booth.positionX),
         position_y: Math.round(booth.positionY),
         width: booth.width,
         height: booth.height,
-        price: booth.price,
-        status: booth.status,
+        price: Math.round(booth.price),
+        updated_at: new Date().toISOString(),
+        // `status` sengaja tidak dikirim agar penyimpanan denah tidak menimpa
+        // status Reserved/Booked yang baru saja diubah oleh penyewa (realtime).
       }))
 
-      const { error } = await supabase.from('booths').upsert(payload, { onConflict: 'id' })
+      if (payload.length > 0) {
+        const { error } = await supabase.from('booths').upsert(payload, { onConflict: 'id' })
+        if (error) throw error
+      }
 
-      if (error) throw error
+      if (deletedBoothIds.length > 0) {
+        const { error: deleteError } = await supabase
+          .from('booths')
+          .delete()
+          .in('id', deletedBoothIds)
 
-      const savedIds = payload.map((row) => row.id)
-      const { error: cleanupError } = await supabase
-        .from('booths')
-        .delete()
-        .eq('blueprint_id', blueprintId)
-        .not('id', 'in', `(${savedIds.join(',')})`)
-
-      if (cleanupError) {
-        console.warn('Gagal membersihkan booth yang dihapus:', cleanupError.message)
+        if (deleteError) throw deleteError
       }
 
       markSaved()
-      showToast(`Denah berhasil disimpan. ${booths.length} booth tersimpan permanen.`, 'success')
-    } catch (error) {
-      const message = getErrorMessage(error)
-      const friendlyMessage = /could not find the table|relation .* does not exist|schema cache/i.test(message)
-        ? 'Tabel "booths" belum tersedia di Supabase. Jalankan migrasi skema terlebih dahulu.'
-        : message
 
-      showToast(`Gagal menyimpan denah: ${friendlyMessage}`, 'error')
+      showToast(
+        payload.length > 0
+          ? `Denah berhasil disimpan. ${payload.length} booth tersimpan permanen.`
+          : 'Denah berhasil diperbarui. Semua booth telah dihapus dari blueprint ini.',
+        'success',
+      )
+    } catch (error) {
+      showToast(`Gagal menyimpan denah: ${getFriendlyErrorMessage(error)}`, 'error')
     } finally {
       setSaving(false)
     }
@@ -173,6 +250,9 @@ export default function BlueprintEditor() {
                   Perubahan belum disimpan
                 </span>
               )}
+              {!loading && !loadError && (
+                <span className="text-xs font-medium text-gray-500">{boothCount} booth</span>
+              )}
               {loading && <span className="text-xs text-gray-500">Memuat denah…</span>}
             </div>
 
@@ -185,7 +265,7 @@ export default function BlueprintEditor() {
           <button
             type="button"
             onClick={handleSave}
-            disabled={saving || loading}
+            disabled={saving || loading || Boolean(loadError)}
             className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {saving ? (
@@ -207,8 +287,44 @@ export default function BlueprintEditor() {
           </button>
         </div>
 
+        {!isSupabaseConfigured && (
+          <div className="mt-6 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-relaxed text-amber-800">
+            Supabase belum dikonfigurasi. Isi <code className="font-semibold">VITE_SUPABASE_URL</code>{' '}
+            dan <code className="font-semibold">VITE_SUPABASE_ANON_KEY</code> pada file{' '}
+            <code className="font-semibold">.env</code> agar denah dapat dimuat dan disimpan.
+          </div>
+        )}
+
+        {loadError && !loading && (
+          <div
+            role="alert"
+            className="mt-6 flex flex-col gap-3 rounded-2xl border border-red-200 bg-red-50 px-4 py-4 text-sm text-red-800 sm:flex-row sm:items-center sm:justify-between"
+          >
+            <p className="leading-relaxed">Gagal memuat denah: {loadError}</p>
+            <button
+              type="button"
+              onClick={() => setReloadToken((token) => token + 1)}
+              className="inline-flex shrink-0 items-center justify-center rounded-xl border border-red-200 bg-white px-4 py-2 text-sm font-semibold text-red-700 shadow-sm transition-colors hover:bg-red-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2"
+            >
+              Coba lagi
+            </button>
+          </div>
+        )}
+
         <div className="mt-6">
-          <BlueprintWorkspace />
+          {loading ? (
+            <div className="flex min-h-[360px] items-center justify-center rounded-2xl border border-gray-200 bg-white shadow-sm">
+              <div className="flex flex-col items-center gap-3">
+                <span
+                  aria-hidden="true"
+                  className="h-8 w-8 animate-spin rounded-full border-2 border-gray-200 border-t-blue-600"
+                />
+                <p className="text-sm text-gray-500">Memuat denah dari Supabase…</p>
+              </div>
+            </div>
+          ) : (
+            !loadError && <BlueprintWorkspace />
+          )}
         </div>
       </main>
     </div>

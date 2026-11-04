@@ -39,6 +39,26 @@ function snapToGrid(value: number) {
   return Math.round(value / GRID_SIZE) * GRID_SIZE
 }
 
+function getActivatorPoint(activatorEvent: Event): { x: number; y: number } | null {
+  const pointerLike = activatorEvent as PointerEvent
+
+  if (
+    typeof pointerLike.clientX === 'number' &&
+    typeof pointerLike.clientY === 'number'
+  ) {
+    return { x: pointerLike.clientX, y: pointerLike.clientY }
+  }
+
+  const touchEvent = activatorEvent as TouchEvent
+  const touch = touchEvent.changedTouches?.[0] ?? touchEvent.touches?.[0]
+
+  if (touch) {
+    return { x: touch.clientX, y: touch.clientY }
+  }
+
+  return null
+}
+
 export default function BlueprintWorkspace() {
   const blueprintId = useBoothStore((state) => state.blueprintId)
   const addBooth = useBoothStore((state) => state.addBooth)
@@ -103,17 +123,18 @@ export default function BlueprintWorkspace() {
       data?.type === 'palette' &&
       event.over?.id === 'blueprint-canvas' &&
       canvasRect &&
-      canvasRect.width > 0
+      canvasRect.width > 0 &&
+      canvasRect.height > 0
     ) {
       const template = data.template
+      const activatorPoint = getActivatorPoint(event.activatorEvent)
 
       let clientX: number | null = null
       let clientY: number | null = null
 
-      if ('clientX' in event.activatorEvent) {
-        const activator = event.activatorEvent as PointerEvent
-        clientX = activator.clientX + event.delta.x
-        clientY = activator.clientY + event.delta.y
+      if (activatorPoint) {
+        clientX = activatorPoint.x + event.delta.x
+        clientY = activatorPoint.y + event.delta.y
       } else {
         const translated = event.active.rect.current.translated
         if (translated) {
@@ -126,9 +147,15 @@ export default function BlueprintWorkspace() {
         const pointerX = ((clientX - canvasRect.left) / canvasRect.width) * CANVAS_WIDTH
         const pointerY = ((clientY - canvasRect.top) / canvasRect.height) * CANVAS_HEIGHT
 
-        const positionX = snapToGrid(clamp(pointerX - template.width / 2, 0, CANVAS_WIDTH - template.width))
-        const positionY = snapToGrid(
-          clamp(pointerY - template.height / 2, 0, CANVAS_HEIGHT - template.height),
+        const positionX = clamp(
+          snapToGrid(pointerX - template.width / 2),
+          0,
+          CANVAS_WIDTH - template.width,
+        )
+        const positionY = clamp(
+          snapToGrid(pointerY - template.height / 2),
+          0,
+          CANVAS_HEIGHT - template.height,
         )
 
         addBooth({

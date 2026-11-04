@@ -1,16 +1,23 @@
 import { create } from 'zustand'
-import type { Booth, BoothStatus } from '../types/booth'
+import type { Booth, BoothCategory, BoothStatus } from '../types/booth'
 
 export const DEFAULT_BLUEPRINT_ID = 'hall-a'
+
+export interface BoothDetailsPatch {
+  category?: BoothCategory
+  price?: number
+}
 
 interface BoothStore {
   booths: Booth[]
   activeBoothId: string | null
   blueprintId: string
   isDirty: boolean
+  deletedBoothIds: string[]
   setBooths: (booths: Booth[]) => void
   addBooth: (booth: Booth) => void
   updateBoothPosition: (id: string, x: number, y: number) => void
+  updateBoothDetails: (id: string, patch: BoothDetailsPatch) => void
   updateBoothStatus: (id: string, status: BoothStatus) => void
   setActiveBooth: (id: string | null) => void
   removeBooth: (id: string) => void
@@ -23,12 +30,14 @@ export const useBoothStore = create<BoothStore>((set) => ({
   activeBoothId: null,
   blueprintId: DEFAULT_BLUEPRINT_ID,
   isDirty: false,
+  deletedBoothIds: [],
 
   setBooths: (booths) =>
     set({
       booths,
       activeBoothId: null,
       isDirty: false,
+      deletedBoothIds: [],
     }),
 
   addBooth: (booth) =>
@@ -46,6 +55,23 @@ export const useBoothStore = create<BoothStore>((set) => ({
       isDirty: true,
     })),
 
+  updateBoothDetails: (id, patch) =>
+    set((state) => ({
+      booths: state.booths.map((booth) =>
+        booth.id === id
+          ? {
+              ...booth,
+              ...patch,
+              price:
+                patch.price !== undefined && Number.isFinite(patch.price)
+                  ? Math.max(0, Math.round(patch.price))
+                  : booth.price,
+            }
+          : booth,
+      ),
+      isDirty: true,
+    })),
+
   updateBoothStatus: (id, status) =>
     set((state) => ({
       booths: state.booths.map((booth) => (booth.id === id ? { ...booth, status } : booth)),
@@ -58,14 +84,18 @@ export const useBoothStore = create<BoothStore>((set) => ({
       booths: state.booths.filter((booth) => booth.id !== id),
       activeBoothId: state.activeBoothId === id ? null : state.activeBoothId,
       isDirty: true,
+      deletedBoothIds: state.deletedBoothIds.includes(id)
+        ? state.deletedBoothIds
+        : [...state.deletedBoothIds, id],
     })),
 
-  markSaved: () => set({ isDirty: false }),
+  markSaved: () => set({ isDirty: false, deletedBoothIds: [] }),
 
   resetBooths: () =>
     set({
       booths: [],
       activeBoothId: null,
       isDirty: false,
+      deletedBoothIds: [],
     }),
 }))
