@@ -46,6 +46,14 @@ export default function AppHeader() {
             >
               Jelajahi Event
             </Link>
+            {role === 'tenant' && (
+              <Link
+                to="/bookings"
+                className="rounded-xl px-3 py-2 text-sm font-medium text-gray-600 transition-colors hover:text-gray-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2"
+              >
+                Pesanan Saya
+              </Link>
+            )}
             {role === 'organizer' && (
               <>
                 <Link
@@ -55,10 +63,16 @@ export default function AppHeader() {
                   Dashboard
                 </Link>
                 <Link
+                  to="/admin/bookings"
+                  className="rounded-xl px-3 py-2 text-sm font-medium text-gray-600 transition-colors hover:text-gray-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2"
+                >
+                  Pemesanan
+                </Link>
+                <Link
                   to="/admin/blueprint"
                   className="rounded-xl px-3 py-2 text-sm font-medium text-gray-600 transition-colors hover:text-gray-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2"
                 >
-                  Editor Denah
+                  Kelola Denah
                 </Link>
               </>
             )}

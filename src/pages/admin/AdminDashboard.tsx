@@ -2,9 +2,15 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import AppHeader from '../../components/layout/AppHeader'
 import { useToast } from '../../components/ui/Toast'
+import { createChannelName } from '../../lib/id'
 import { isSupabaseConfigured, supabase } from '../../lib/supabase'
 import { useAuthStore } from '../../store/useAuthStore'
 import { useBoothStore } from '../../store/useBoothStore'
+import {
+  BLUEPRINT_STATUS_BADGE,
+  BLUEPRINT_STATUS_LABEL,
+} from '../../types/blueprint'
+import type { BlueprintStatus } from '../../types/blueprint'
 import type { BoothCategory, BoothStatus } from '../../types/booth'
 
 interface BlueprintRow {
@@ -12,6 +18,7 @@ interface BlueprintRow {
   name: string
   venue: string | null
   event_date: string | null
+  status: BlueprintStatus
 }
 
 interface BoothRow {
@@ -132,7 +139,7 @@ export default function AdminDashboard() {
 
     const loadDashboard = async () => {
       const [blueprintResult, boothResult] = await Promise.all([
-        supabase.from('blueprints').select('id, name, venue, event_date'),
+        supabase.from('blueprints').select('id, name, venue, event_date, status'),
         supabase.from('booths').select('*').order('created_at', { ascending: false }),
       ])
 
@@ -166,7 +173,7 @@ export default function AdminDashboard() {
     if (!isSupabaseConfigured) return
 
     const channel = supabase
-      .channel(`admin-booths-${crypto.randomUUID()}`)
+      .channel(createChannelName('admin-booths'))
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'booths' },
@@ -329,13 +336,19 @@ export default function AdminDashboard() {
               Lihat Halaman Publik
             </Link>
             <Link
+              to="/admin/bookings"
+              className="inline-flex items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-5 py-2.5 text-sm font-semibold text-gray-900 shadow-sm transition-colors hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2"
+            >
+              Pemesanan
+            </Link>
+            <Link
               to="/admin/blueprint"
               className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2"
             >
               <svg viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4">
                 <path d="M10.75 4.75a.75.75 0 0 0-1.5 0v4.5h-4.5a.75.75 0 0 0 0 1.5h4.5v4.5a.75.75 0 0 0 1.5 0v-4.5h4.5a.75.75 0 0 0 0-1.5h-4.5v-4.5Z" />
               </svg>
-              Buat Denah Baru
+              Kelola Denah
             </Link>
           </div>
         </div>
@@ -373,7 +386,7 @@ export default function AdminDashboard() {
                 to="/admin/blueprint"
                 className="inline-flex items-center justify-center rounded-xl border border-gray-200 bg-white px-5 py-2.5 text-sm font-semibold text-gray-900 shadow-sm transition-colors hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2"
               >
-                Buka Blueprint Editor
+                Buka Kelola Denah
               </Link>
             </div>
           </div>
@@ -636,7 +649,7 @@ export default function AdminDashboard() {
                     </p>
                     <p className="mx-auto mt-1 max-w-sm text-xs leading-relaxed text-gray-500">
                       {booths.length === 0
-                        ? 'Tambahkan booth melalui Blueprint Editor agar inventaris muncul di sini.'
+                        ? 'Tambahkan booth melalui halaman Kelola Denah agar inventaris muncul di sini.'
                         : 'Coba ubah kata kunci atau filter event, kategori, dan status.'}
                     </p>
                     {booths.length === 0 && (
@@ -644,7 +657,7 @@ export default function AdminDashboard() {
                         to="/admin/blueprint"
                         className="mt-4 inline-flex items-center justify-center rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2"
                       >
-                        Buka Blueprint Editor
+                        Buka Kelola Denah
                       </Link>
                     )}
                   </div>
@@ -703,8 +716,15 @@ export default function AdminDashboard() {
                             }`}
                           >
                             <span className="flex items-center justify-between gap-2">
-                              <span className="truncate text-xs font-semibold text-gray-900">
-                                {event.name}
+                              <span className="flex min-w-0 items-center gap-2">
+                                <span className="truncate text-xs font-semibold text-gray-900">
+                                  {event.name}
+                                </span>
+                                <span
+                                  className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold ring-1 ring-inset ${BLUEPRINT_STATUS_BADGE[event.status]}`}
+                                >
+                                  {BLUEPRINT_STATUS_LABEL[event.status]}
+                                </span>
                               </span>
                               <span className="shrink-0 text-[11px] font-medium text-gray-500">
                                 {event.booked}/{event.total}
@@ -723,6 +743,12 @@ export default function AdminDashboard() {
                               {event.occupancy}% terjual · {event.available} tersedia
                             </span>
                           </button>
+                          <Link
+                            to={`/admin/blueprint/${event.id}`}
+                            className="mt-1.5 inline-flex text-[11px] font-semibold text-blue-700 hover:text-blue-800 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2"
+                          >
+                            Atur denah & booth
+                          </Link>
                         </li>
                       )
                     })}

@@ -5,9 +5,14 @@ import AppHeader from '../../components/layout/AppHeader'
 import InteractiveMap from '../../components/map/InteractiveMap'
 import TenantSidebar from '../../components/map/TenantSidebar'
 import { useToast } from '../../components/ui/Toast'
+import { getBookingErrorMessage } from '../../lib/booking'
+import { createChannelName } from '../../lib/id'
 import { isSupabaseConfigured, supabase } from '../../lib/supabase'
 import { useAuthStore } from '../../store/useAuthStore'
 import { useBoothStore } from '../../store/useBoothStore'
+import { BLUEPRINT_STATUS_BADGE, BLUEPRINT_STATUS_LABEL } from '../../types/blueprint'
+import type { BlueprintStatus } from '../../types/blueprint'
+import type { BookingRow, PaymentMethod } from '../../types/booking'
 import type { Booth, BoothCategory, BoothStatus } from '../../types/booth'
 
 interface BlueprintRow {
@@ -16,6 +21,9 @@ interface BlueprintRow {
   venue: string | null
   event_date: string | null
   description: string | null
+  status: BlueprintStatus
+  image_url: string | null
+  image_path: string | null
 }
 
 interface BoothRow {
@@ -57,6 +65,7 @@ function getLoadErrorMessage(error: { message?: string } | null): string {
 export default function TenantEventView() {
   const { eventId } = useParams<{ eventId: string }>()
   const session = useAuthStore((state) => state.session)
+  const role = useAuthStore((state) => state.role)
   const setBooths = useBoothStore((state) => state.setBooths)
   const { showToast } = useToast()
   const navigate = useNavigate()
@@ -68,6 +77,7 @@ export default function TenantEventView() {
   const [reloadToken, setReloadToken] = useState(0)
   const [reserving, setReserving] = useState(false)
   const [reservedBoothId, setReservedBoothId] = useState<string | null>(null)
+  const [reservedBooking, setReservedBooking] = useState<BookingRow | null>(null)
   const [checkoutOpen, setCheckoutOpen] = useState(false)
   const locallyReservedRef = useRef<Set<string>>(new Set())
 
@@ -90,6 +100,7 @@ export default function TenantEventView() {
     setError(null)
     setActiveCategory('all')
     setReservedBoothId(null)
+    setReservedBooking(null)
     setCheckoutOpen(false)
     locallyReservedRef.current.clear()
     setBooths([])
@@ -109,7 +120,7 @@ export default function TenantEventView() {
       }
 
       if (!blueprintResult.data) {
-        setError('Event tidak ditemukan atau sudah tidak aktif.')
+        setError('Event tidak ditemukan atau belum dipublikasikan.')
         setLoading(false)
         return
       }
@@ -120,8 +131,13 @@ export default function TenantEventView() {
         return
       }
 
-      setBlueprint(blueprintResult.data as BlueprintRow)
-      setBooths(((boothsResult.data ?? []) as BoothRow[]).map(mapRowToBooth))
+      const blueprintRow = blueprintResult.data as BlueprintRow
+
+      setBlueprint(blueprintRow)
+      setBooths(
+        ((boothsResult.data ?? []) as BoothRow[]).map(mapRowToBooth),
+        blueprintRow.image_url,
+      )
       setLoading(false)
     }
 
@@ -136,7 +152,7 @@ export default function TenantEventView() {
     if (!eventId || !isSupabaseConfigured) return
 
     const channel = supabase
-      .channel(`tenant-booths-${eventId}-${crypto.randomUUID()}`)
+      .channel(createChannelName(`tenant-booths-${eventId}`))
       .on(
         'postgres_changes',
         {
@@ -205,7 +221,7 @@ export default function TenantEventView() {
     setCheckoutOpen(false)
   }
 
-  const handleConfirmCheckout = async () => {
+  const handleConfirmCheckout = async (paymentMethod: PaymentMethod) => {
     const store = useBoothStore.getState()
     const activeBooth = store.booths.find((booth) => booth.id === store.activeBoothId)
 
@@ -227,29 +243,26 @@ export default function TenantEventView() {
     locallyReservedRef.current.add(activeBooth.id)
 
     try {
-      const { data, error: updateError } = await supabase
-        .from('booths')
-        .update({ status: 'Reserved' })
-        .eq('id', activeBooth.id)
-        .eq('status', 'Available')
-        .select('*')
+      const { data, error: bookingError } = await supabase.rpc('create_booking', {
+        p_booth_id: activeBooth.id,
+        p_payment_method: paymentMethod,
+      })
 
-      if (updateError) throw updateError
+      if (bookingError) throw bookingError
 
-      if (!data || data.length === 0) {
-        locallyReservedRef.current.delete(activeBooth.id)
-        store.updateBoothStatus(activeBooth.id, 'Reserved')
-        showToast('Booth ini baru saja diambil penyewa lain. Silakan pilih booth lain.', 'error')
-        return
+      const booking = (Array.isArray(data) ? data[0] : data) as BookingRow | null
+
+      if (!booking) {
+        throw new Error('Pemesanan gagal dibuat. Silakan coba lagi.')
       }
 
       store.updateBoothStatus(activeBooth.id, 'Reserved')
       setReservedBoothId(activeBooth.id)
-      showToast('Booth berhasil dikunci. Silakan lanjutkan ke pembayaran.', 'success')
+      setReservedBooking(booking)
+      showToast(`Pesanan ${booking.booking_code} berhasil dibuat.`, 'success')
     } catch (reserveError) {
       locallyReservedRef.current.delete(activeBooth.id)
-      const message = reserveError instanceof Error ? reserveError.message : String(reserveError)
-      showToast(`Gagal mengunci booth: ${message}`, 'error')
+      showToast(`Gagal membuat pesanan: ${getBookingErrorMessage(reserveError)}`, 'error')
     } finally {
       setReserving(false)
     }
@@ -290,6 +303,18 @@ export default function TenantEventView() {
               <h1 className="text-2xl font-semibold tracking-tight text-gray-900 sm:text-3xl">
                 {blueprint?.name ?? 'Memuat event…'}
               </h1>
+              {blueprint && blueprint.status !== 'published' && (
+                <span
+                  className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold ring-1 ring-inset ${BLUEPRINT_STATUS_BADGE[blueprint.status]}`}
+                >
+                  <span
+                    className={`h-1.5 w-1.5 rounded-full ${
+                      blueprint.status === 'draft' ? 'bg-amber-500' : 'bg-gray-400'
+                    }`}
+                  />
+                  {role === 'organizer' ? 'Pratinjau organizer' : BLUEPRINT_STATUS_LABEL[blueprint.status]}
+                </span>
+              )}
               <span className="inline-flex items-center gap-2 rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-100">
                 <span className="h-1.5 w-1.5 rounded-full bg-blue-600" />
                 Sinkron real-time
@@ -380,9 +405,11 @@ export default function TenantEventView() {
           booth={activeBooth}
           eventName={blueprint?.name}
           reserved={reservedBoothId === activeBooth.id}
+          bookingCode={reservedBooking?.booking_code ?? null}
           confirming={reserving}
           onClose={handleCloseCheckout}
           onConfirm={handleConfirmCheckout}
+          onViewBookings={() => navigate('/bookings')}
         />
       )}
     </div>

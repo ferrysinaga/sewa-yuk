@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import type { BlueprintDraft } from '../types/blueprint'
 import type { Booth, BoothCategory, BoothStatus } from '../types/booth'
 
 export const DEFAULT_BLUEPRINT_ID = 'hall-a'
@@ -12,9 +13,13 @@ interface BoothStore {
   booths: Booth[]
   activeBoothId: string | null
   blueprintId: string
+  blueprintDraft: BlueprintDraft | null
+  blueprintImageUrl: string | null
   isDirty: boolean
   deletedBoothIds: string[]
-  setBooths: (booths: Booth[]) => void
+  setBooths: (booths: Booth[], imageUrl?: string | null) => void
+  loadBlueprint: (blueprintId: string, booths: Booth[], draft: BlueprintDraft) => void
+  setBlueprintDraft: (draft: BlueprintDraft) => void
   addBooth: (booth: Booth) => void
   updateBoothPosition: (id: string, x: number, y: number) => void
   updateBoothDetails: (id: string, patch: BoothDetailsPatch) => void
@@ -29,15 +34,36 @@ export const useBoothStore = create<BoothStore>((set) => ({
   booths: [],
   activeBoothId: null,
   blueprintId: DEFAULT_BLUEPRINT_ID,
+  blueprintDraft: null,
+  blueprintImageUrl: null,
   isDirty: false,
   deletedBoothIds: [],
 
-  setBooths: (booths) =>
+  setBooths: (booths, imageUrl = null) =>
     set({
+      booths,
+      blueprintImageUrl: imageUrl,
+      activeBoothId: null,
+      isDirty: false,
+      deletedBoothIds: [],
+    }),
+
+  loadBlueprint: (blueprintId, booths, draft) =>
+    set({
+      blueprintId,
+      blueprintDraft: draft,
+      blueprintImageUrl: draft.imageUrl || null,
       booths,
       activeBoothId: null,
       isDirty: false,
       deletedBoothIds: [],
+    }),
+
+  setBlueprintDraft: (draft) =>
+    set({
+      blueprintDraft: draft,
+      blueprintImageUrl: draft.imageUrl || null,
+      isDirty: true,
     }),
 
   addBooth: (booth) =>
@@ -95,6 +121,8 @@ export const useBoothStore = create<BoothStore>((set) => ({
     set({
       booths: [],
       activeBoothId: null,
+      blueprintDraft: null,
+      blueprintImageUrl: null,
       isDirty: false,
       deletedBoothIds: [],
     }),

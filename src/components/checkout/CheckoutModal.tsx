@@ -1,38 +1,34 @@
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import type { Booth } from '../../types/booth'
-
-const paymentMethods = [
-  { id: 'va', label: 'Virtual Account', description: 'BCA, BNI, Mandiri' },
-  { id: 'transfer', label: 'Transfer Bank', description: 'Konfirmasi manual' },
-  { id: 'qris', label: 'QRIS', description: 'Semua e-wallet' },
-] as const
-
-type PaymentMethod = (typeof paymentMethods)[number]['id']
-
-const formatPrice = (price: number) =>
-  new Intl.NumberFormat('id-ID', {
-    style: 'currency',
-    currency: 'IDR',
-    maximumFractionDigits: 0,
-  }).format(price)
+import {
+  PAYMENT_METHOD_DESCRIPTION,
+  PAYMENT_METHOD_LABEL,
+  PAYMENT_METHOD_OPTIONS,
+} from '../../types/booking'
+import type { PaymentMethod } from '../../types/booking'
+import { formatCurrency } from '../../lib/booking'
 
 interface CheckoutModalProps {
   booth: Booth
   eventName?: string
   reserved: boolean
+  bookingCode?: string | null
   confirming: boolean
   onClose: () => void
-  onConfirm: () => void
+  onConfirm: (paymentMethod: PaymentMethod) => void
+  onViewBookings: () => void
 }
 
 export default function CheckoutModal({
   booth,
   eventName,
   reserved,
+  bookingCode,
   confirming,
   onClose,
   onConfirm,
+  onViewBookings,
 }: CheckoutModalProps) {
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('va')
   const closeButtonRef = useRef<HTMLButtonElement>(null)
@@ -80,7 +76,7 @@ export default function CheckoutModal({
         <div className="flex items-start justify-between gap-4 border-b border-gray-200 px-5 py-4 sm:px-6">
           <div>
             <h2 id="checkout-title" className="text-lg font-semibold tracking-tight text-gray-900">
-              {reserved ? 'Booth Berhasil Dikunci' : 'Konfirmasi Pemesanan'}
+              {reserved ? 'Pesanan Berhasil Dibuat' : 'Konfirmasi Pemesanan'}
             </h2>
             <p className="mt-0.5 text-xs text-gray-500">
               {eventName ?? 'Penyewaan booth event'}
@@ -112,11 +108,17 @@ export default function CheckoutModal({
               </div>
               <h3 className="mt-4 text-lg font-semibold text-gray-900">Booth aman untuk Anda</h3>
               <p className="mx-auto mt-1.5 max-w-sm text-sm leading-relaxed text-gray-500">
-                Booth {booth.category} telah dikunci sementara dan langsung ditandai terisi untuk penyewa
-                lain di peta.
+                Booth {booth.category} sudah dikunci dan langsung ditandai terisi untuk penyewa lain
+                di peta.
               </p>
 
               <dl className="mt-5 space-y-2 rounded-xl border border-gray-200 bg-gray-50 p-4 text-left text-sm">
+                {bookingCode && (
+                  <div className="flex items-center justify-between gap-3">
+                    <dt className="text-gray-500">Kode pesanan</dt>
+                    <dd className="font-mono text-xs font-semibold text-gray-900">{bookingCode}</dd>
+                  </div>
+                )}
                 <div className="flex items-center justify-between gap-3">
                   <dt className="text-gray-500">Booth</dt>
                   <dd className="font-semibold text-gray-900">
@@ -131,13 +133,13 @@ export default function CheckoutModal({
                 </div>
                 <div className="flex items-center justify-between gap-3">
                   <dt className="text-gray-500">Total</dt>
-                  <dd className="font-semibold text-gray-900">{formatPrice(booth.price)}</dd>
+                  <dd className="font-semibold text-gray-900">{formatCurrency(booth.price)}</dd>
                 </div>
               </dl>
 
               <p className="mt-4 text-xs leading-relaxed text-gray-500">
-                Status booth: <span className="font-semibold text-gray-700">Reserved</span>. Selesaikan
-                pembayaran untuk mengubahnya menjadi Booked.
+                Status booth: <span className="font-semibold text-gray-700">Reserved</span>. Buka
+                halaman Pesanan Saya untuk melihat instruksi pembayaran dan menyelesaikan pesanan.
               </p>
             </div>
           ) : (
@@ -171,27 +173,29 @@ export default function CheckoutModal({
               <dl className="mt-4 space-y-2.5 text-sm">
                 <div className="flex items-center justify-between gap-3">
                   <dt className="text-gray-500">Harga sewa booth</dt>
-                  <dd className="font-medium text-gray-900">{formatPrice(booth.price)}</dd>
+                  <dd className="font-medium text-gray-900">{formatCurrency(booth.price)}</dd>
                 </div>
                 <div className="flex items-center justify-between gap-3">
                   <dt className="text-gray-500">Biaya layanan</dt>
-                  <dd className="font-medium text-gray-900">{formatPrice(0)}</dd>
+                  <dd className="font-medium text-gray-900">{formatCurrency(0)}</dd>
                 </div>
                 <div className="flex items-center justify-between gap-3 border-t border-gray-200 pt-2.5">
                   <dt className="font-semibold text-gray-900">Total pembayaran</dt>
-                  <dd className="text-base font-semibold text-gray-900">{formatPrice(booth.price)}</dd>
+                  <dd className="text-base font-semibold text-gray-900">
+                    {formatCurrency(booth.price)}
+                  </dd>
                 </div>
               </dl>
 
               <fieldset className="mt-5">
                 <legend className="text-sm font-medium text-gray-900">Metode pembayaran</legend>
                 <div className="mt-2 grid gap-2 sm:grid-cols-3">
-                  {paymentMethods.map((method) => {
-                    const isSelected = paymentMethod === method.id
+                  {PAYMENT_METHOD_OPTIONS.map((method) => {
+                    const isSelected = paymentMethod === method
 
                     return (
                       <label
-                        key={method.id}
+                        key={method}
                         className={`cursor-pointer rounded-xl border p-3 shadow-sm transition-colors focus-within:ring-2 focus-within:ring-blue-600 focus-within:ring-offset-2 ${
                           isSelected
                             ? 'border-blue-600 bg-blue-50/60'
@@ -201,13 +205,15 @@ export default function CheckoutModal({
                         <input
                           type="radio"
                           name="payment-method"
-                          value={method.id}
+                          value={method}
                           checked={isSelected}
-                          onChange={() => setPaymentMethod(method.id)}
+                          onChange={() => setPaymentMethod(method)}
                           className="sr-only"
                         />
                         <span className="flex items-center justify-between gap-2">
-                          <span className="text-xs font-semibold text-gray-900">{method.label}</span>
+                          <span className="text-xs font-semibold text-gray-900">
+                            {PAYMENT_METHOD_LABEL[method]}
+                          </span>
                           <span
                             aria-hidden="true"
                             className={`flex h-3.5 w-3.5 items-center justify-center rounded-full border ${
@@ -218,7 +224,7 @@ export default function CheckoutModal({
                           </span>
                         </span>
                         <span className="mt-1 block text-[11px] leading-snug text-gray-500">
-                          {method.description}
+                          {PAYMENT_METHOD_DESCRIPTION[method]}
                         </span>
                       </label>
                     )
@@ -234,8 +240,8 @@ export default function CheckoutModal({
                     clipRule="evenodd"
                   />
                 </svg>
-                Saat dikonfirmasi, status booth langsung berubah menjadi Reserved dan tidak dapat diambil
-                penyewa lain.
+                Saat dikonfirmasi, pesanan dibuat dan status booth menjadi Reserved. Selesaikan
+                pembayaran dalam 24 jam.
               </p>
             </>
           )}
@@ -243,13 +249,22 @@ export default function CheckoutModal({
 
         <div className="border-t border-gray-200 px-5 py-4 sm:px-6">
           {reserved ? (
-            <button
-              type="button"
-              onClick={onClose}
-              className="inline-flex w-full items-center justify-center rounded-xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2"
-            >
-              Selesai
-            </button>
+            <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+              <button
+                type="button"
+                onClick={onClose}
+                className="inline-flex items-center justify-center rounded-xl border border-gray-200 bg-white px-5 py-3 text-sm font-semibold text-gray-900 shadow-sm transition-colors hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2"
+              >
+                Selesai
+              </button>
+              <button
+                type="button"
+                onClick={onViewBookings}
+                className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2"
+              >
+                Lihat Pesanan Saya
+              </button>
+            </div>
           ) : (
             <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
               <button
@@ -262,7 +277,13 @@ export default function CheckoutModal({
               </button>
               <button
                 type="button"
-                onClick={isAvailable ? onConfirm : onClose}
+                onClick={() => {
+                  if (isAvailable) {
+                    onConfirm(paymentMethod)
+                  } else {
+                    onClose()
+                  }
+                }}
                 disabled={confirming}
                 className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
               >
@@ -272,10 +293,10 @@ export default function CheckoutModal({
                       aria-hidden="true"
                       className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white"
                     />
-                    Mengunci Booth…
+                    Membuat Pesanan…
                   </>
                 ) : isAvailable ? (
-                  'Kunci Booth & Lanjut Bayar'
+                  'Buat Pesanan & Kunci Booth'
                 ) : (
                   'Pilih Booth Lain'
                 )}
