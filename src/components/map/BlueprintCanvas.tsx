@@ -1,5 +1,5 @@
-import { memo } from 'react'
-import type { RefObject } from 'react'
+import { memo, useCallback } from 'react'
+import type { KeyboardEvent as ReactKeyboardEvent, RefObject } from 'react'
 import { useDraggable, useDroppable } from '@dnd-kit/core'
 import { useBoothStore } from '../../store/useBoothStore'
 import type { Booth, BoothStatus } from '../../types/booth'
@@ -39,6 +39,21 @@ const BoothRect = memo(function BoothRect({ booth }: BoothRectProps) {
     setNodeRef(element as unknown as HTMLElement | null)
   }
 
+  const handleKeyDown = useCallback(
+    (event: ReactKeyboardEvent<SVGGElement>) => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        // Tetap teruskan event ke sensor keyboard dnd-kit agar drag-and-drop
+        // via keyboard tidak hilang, tetapi booth juga langsung terpilih.
+        setActiveBooth(booth.id)
+      } else if (event.key === 'Escape') {
+        setActiveBooth(null)
+      }
+
+      listeners?.onKeyDown?.(event)
+    },
+    [booth.id, listeners, setActiveBooth],
+  )
+
   const rectTone = isSelected
     ? 'fill-pine stroke-pine-dark'
     : isUnavailable
@@ -52,9 +67,10 @@ const BoothRect = memo(function BoothRect({ booth }: BoothRectProps) {
       ref={setBoothRef}
       {...listeners}
       {...attributes}
+      onKeyDown={handleKeyDown}
       onClick={() => setActiveBooth(booth.id)}
       aria-pressed={isSelected}
-      aria-label={`Booth ${booth.category}, ${formatPrice(booth.price)}, status ${statusLabel[booth.status]}`}
+      aria-label={`Booth ${booth.category}, ${booth.width} × ${booth.height} px · ${statusLabel[booth.status]}, ${formatPrice(booth.price)}`}
       className={`group touch-none focus-visible:outline-none ${isDragging ? 'opacity-80' : ''} ${
         isSelected ? 'cursor-grabbing' : 'cursor-grab'
       }`}
@@ -92,7 +108,7 @@ const BoothRect = memo(function BoothRect({ booth }: BoothRectProps) {
       >
         {booth.category}
       </text>
-
+      {' '}
       <text
         x={booth.positionX + 12}
         y={booth.positionY + 38}
@@ -102,7 +118,7 @@ const BoothRect = memo(function BoothRect({ booth }: BoothRectProps) {
       >
         {booth.width} × {booth.height} px · {statusLabel[booth.status]}
       </text>
-
+      {' '}
       <text
         x={booth.positionX + 12}
         y={booth.positionY + booth.height - 12}

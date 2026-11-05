@@ -24,6 +24,9 @@ interface BoothStore {
   updateBoothPosition: (id: string, x: number, y: number) => void
   updateBoothDetails: (id: string, patch: BoothDetailsPatch) => void
   updateBoothStatus: (id: string, status: BoothStatus) => void
+  upsertRealtimeBooth: (booth: Booth) => void
+  removeRealtimeBooth: (id: string) => void
+  markDirty: () => void
   setActiveBooth: (id: string | null) => void
   removeBooth: (id: string) => void
   markSaved: () => void
@@ -102,6 +105,28 @@ export const useBoothStore = create<BoothStore>((set) => ({
     set((state) => ({
       booths: state.booths.map((booth) => (booth.id === id ? { ...booth, status } : booth)),
     })),
+
+  // Dipakai oleh kanvas tenant saat menerima event Realtime. Booth baru atau
+  // perubahan dari organizer tidak boleh menandai denah sebagai "belum
+  // disimpan" atau mengubah pilihan booth yang sedang aktif.
+  upsertRealtimeBooth: (booth) =>
+    set((state) => {
+      const exists = state.booths.some((item) => item.id === booth.id)
+
+      return {
+        booths: exists
+          ? state.booths.map((item) => (item.id === booth.id ? booth : item))
+          : [...state.booths, booth],
+      }
+    }),
+
+  removeRealtimeBooth: (id) =>
+    set((state) => ({
+      booths: state.booths.filter((booth) => booth.id !== id),
+      activeBoothId: state.activeBoothId === id ? null : state.activeBoothId,
+    })),
+
+  markDirty: () => set({ isDirty: true }),
 
   setActiveBooth: (id) => set({ activeBoothId: id }),
 

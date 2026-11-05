@@ -1,7 +1,7 @@
-import { useEffect, useRef, useState } from 'react'
-import type { PointerEvent as ReactPointerEvent } from 'react'
+import { memo, useCallback, useEffect, useRef, useState } from 'react'
+import type { KeyboardEvent as ReactKeyboardEvent, PointerEvent as ReactPointerEvent } from 'react'
 import { useBoothStore } from '../../store/useBoothStore'
-import type { BoothCategory, BoothStatus } from '../../types/booth'
+import type { Booth, BoothCategory, BoothStatus } from '../../types/booth'
 
 const CANVAS_WIDTH = 1000
 const CANVAS_HEIGHT = 640
@@ -75,6 +75,145 @@ function midpoint(a: Point, b: Point): Point {
 function distance(a: Point, b: Point) {
   return Math.max(Math.hypot(b.x - a.x, b.y - a.y), 1)
 }
+
+interface TenantBoothProps {
+  booth: Booth
+  activeCategory: BoothCategory | 'all'
+  onSelect: (id: string | null) => void
+}
+
+/**
+ * Satu booth pada kanvas tenant. Komponen di-memo agar perubahan pilihan
+ * hanya me-render ulang booth yang aktif/berubah, bukan seluruh kanvas.
+ */
+const TenantBooth = memo(function TenantBooth({
+  booth,
+  activeCategory,
+  onSelect,
+}: TenantBoothProps) {
+  const isSelected = useBoothStore((state) => state.activeBoothId === booth.id)
+  const isUnavailable = booth.status !== 'Available'
+  const isReserved = booth.status === 'Reserved'
+  const isDimmed = activeCategory !== 'all' && booth.category !== activeCategory
+
+  const rectTone = isUnavailable
+    ? `${isReserved ? 'fill-unavailable' : 'fill-unavailable-deep'} ${
+        isSelected ? 'stroke-pine-dark' : 'stroke-muted'
+      }`
+    : isSelected
+      ? 'fill-pine stroke-pine-dark'
+      : 'fill-surface stroke-pine hover:fill-pine-soft hover:stroke-pine-dark'
+
+  const titleTone = isSelected && !isUnavailable ? 'fill-white' : 'fill-ink'
+  const metaTone = isSelected && !isUnavailable ? 'fill-pine-soft' : 'fill-muted'
+  const priceTone =
+    isSelected && !isUnavailable
+      ? 'fill-white'
+      : isUnavailable
+        ? 'fill-muted'
+        : 'fill-ink'
+
+  const handleSelect = useCallback(() => onSelect(booth.id), [booth.id, onSelect])
+
+  const handleKeyDown = useCallback(
+    (event: ReactKeyboardEvent<SVGGElement>) => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault()
+        onSelect(booth.id)
+        return
+      }
+
+      if (event.key === 'Escape') {
+        event.preventDefault()
+        onSelect(null)
+      }
+    },
+    [booth.id, onSelect],
+  )
+
+  return (
+    <g
+      data-booth-id={booth.id}
+      data-booth-status={booth.status}
+      role="button"
+      tabIndex={0}
+      aria-pressed={isSelected}
+      aria-label={`Booth ${categoryLabel[booth.category]}, ${statusLabel[booth.status]}, ${formatPrice(booth.price)}`}
+      onKeyDown={handleKeyDown}
+      onClick={handleSelect}
+      className={`group cursor-pointer outline-none transition-opacity focus-visible:outline-none motion-reduce:transition-none ${
+        isDimmed ? 'opacity-30' : 'opacity-100'
+      }`}
+    >
+      <title>{`${categoryLabel[booth.category]} — ${statusLabel[booth.status]}`}</title>
+
+      <rect
+        x={booth.positionX}
+        y={booth.positionY}
+        width={booth.width}
+        height={booth.height}
+        rx="8"
+        strokeWidth={isSelected ? 2.6 : 1.4}
+        strokeDasharray={isReserved ? '4 3' : undefined}
+        className={`transition-colors motion-reduce:transition-none ${rectTone}`}
+      />
+
+      <rect
+        x={booth.positionX - 3}
+        y={booth.positionY - 3}
+        width={booth.width + 6}
+        height={booth.height + 6}
+        rx="10"
+        fill="none"
+        stroke="var(--color-clay)"
+        strokeWidth="2"
+        strokeDasharray="4 3"
+        className="pointer-events-none opacity-0 transition-opacity group-focus-visible:opacity-100 motion-reduce:transition-none"
+      />
+
+      <text
+        x={booth.positionX + 12}
+        y={booth.positionY + 22}
+        className={`pointer-events-none text-[11px] font-semibold ${titleTone}`}
+      >
+        {categoryLabel[booth.category]}
+      </text>
+      {' '}
+      <text
+        x={booth.positionX + 12}
+        y={booth.positionY + 38}
+        className={`pointer-events-none text-[9px] font-medium ${metaTone}`}
+      >
+        {statusLabel[booth.status]}
+      </text>
+      {' '}
+      <text
+        x={booth.positionX + 12}
+        y={booth.positionY + booth.height - 12}
+        className={`pointer-events-none text-[9px] font-medium tabular-nums ${priceTone}`}
+      >
+        {formatPrice(booth.price)}
+      </text>
+
+      {isSelected && (
+        <g
+          transform={`translate(${booth.positionX + booth.width - 14} ${booth.positionY + 14})`}
+          className="pointer-events-none"
+        >
+          <circle r="7" fill="var(--color-surface)" />
+          <path
+            d="M-3 0.5 0 3.5 4 -3"
+            fill="none"
+            stroke="var(--color-pine)"
+            strokeWidth="1.6"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </g>
+      )}
+    </g>
+  )
+})
 
 interface InteractiveMapProps {
   activeCategory: BoothCategory | 'all'
@@ -405,7 +544,7 @@ export default function InteractiveMap({ activeCategory }: InteractiveMapProps) 
             type="button"
             onClick={resetView}
             disabled={!isZoomed}
-            aria-label="Reset zoom peta"
+            aria-label="Reset zoom peta ke 1×"
             className="flex h-9 w-9 items-center justify-center rounded-[4px] text-[10px] font-bold text-muted transition-colors hover:bg-pine-soft hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine disabled:cursor-not-allowed disabled:opacity-40 sm:h-8 sm:w-8 motion-reduce:transition-none"
           >
             1×
@@ -499,7 +638,7 @@ export default function InteractiveMap({ activeCategory }: InteractiveMapProps) 
                   x={CANVAS_WIDTH / 2}
                   y="32"
                   textAnchor="middle"
-                  className="pointer-events-none fill-gray-500 text-[11px] font-semibold tracking-[0.3em]"
+                  className="pointer-events-none fill-muted text-[11px] font-semibold tracking-[0.3em]"
                 >
                   AREA PAMERAN
                 </text>
@@ -510,127 +649,20 @@ export default function InteractiveMap({ activeCategory }: InteractiveMapProps) 
                   x={CANVAS_WIDTH / 2}
                   y={CANVAS_HEIGHT - 20}
                   textAnchor="middle"
-                  className="pointer-events-none fill-gray-500 text-[11px] font-semibold tracking-[0.3em]"
+                  className="pointer-events-none fill-muted text-[11px] font-semibold tracking-[0.3em]"
                 >
                   PINTU MASUK
                 </text>
               )}
 
-              {booths.map((booth) => {
-                const isSelected = booth.id === activeBoothId
-                const isUnavailable = booth.status !== 'Available'
-                const isReserved = booth.status === 'Reserved'
-                const isDimmed = activeCategory !== 'all' && booth.category !== activeCategory
-
-                const rectTone = isUnavailable
-                  ? `${isReserved ? 'fill-unavailable' : 'fill-unavailable-deep'} ${
-                      isSelected ? 'stroke-pine-dark' : 'stroke-muted'
-                    }`
-                  : isSelected
-                    ? 'fill-pine stroke-pine-dark'
-                    : 'fill-surface stroke-pine hover:fill-pine-soft hover:stroke-pine-dark'
-
-                const titleTone = isSelected && !isUnavailable ? 'fill-white' : 'fill-ink'
-                const metaTone = isSelected && !isUnavailable ? 'fill-pine-soft' : 'fill-muted'
-                const priceTone =
-                  isSelected && !isUnavailable
-                    ? 'fill-white'
-                    : isUnavailable
-                      ? 'fill-muted'
-                      : 'fill-ink'
-
-                return (
-                  <g
-                    key={booth.id}
-                    data-booth-id={booth.id}
-                    data-booth-status={booth.status}
-                    role="button"
-                    tabIndex={0}
-                    aria-pressed={isSelected}
-                    aria-label={`Booth ${categoryLabel[booth.category]}, ${formatPrice(booth.price)}, status ${statusLabel[booth.status]}`}
-                    onKeyDown={(event) => {
-                      if (event.key === 'Enter' || event.key === ' ') {
-                        event.preventDefault()
-                        setActiveBooth(booth.id)
-                      }
-                      if (event.key === 'Escape') {
-                        setActiveBooth(null)
-                      }
-                    }}
-                    onClick={() => setActiveBooth(booth.id)}
-                    className={`group cursor-pointer outline-none transition-opacity focus-visible:outline-none motion-reduce:transition-none ${
-                      isDimmed ? 'opacity-30' : 'opacity-100'
-                    }`}
-                  >
-                    <title>{`${categoryLabel[booth.category]} — ${statusLabel[booth.status]}`}</title>
-
-                    <rect
-                      x={booth.positionX}
-                      y={booth.positionY}
-                      width={booth.width}
-                      height={booth.height}
-                      rx="8"
-                      strokeWidth={isSelected ? 2.6 : 1.4}
-                      strokeDasharray={isReserved ? '4 3' : undefined}
-                      className={`transition-colors motion-reduce:transition-none ${rectTone}`}
-                    />
-
-                    <rect
-                      x={booth.positionX - 3}
-                      y={booth.positionY - 3}
-                      width={booth.width + 6}
-                      height={booth.height + 6}
-                      rx="10"
-                      fill="none"
-                      stroke="var(--color-clay)"
-                      strokeWidth="2"
-                      strokeDasharray="4 3"
-                      className="pointer-events-none opacity-0 transition-opacity group-focus-visible:opacity-100 motion-reduce:transition-none"
-                    />
-
-                    <text
-                      x={booth.positionX + 12}
-                      y={booth.positionY + 22}
-                      className={`pointer-events-none text-[11px] font-semibold ${titleTone}`}
-                    >
-                      {categoryLabel[booth.category]}
-                    </text>
-
-                    <text
-                      x={booth.positionX + 12}
-                      y={booth.positionY + 38}
-                      className={`pointer-events-none text-[9px] font-medium ${metaTone}`}
-                    >
-                      {statusLabel[booth.status]}
-                    </text>
-
-                    <text
-                      x={booth.positionX + 12}
-                      y={booth.positionY + booth.height - 12}
-                      className={`pointer-events-none text-[9px] font-medium tabular-nums ${priceTone}`}
-                    >
-                      {formatPrice(booth.price)}
-                    </text>
-
-                    {isSelected && (
-                      <g
-                        transform={`translate(${booth.positionX + booth.width - 14} ${booth.positionY + 14})`}
-                        className="pointer-events-none"
-                      >
-                        <circle r="7" fill="var(--color-surface)" />
-                        <path
-                          d="M-3 0.5 0 3.5 4 -3"
-                          fill="none"
-                          stroke="var(--color-pine)"
-                          strokeWidth="1.6"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                      </g>
-                    )}
-                  </g>
-                )
-              })}
+              {booths.map((booth) => (
+                <TenantBooth
+                  key={booth.id}
+                  booth={booth}
+                  activeCategory={activeCategory}
+                  onSelect={setActiveBooth}
+                />
+              ))}
             </svg>
           </div>
 

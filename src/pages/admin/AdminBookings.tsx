@@ -1,6 +1,7 @@
-import { useEffect, useMemo, useState } from 'react'
+import { Fragment, useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import AppHeader from '../../components/layout/AppHeader'
+import InlineConfirm from '../../components/ui/InlineConfirm'
 import { useToast } from '../../components/ui/Toast'
 import { formatCurrency, formatDateTime, getBookingErrorMessage, isExpiredBooking } from '../../lib/booking'
 import { sweepExpiredBookings } from '../../lib/bookingExpiry'
@@ -62,6 +63,7 @@ export default function AdminBookings() {
   const [eventFilter, setEventFilter] = useState('all')
   const [search, setSearch] = useState('')
   const [updatingId, setUpdatingId] = useState<string | null>(null)
+  const [confirmingCancelId, setConfirmingCancelId] = useState<string | null>(null)
   const [refreshing, setRefreshing] = useState(false)
 
   useEffect(() => {
@@ -207,12 +209,7 @@ export default function AdminBookings() {
   const handleCancel = async (booking: BookingRow) => {
     if (updatingId) return
 
-    const confirmed = window.confirm(
-      `Batalkan pesanan ${booking.booking_code}? Booth akan tersedia kembali.`,
-    )
-
-    if (!confirmed) return
-
+    setConfirmingCancelId(null)
     setUpdatingId(booking.id)
 
     try {
@@ -495,9 +492,12 @@ export default function AdminBookings() {
                         ? BOOKING_EXPIRED_DOT
                         : BOOKING_STATUS_DOT[booking.status]
 
+                      const confirmingCancel = confirmingCancelId === booking.id
+
                       return (
-                        <tr key={booking.id} className="transition-colors hover:bg-canvas">
-                          <td className="whitespace-nowrap px-5 py-3.5">
+                        <Fragment key={booking.id}>
+                          <tr className="transition-colors hover:bg-canvas">
+                            <td className="whitespace-nowrap px-5 py-3.5">
                             <p className="font-mono text-xs font-semibold text-ink">
                               {booking.booking_code}
                             </p>
@@ -559,8 +559,10 @@ export default function AdminBookings() {
                                   )}
                                   <button
                                     type="button"
-                                    onClick={() => void handleCancel(booking)}
+                                    onClick={() => setConfirmingCancelId(booking.id)}
                                     disabled={isUpdating}
+                                    aria-expanded={confirmingCancel}
+                                    aria-controls={`cancel-booking-${booking.id}`}
                                     className="rounded-[8px] px-2 py-1.5 text-[11px] font-semibold text-muted transition-colors hover:bg-red-50 hover:text-red-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
                                   >
                                     Batalkan
@@ -571,7 +573,23 @@ export default function AdminBookings() {
                               )}
                             </div>
                           </td>
-                        </tr>
+                          </tr>
+
+                          {confirmingCancel && (
+                            <tr className="bg-canvas">
+                              <td colSpan={8} className="px-5 py-3">
+                                <InlineConfirm
+                                  id={`cancel-booking-${booking.id}`}
+                                  title={`Batalkan pesanan ${booking.booking_code}?`}
+                                  description="Booth akan tersedia kembali untuk penyewa lain. Tindakan ini tidak dapat dibatalkan."
+                                  confirmLabel="Ya, batalkan pesanan"
+                                  onConfirm={() => void handleCancel(booking)}
+                                  onCancel={() => setConfirmingCancelId(null)}
+                                />
+                              </td>
+                            </tr>
+                          )}
+                        </Fragment>
                       )
                     })}
                   </tbody>

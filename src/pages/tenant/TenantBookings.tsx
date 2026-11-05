@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import AppHeader from '../../components/layout/AppHeader'
+import InlineConfirm from '../../components/ui/InlineConfirm'
 import { useToast } from '../../components/ui/Toast'
 import {
   formatCurrency,
@@ -66,6 +67,7 @@ export default function TenantBookings() {
   const [reloadToken, setReloadToken] = useState(0)
   const [statusFilter, setStatusFilter] = useState<BookingStatus | 'all'>('all')
   const [updatingId, setUpdatingId] = useState<string | null>(null)
+  const [confirmingCancelId, setConfirmingCancelId] = useState<string | null>(null)
   const [refreshing, setRefreshing] = useState(false)
 
   useEffect(() => {
@@ -208,12 +210,7 @@ export default function TenantBookings() {
   const handleCancel = async (booking: BookingRow) => {
     if (updatingId) return
 
-    const confirmed = window.confirm(
-      'Batalkan pesanan ini? Booth akan tersedia kembali untuk penyewa lain.',
-    )
-
-    if (!confirmed) return
-
+    setConfirmingCancelId(null)
     setUpdatingId(booking.id)
 
     try {
@@ -421,6 +418,7 @@ export default function TenantBookings() {
                       ? getPaymentInstruction(booking.payment_method, booking)
                       : null
                   const isUpdating = updatingId === booking.id
+                  const confirmingCancel = confirmingCancelId === booking.id
                   const statusLabel = expired
                     ? BOOKING_EXPIRED_LABEL
                     : BOOKING_STATUS_LABEL[booking.status]
@@ -573,24 +571,40 @@ export default function TenantBookings() {
 
                       {(booking.status === 'pending' ||
                         booking.status === 'awaiting_confirmation') && (
-                        <div className="flex flex-col-reverse gap-2 border-t border-line px-5 py-3 sm:flex-row sm:justify-end">
-                          <button
-                            type="button"
-                            onClick={() => void handleCancel(booking)}
-                            disabled={isUpdating}
-                            className="inline-flex items-center justify-center rounded-[8px] border border-line bg-surface px-4 py-2 text-xs font-semibold text-ink transition-colors hover:border-red-200 hover:bg-red-50 hover:text-red-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
-                          >
-                            Batalkan Pesanan
-                          </button>
-                          {booking.status === 'pending' && !expired && (
-                            <button
-                              type="button"
-                              onClick={() => void handleMarkPaid(booking)}
-                              disabled={isUpdating}
-                              className="inline-flex items-center justify-center gap-2 rounded-[8px] bg-pine px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-pine-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
-                            >
-                              {isUpdating ? 'Mengirim…' : 'Saya Sudah Bayar'}
-                            </button>
+                        <div className="border-t border-line px-5 py-3">
+                          {confirmingCancel ? (
+                            <InlineConfirm
+                              id={`cancel-booking-${booking.id}`}
+                              title="Batalkan pesanan ini?"
+                              description="Booth akan tersedia kembali untuk penyewa lain. Tindakan ini tidak dapat dibatalkan."
+                              confirmLabel="Ya, batalkan pesanan"
+                              onConfirm={() => void handleCancel(booking)}
+                              onCancel={() => setConfirmingCancelId(null)}
+                              className="rounded-[8px] border border-red-200 bg-red-50 p-3"
+                            />
+                          ) : (
+                            <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+                              <button
+                                type="button"
+                                onClick={() => setConfirmingCancelId(booking.id)}
+                                disabled={isUpdating}
+                                aria-expanded={confirmingCancel}
+                                aria-controls={`cancel-booking-${booking.id}`}
+                                className="inline-flex items-center justify-center rounded-[8px] border border-line bg-surface px-4 py-2 text-xs font-semibold text-ink transition-colors hover:border-red-200 hover:bg-red-50 hover:text-red-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+                              >
+                                Batalkan Pesanan
+                              </button>
+                              {booking.status === 'pending' && !expired && (
+                                <button
+                                  type="button"
+                                  onClick={() => void handleMarkPaid(booking)}
+                                  disabled={isUpdating}
+                                  className="inline-flex items-center justify-center gap-2 rounded-[8px] bg-pine px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-pine-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+                                >
+                                  {isUpdating ? 'Mengirim…' : 'Saya Sudah Bayar'}
+                                </button>
+                              )}
+                            </div>
                           )}
                         </div>
                       )}

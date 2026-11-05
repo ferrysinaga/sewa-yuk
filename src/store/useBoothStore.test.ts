@@ -173,6 +173,69 @@ describe('updateBoothStatus', () => {
   })
 })
 
+describe('upsertRealtimeBooth', () => {
+  it('menambahkan booth baru tanpa menandai denah berubah', () => {
+    const booth = createBooth()
+
+    useBoothStore.getState().markSaved()
+    useBoothStore.getState().upsertRealtimeBooth(booth)
+
+    const state = useBoothStore.getState()
+    expect(state.booths).toEqual([booth])
+    expect(state.isDirty).toBe(false)
+    expect(state.deletedBoothIds).toEqual([])
+  })
+
+  it('memperbarui booth yang sudah ada tanpa mengubah pilihan aktif', () => {
+    const first = createBooth({ id: 'booth-1' })
+    const second = createBooth({ id: 'booth-2' })
+    const updatedFirst = { ...first, status: 'Booked' as const, price: 500_000 }
+
+    useBoothStore.getState().addBooth(first)
+    useBoothStore.getState().addBooth(second)
+    useBoothStore.getState().markSaved()
+
+    useBoothStore.getState().upsertRealtimeBooth(updatedFirst)
+
+    const state = useBoothStore.getState()
+    expect(state.booths).toHaveLength(2)
+    expect(state.booths[0]).toMatchObject({ id: 'booth-1', status: 'Booked', price: 500_000 })
+    expect(state.activeBoothId).toBe('booth-2')
+    expect(state.isDirty).toBe(false)
+  })
+})
+
+describe('removeRealtimeBooth', () => {
+  it('menghapus booth tanpa menandai denah berubah atau mencatat id terhapus', () => {
+    const booth = createBooth()
+
+    useBoothStore.getState().addBooth(booth)
+    useBoothStore.getState().markSaved()
+    useBoothStore.getState().removeRealtimeBooth(booth.id)
+
+    const state = useBoothStore.getState()
+    expect(state.booths).toEqual([])
+    expect(state.activeBoothId).toBeNull()
+    expect(state.isDirty).toBe(false)
+    expect(state.deletedBoothIds).toEqual([])
+  })
+
+  it('mempertahankan pilihan booth lain saat booth yang tidak aktif dihapus', () => {
+    const first = createBooth({ id: 'booth-1' })
+    const second = createBooth({ id: 'booth-2' })
+
+    useBoothStore.getState().addBooth(first)
+    useBoothStore.getState().addBooth(second)
+    useBoothStore.getState().markSaved()
+    useBoothStore.getState().removeRealtimeBooth(first.id)
+
+    const state = useBoothStore.getState()
+    expect(state.booths.map((booth) => booth.id)).toEqual(['booth-2'])
+    expect(state.activeBoothId).toBe('booth-2')
+    expect(state.isDirty).toBe(false)
+  })
+})
+
 describe('updateBoothPosition', () => {
   it('memperbarui koordinat booth dan menandai denah berubah', () => {
     const booth = createBooth()

@@ -53,6 +53,20 @@ function mapRowToBooth(row: BoothRow): Booth {
   }
 }
 
+function isCompleteBoothRow(row: Partial<BoothRow>): row is BoothRow {
+  return (
+    typeof row.id === 'string' &&
+    typeof row.blueprint_id === 'string' &&
+    (row.category === 'Tech' || row.category === 'F&B' || row.category === 'Apparel') &&
+    typeof row.position_x === 'number' &&
+    typeof row.position_y === 'number' &&
+    typeof row.width === 'number' &&
+    typeof row.height === 'number' &&
+    typeof row.price === 'number' &&
+    (row.status === 'Available' || row.status === 'Reserved' || row.status === 'Booked')
+  )
+}
+
 function getLoadErrorMessage(error: { message?: string } | null): string {
   const message = error?.message ?? ''
 
@@ -177,23 +191,33 @@ export default function TenantEventView() {
       .on(
         'postgres_changes',
         {
-          event: 'UPDATE',
+          event: '*',
           schema: 'public',
           table: 'booths',
           filter: `blueprint_id=eq.${eventId}`,
         },
         (payload) => {
+          const boothState = useBoothStore.getState()
+
+          if (payload.eventType === 'DELETE') {
+            const deleted = payload.old as Partial<BoothRow>
+            if (deleted?.id) boothState.removeRealtimeBooth(deleted.id)
+            return
+          }
+
           const row = payload.new as Partial<BoothRow>
           if (!row?.id) return
 
-          const boothState = useBoothStore.getState()
           const previous = boothState.booths.find((booth) => booth.id === row.id)
 
-          if (row.status) {
+          if (isCompleteBoothRow(row)) {
+            boothState.upsertRealtimeBooth(mapRowToBooth(row))
+          } else if (row.status) {
             boothState.updateBoothStatus(row.id, row.status)
           }
 
           if (
+            payload.eventType === 'UPDATE' &&
             row.status &&
             row.status !== 'Available' &&
             previous?.status === 'Available' &&

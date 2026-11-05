@@ -58,12 +58,17 @@ export default function BlueprintEditor() {
   const [reloadToken, setReloadToken] = useState(0)
   const [saving, setSaving] = useState(false)
   const savedImagePathRef = useRef('')
+  // Status awal booth saat dimuat. Hanya status yang benar-benar diubah
+  // organizer yang ikut disimpan agar perubahan status dari penyewa
+  // (Reserved/Booked) tidak tertimpa oleh penyimpanan denah.
+  const originalBoothStatusesRef = useRef<Map<string, BoothStatus>>(new Map())
 
   useEffect(() => {
     let cancelled = false
 
     if (!blueprintId) {
       resetBooths()
+      originalBoothStatusesRef.current.clear()
       savedImagePathRef.current = ''
       setLoadError('ID denah tidak valid.')
       setLoading(false)
@@ -72,6 +77,7 @@ export default function BlueprintEditor() {
 
     if (!isSupabaseConfigured) {
       resetBooths()
+      originalBoothStatusesRef.current.clear()
       savedImagePathRef.current = ''
       setLoadError(
         'Supabase belum dikonfigurasi. Isi VITE_SUPABASE_URL dan VITE_SUPABASE_ANON_KEY pada file .env.',
@@ -103,6 +109,7 @@ export default function BlueprintEditor() {
 
       if (blueprintResult.error) {
         resetBooths()
+      originalBoothStatusesRef.current.clear()
         setLoadError(getBlueprintErrorMessage(blueprintResult.error))
         setLoading(false)
         return
@@ -110,6 +117,7 @@ export default function BlueprintEditor() {
 
       if (!blueprintResult.data) {
         resetBooths()
+      originalBoothStatusesRef.current.clear()
         setLoadError('Denah tidak ditemukan atau belum dipublikasikan.')
         setLoading(false)
         return
@@ -117,6 +125,7 @@ export default function BlueprintEditor() {
 
       if (boothsResult.error) {
         resetBooths()
+      originalBoothStatusesRef.current.clear()
         setLoadError(getBlueprintErrorMessage(boothsResult.error))
         setLoading(false)
         return
@@ -131,6 +140,9 @@ export default function BlueprintEditor() {
         mapBlueprintRowToDraft(blueprintRow),
       )
       savedImagePathRef.current = blueprintRow.image_path ?? ''
+      originalBoothStatusesRef.current = new Map(
+        boothRows.map((booth) => [booth.id, booth.status]),
+      )
       setLoading(false)
     }
 
@@ -244,6 +256,28 @@ export default function BlueprintEditor() {
         if (boothError) throw boothError
       }
 
+      // Status booth disimpan terpisah dan hanya untuk booth yang statusnya
+      // benar-benar diubah organizer. Dengan begitu, status Reserved/Booked
+      // dari penyewa tidak ikut tertimpa saat denah disimpan.
+      const statusUpdates = new Map<BoothStatus, string[]>()
+
+      for (const booth of store.booths) {
+        if (originalBoothStatusesRef.current.get(booth.id) === booth.status) continue
+
+        const ids = statusUpdates.get(booth.status) ?? []
+        ids.push(booth.id)
+        statusUpdates.set(booth.status, ids)
+      }
+
+      for (const [status, ids] of statusUpdates) {
+        const { error: statusError } = await supabase
+          .from('booths')
+          .update({ status, updated_at: now })
+          .in('id', ids)
+
+        if (statusError) throw statusError
+      }
+
       if (store.deletedBoothIds.length > 0) {
         const { error: deleteError } = await supabase
           .from('booths')
@@ -286,6 +320,9 @@ export default function BlueprintEditor() {
       }
 
       savedImagePathRef.current = nextImagePath
+      originalBoothStatusesRef.current = new Map(
+        store.booths.map((booth) => [booth.id, booth.status]),
+      )
 
       markSaved()
 

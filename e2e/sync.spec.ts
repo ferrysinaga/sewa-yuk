@@ -115,8 +115,10 @@ async function safeCancelBooking(page: Page) {
 
     if (!visible) return
 
-    page.once('dialog', (dialog) => void dialog.accept())
     await cancelButton.click()
+    const confirm = page.getByRole('alertdialog')
+    await expect(confirm).toBeVisible({ timeout: 10_000 })
+    await confirm.getByRole('button', { name: /Ya, batalkan pesanan/ }).click()
     await expect(page.getByText(/Pesanan dibatalkan/)).toBeVisible({
       timeout: 20_000,
     })
