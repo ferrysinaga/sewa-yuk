@@ -7,11 +7,16 @@ import {
   formatDateTime,
   getBookingErrorMessage,
   getPaymentInstruction,
+  isExpiredBooking,
 } from '../../lib/booking'
+import { sweepExpiredBookings } from '../../lib/bookingExpiry'
 import { createChannelName } from '../../lib/id'
 import { isSupabaseConfigured, supabase } from '../../lib/supabase'
 import { useAuthStore } from '../../store/useAuthStore'
 import {
+  BOOKING_EXPIRED_BADGE,
+  BOOKING_EXPIRED_DOT,
+  BOOKING_EXPIRED_LABEL,
   BOOKING_STATUS_BADGE,
   BOOKING_STATUS_DOT,
   BOOKING_STATUS_LABEL,
@@ -61,6 +66,7 @@ export default function TenantBookings() {
   const [reloadToken, setReloadToken] = useState(0)
   const [statusFilter, setStatusFilter] = useState<BookingStatus | 'all'>('all')
   const [updatingId, setUpdatingId] = useState<string | null>(null)
+  const [refreshing, setRefreshing] = useState(false)
 
   useEffect(() => {
     if (!isSupabaseConfigured) {
@@ -81,6 +87,12 @@ export default function TenantBookings() {
     setError(null)
 
     const loadBookings = async () => {
+      // Lepas booking kedaluwarsa lebih dulu agar status booth yang tampil
+      // sudah mencerminkan data terbaru saat pg_cron tidak aktif.
+      await sweepExpiredBookings()
+
+      if (cancelled) return
+
       const [bookingResult, blueprintResult] = await Promise.all([
         supabase.from('bookings').select('*').order('created_at', { ascending: false }),
         supabase.from('blueprints').select('id, name, venue, event_date'),
@@ -155,7 +167,9 @@ export default function TenantBookings() {
 
   const metrics = useMemo(() => {
     const active = bookings.filter(
-      (booking) => booking.status === 'pending' || booking.status === 'awaiting_confirmation',
+      (booking) =>
+        booking.status === 'awaiting_confirmation' ||
+        (booking.status === 'pending' && !isExpiredBooking(booking)),
     ).length
     const confirmed = bookings.filter((booking) => booking.status === 'confirmed')
     const totalPaid = confirmed.reduce((sum, booking) => sum + booking.price, 0)
@@ -225,6 +239,26 @@ export default function TenantBookings() {
     }
   }
 
+  const handleRefresh = async () => {
+    if (refreshing) return
+
+    setRefreshing(true)
+
+    try {
+      const released = await sweepExpiredBookings()
+
+      if (released) {
+        showToast(
+          `${released} pesanan kedaluwarsa dibatalkan dan booth kembali tersedia.`,
+          'info',
+        )
+      }
+    } finally {
+      setRefreshing(false)
+      setReloadToken((token) => token + 1)
+    }
+  }
+
   return (
     <div className="min-h-screen bg-canvas">
       <AppHeader />
@@ -245,12 +279,22 @@ export default function TenantBookings() {
               Pantau status pemesanan booth dan selesaikan pembayaran sebelum batas waktu.
             </p>
           </div>
-          <Link
-            to="/event"
-            className="inline-flex items-center justify-center gap-2 rounded-[8px] bg-pine px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-pine-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2"
-          >
-            Jelajahi Event
-          </Link>
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <button
+              type="button"
+              onClick={() => void handleRefresh()}
+              disabled={refreshing || loading}
+              className="inline-flex items-center justify-center gap-2 rounded-[8px] border border-line bg-surface px-5 py-2.5 text-sm font-semibold text-ink transition-colors hover:bg-canvas focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {refreshing ? 'Memperbarui…' : 'Perbarui status'}
+            </button>
+            <Link
+              to="/event"
+              className="inline-flex items-center justify-center gap-2 rounded-[8px] bg-pine px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-pine-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2"
+            >
+              Jelajahi Event
+            </Link>
+          </div>
         </div>
 
         {loading && (
@@ -371,11 +415,21 @@ export default function TenantBookings() {
               <ul className="mt-6 space-y-4">
                 {visibleBookings.map((booking) => {
                   const event = blueprintById.get(booking.blueprint_id)
+                  const expired = isExpiredBooking(booking)
                   const instruction =
-                    booking.status === 'pending'
+                    booking.status === 'pending' && !expired
                       ? getPaymentInstruction(booking.payment_method, booking)
                       : null
                   const isUpdating = updatingId === booking.id
+                  const statusLabel = expired
+                    ? BOOKING_EXPIRED_LABEL
+                    : BOOKING_STATUS_LABEL[booking.status]
+                  const statusBadge = expired
+                    ? BOOKING_EXPIRED_BADGE
+                    : BOOKING_STATUS_BADGE[booking.status]
+                  const statusDot = expired
+                    ? BOOKING_EXPIRED_DOT
+                    : BOOKING_STATUS_DOT[booking.status]
 
                   return (
                     <li
@@ -389,12 +443,10 @@ export default function TenantBookings() {
                               {booking.booking_code}
                             </span>
                             <span
-                              className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold ring-1 ring-inset ${BOOKING_STATUS_BADGE[booking.status]}`}
+                              className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold ring-1 ring-inset ${statusBadge}`}
                             >
-                              <span
-                                className={`h-1.5 w-1.5 rounded-full ${BOOKING_STATUS_DOT[booking.status]}`}
-                              />
-                              {BOOKING_STATUS_LABEL[booking.status]}
+                              <span className={`h-1.5 w-1.5 rounded-full ${statusDot}`} />
+                              {statusLabel}
                             </span>
                           </div>
                           <p className="mt-1 text-sm font-semibold text-ink">
@@ -438,7 +490,9 @@ export default function TenantBookings() {
                             (booking.status === 'pending' ||
                               booking.status === 'awaiting_confirmation') && (
                               <div className="flex items-center justify-between gap-3">
-                                <dt className="text-muted">Batas pembayaran</dt>
+                                <dt className="text-muted">
+                                  {expired ? 'Batas pembayaran (terlewat)' : 'Batas pembayaran'}
+                                </dt>
                                 <dd className="font-medium text-clay-dark">
                                   {formatDateTime(booking.expires_at)}
                                 </dd>
@@ -454,7 +508,11 @@ export default function TenantBookings() {
                           )}
                           {booking.status === 'cancelled' && (
                             <div className="flex items-center justify-between gap-3">
-                              <dt className="text-muted">Dibatalkan</dt>
+                              <dt className="text-muted">
+                                {booking.cancelled_reason === 'expired'
+                                  ? 'Kedaluwarsa'
+                                  : 'Dibatalkan'}
+                              </dt>
                               <dd className="font-medium text-ink">
                                 {formatDateTime(booking.cancelled_at)}
                               </dd>
@@ -463,6 +521,14 @@ export default function TenantBookings() {
                         </dl>
 
                         <div>
+                          {expired && booking.status === 'pending' && (
+                            <div className="rounded-[8px] border border-line bg-clay-soft p-3 text-xs leading-relaxed text-clay-dark">
+                              Batas pembayaran sudah lewat. Pesanan akan dibatalkan otomatis dan
+                              booth dilepas untuk penyewa lain. Tekan tombol Perbarui status untuk
+                              memperbarui sekarang.
+                            </div>
+                          )}
+
                           {instruction && (
                             <div className="rounded-[8px] border border-line bg-clay-soft p-3">
                               <p className="text-[11px] font-semibold uppercase tracking-wide text-clay-dark">
@@ -497,7 +563,9 @@ export default function TenantBookings() {
 
                           {booking.status === 'cancelled' && (
                             <div className="rounded-[8px] border border-line bg-unavailable p-3 text-xs leading-relaxed text-muted">
-                              Pesanan dibatalkan. Booth sudah dilepas dan dapat dipesan penyewa lain.
+                              {booking.cancelled_reason === 'expired'
+                                ? 'Pesanan kedaluwarsa karena batas pembayaran terlewat. Booth sudah dilepas dan dapat dipesan penyewa lain.'
+                                : 'Pesanan dibatalkan. Booth sudah dilepas dan dapat dipesan penyewa lain.'}
                             </div>
                           )}
                         </div>
@@ -514,7 +582,7 @@ export default function TenantBookings() {
                           >
                             Batalkan Pesanan
                           </button>
-                          {booking.status === 'pending' && (
+                          {booking.status === 'pending' && !expired && (
                             <button
                               type="button"
                               onClick={() => void handleMarkPaid(booking)}

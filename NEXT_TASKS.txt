@@ -36,7 +36,8 @@ P0 - HARUS BERES SEBELUM QA DIJALANKAN
     AUTH-05 (tenant membuka rute organizer). Contoh bug template juga
     disesuaikan agar tidak lagi menyebut warna lama.
 
-[ ] 2. Booking expiry / auto-release booth
+[x] 2. Booking expiry / auto-release booth
+    STATUS: SELESAI (5 November 2026)
     File: supabase/migrations/ (migrasi baru), src/pages/tenant/TenantBookings.tsx,
           src/pages/admin/AdminBookings.tsx
     Masalah: expires_at hanya ditampilkan, tidak pernah ditegakkan. Booking
@@ -53,6 +54,19 @@ P0 - HARUS BERES SEBELUM QA DIJALANKAN
     - Pastikan realtime mengirim perubahan booth ke tenant lain
     Acceptance: booking pending yang lewat batas otomatis cancelled dan
     booth kembali Available tanpa intervensi manual.
+    Hasil: migrasi baru 20261105000000_booking_expiry.sql menambah kolom
+    cancelled_reason, index parsial expires_at, dan RPC
+    release_expired_bookings() (FOR UPDATE SKIP LOCKED). RPC dijadwalkan
+    pg_cron tiap 2 menit bila ekstensi tersedia; bila tidak, halaman
+    /event, /event/:id, /bookings, dan /admin/bookings memanggilnya saat
+    dibuka.
+    mark_booking_paid menolak pembayaran setelah expires_at dan
+    confirm_booking menolak konfirmasi booking pending yang kedaluwarsa.
+    Tombol "Perbarui status" menjalankan sweep + reload. Badge "Kedaluwarsa"
+    (clay) tampil untuk cancelled_reason='expired' dan pending yang lewat
+    batas, dengan aksi bayar dinonaktifkan. Realtime booths/bookings
+    dipastikan aktif agar booth Available langsung terlihat di tab tenant
+    lain. Verifikasi: tsc --noEmit dan vite build lulus.
 
 [x] 3. Redesign halaman yang belum mengikuti frontend.md
     STATUS: SELESAI (5 November 2026)

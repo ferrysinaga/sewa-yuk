@@ -18,6 +18,7 @@ export interface BookingRow {
   expires_at: string | null
   paid_at: string | null
   cancelled_at: string | null
+  cancelled_reason: string | null
   created_at: string
   updated_at: string
 }
@@ -49,6 +50,12 @@ export const BOOKING_STATUS_DOT: Record<BookingStatus, string> = {
   confirmed: 'bg-pine',
   cancelled: 'bg-muted',
 }
+
+// Label khusus untuk pembatalan otomatis akibat expires_at terlewat. Status
+// tersimpan tetap 'cancelled', tetapi pengguna perlu melihat alasan yang jelas.
+export const BOOKING_EXPIRED_LABEL = 'Kedaluwarsa'
+export const BOOKING_EXPIRED_BADGE = 'bg-clay-soft text-clay-dark ring-line'
+export const BOOKING_EXPIRED_DOT = 'bg-clay'
 
 export const PAYMENT_METHOD_OPTIONS: PaymentMethod[] = ['va', 'transfer', 'qris']
 

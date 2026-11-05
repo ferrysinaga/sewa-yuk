@@ -6,6 +6,7 @@ import InteractiveMap from '../../components/map/InteractiveMap'
 import TenantSidebar from '../../components/map/TenantSidebar'
 import { useToast } from '../../components/ui/Toast'
 import { getBookingErrorMessage } from '../../lib/booking'
+import { sweepExpiredBookings } from '../../lib/bookingExpiry'
 import { createChannelName } from '../../lib/id'
 import { isSupabaseConfigured, supabase } from '../../lib/supabase'
 import { useAuthStore } from '../../store/useAuthStore'
@@ -120,6 +121,12 @@ export default function TenantEventView() {
     setBooths([])
 
     const loadEvent = async () => {
+      // Lepas reservasi kedaluwarsa sebelum membaca booth agar booth yang
+      // sudah bebas langsung tampil Available.
+      await sweepExpiredBookings()
+
+      if (cancelled) return
+
       const [blueprintResult, boothsResult] = await Promise.all([
         supabase.from('blueprints').select('*').eq('id', eventId).maybeSingle(),
         supabase.from('booths').select('*').eq('blueprint_id', eventId),

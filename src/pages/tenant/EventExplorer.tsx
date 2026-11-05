@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import AppHeader from '../../components/layout/AppHeader'
 import { getBlueprintErrorMessage } from '../../lib/blueprint'
+import { sweepExpiredBookings } from '../../lib/bookingExpiry'
 import { isSupabaseConfigured, supabase } from '../../lib/supabase'
 import type { BlueprintRow } from '../../types/blueprint'
 import type { BoothCategory, BoothStatus } from '../../types/booth'
@@ -63,6 +64,12 @@ export default function EventExplorer() {
 
     const loadEvents = async () => {
       try {
+        // Pastikan booking kedaluwarsa sudah dilepas agar hitungan booth
+        // tersedia pada kartu event tidak menampilkan reservasi basi.
+        await sweepExpiredBookings()
+
+        if (cancelled) return
+
         const [blueprintResult, boothResult] = await Promise.all([
           supabase
             .from('blueprints')

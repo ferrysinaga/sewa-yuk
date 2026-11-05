@@ -2,10 +2,14 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import AppHeader from '../../components/layout/AppHeader'
 import { useToast } from '../../components/ui/Toast'
-import { formatCurrency, formatDateTime, getBookingErrorMessage } from '../../lib/booking'
+import { formatCurrency, formatDateTime, getBookingErrorMessage, isExpiredBooking } from '../../lib/booking'
+import { sweepExpiredBookings } from '../../lib/bookingExpiry'
 import { createChannelName } from '../../lib/id'
 import { isSupabaseConfigured, supabase } from '../../lib/supabase'
 import {
+  BOOKING_EXPIRED_BADGE,
+  BOOKING_EXPIRED_DOT,
+  BOOKING_EXPIRED_LABEL,
   BOOKING_STATUS_BADGE,
   BOOKING_STATUS_DOT,
   BOOKING_STATUS_LABEL,
@@ -58,6 +62,7 @@ export default function AdminBookings() {
   const [eventFilter, setEventFilter] = useState('all')
   const [search, setSearch] = useState('')
   const [updatingId, setUpdatingId] = useState<string | null>(null)
+  const [refreshing, setRefreshing] = useState(false)
 
   useEffect(() => {
     let cancelled = false
@@ -72,6 +77,12 @@ export default function AdminBookings() {
     setError(null)
 
     const loadBookings = async () => {
+      // Lepas booking kedaluwarsa lebih dulu agar daftar dan status booth
+      // konsisten meskipun pg_cron belum aktif.
+      await sweepExpiredBookings()
+
+      if (cancelled) return
+
       const [bookingResult, blueprintResult] = await Promise.all([
         supabase.from('bookings').select('*').order('created_at', { ascending: false }),
         supabase.from('blueprints').select('id, name, venue, event_date, status'),
@@ -156,7 +167,9 @@ export default function AdminBookings() {
     const awaiting = bookings.filter(
       (booking) => booking.status === 'awaiting_confirmation',
     ).length
-    const pending = bookings.filter((booking) => booking.status === 'pending').length
+    const pending = bookings.filter(
+      (booking) => booking.status === 'pending' && !isExpiredBooking(booking),
+    ).length
     const confirmed = bookings.filter((booking) => booking.status === 'confirmed')
     const revenue = confirmed.reduce((sum, booking) => sum + booking.price, 0)
 
@@ -222,6 +235,26 @@ export default function AdminBookings() {
       showToast(`Gagal membatalkan pesanan: ${getBookingErrorMessage(cancelError)}`, 'error')
     } finally {
       setUpdatingId(null)
+    }
+  }
+
+  const handleRefresh = async () => {
+    if (refreshing) return
+
+    setRefreshing(true)
+
+    try {
+      const released = await sweepExpiredBookings()
+
+      if (released) {
+        showToast(
+          `${released} pesanan kedaluwarsa dibatalkan dan booth kembali tersedia.`,
+          'info',
+        )
+      }
+    } finally {
+      setRefreshing(false)
+      setReloadToken((token) => token + 1)
     }
   }
 
@@ -351,10 +384,11 @@ export default function AdminBookings() {
                 </div>
                 <button
                   type="button"
-                  onClick={() => setReloadToken((token) => token + 1)}
-                  className="inline-flex items-center gap-1.5 rounded-[8px] border border-line bg-surface px-3 py-2 text-xs font-semibold text-ink transition-colors hover:bg-canvas focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2"
+                  onClick={() => void handleRefresh()}
+                  disabled={refreshing}
+                  className="inline-flex items-center gap-1.5 rounded-[8px] border border-line bg-surface px-3 py-2 text-xs font-semibold text-ink transition-colors hover:bg-canvas focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  Muat ulang
+                  {refreshing ? 'Memperbarui…' : 'Perbarui status'}
                 </button>
               </div>
 
@@ -446,8 +480,20 @@ export default function AdminBookings() {
                     {filteredBookings.map((booking) => {
                       const event = blueprintById.get(booking.blueprint_id)
                       const isUpdating = updatingId === booking.id
-                      const canProcess =
-                        booking.status === 'pending' || booking.status === 'awaiting_confirmation'
+                      const expired = isExpiredBooking(booking)
+                      const canCancel =
+                        booking.status === 'pending' ||
+                        booking.status === 'awaiting_confirmation'
+                      const canConfirm = canCancel && !expired
+                      const statusLabel = expired
+                        ? BOOKING_EXPIRED_LABEL
+                        : BOOKING_STATUS_LABEL[booking.status]
+                      const statusBadge = expired
+                        ? BOOKING_EXPIRED_BADGE
+                        : BOOKING_STATUS_BADGE[booking.status]
+                      const statusDot = expired
+                        ? BOOKING_EXPIRED_DOT
+                        : BOOKING_STATUS_DOT[booking.status]
 
                       return (
                         <tr key={booking.id} className="transition-colors hover:bg-canvas">
@@ -488,12 +534,10 @@ export default function AdminBookings() {
                           </td>
                           <td className="whitespace-nowrap px-5 py-3.5">
                             <span
-                              className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold ring-1 ring-inset ${BOOKING_STATUS_BADGE[booking.status]}`}
+                              className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold ring-1 ring-inset ${statusBadge}`}
                             >
-                              <span
-                                className={`h-1.5 w-1.5 rounded-full ${BOOKING_STATUS_DOT[booking.status]}`}
-                              />
-                              {BOOKING_STATUS_LABEL[booking.status]}
+                              <span className={`h-1.5 w-1.5 rounded-full ${statusDot}`} />
+                              {statusLabel}
                             </span>
                           </td>
                           <td className="whitespace-nowrap px-5 py-3.5 text-[11px] text-muted">
@@ -501,16 +545,18 @@ export default function AdminBookings() {
                           </td>
                           <td className="whitespace-nowrap px-5 py-3.5">
                             <div className="flex items-center justify-end gap-2">
-                              {canProcess ? (
+                              {canCancel ? (
                                 <>
-                                  <button
-                                    type="button"
-                                    onClick={() => void handleConfirm(booking)}
-                                    disabled={isUpdating}
-                                    className="rounded-[8px] bg-pine px-3 py-1.5 text-[11px] font-semibold text-white transition-colors hover:bg-pine-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
-                                  >
-                                    {isUpdating ? 'Memproses…' : 'Konfirmasi'}
-                                  </button>
+                                  {canConfirm && (
+                                    <button
+                                      type="button"
+                                      onClick={() => void handleConfirm(booking)}
+                                      disabled={isUpdating}
+                                      className="rounded-[8px] bg-pine px-3 py-1.5 text-[11px] font-semibold text-white transition-colors hover:bg-pine-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+                                    >
+                                      {isUpdating ? 'Memproses…' : 'Konfirmasi'}
+                                    </button>
+                                  )}
                                   <button
                                     type="button"
                                     onClick={() => void handleCancel(booking)}

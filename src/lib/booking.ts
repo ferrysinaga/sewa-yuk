@@ -31,6 +31,34 @@ export function formatDate(value: string | null): string {
   return new Intl.DateTimeFormat('id-ID', { dateStyle: 'medium' }).format(date)
 }
 
+/**
+ * True bila batas pembayaran booking sudah lewat. Dipakai untuk menonaktifkan
+ * aksi "Saya sudah bayar" sebelum sweep server sempat membatalkan booking.
+ */
+export function isBookingExpired(booking: Pick<BookingRow, 'expires_at'>): boolean {
+  if (!booking.expires_at) return false
+
+  const expiresAt = new Date(booking.expires_at).getTime()
+
+  return !Number.isNaN(expiresAt) && expiresAt <= Date.now()
+}
+
+/**
+ * Booking dianggap kedaluwarsa bila sudah dibatalkan karena expired, atau
+ * masih pending tetapi batas pembayarannya sudah lewat (menunggu sweep).
+ * Booking awaiting_confirmation tidak ikut kedaluwarsa karena penyewa sudah
+ * menandai pembayaran dan menunggu verifikasi organizer.
+ */
+export function isExpiredBooking(
+  booking: Pick<BookingRow, 'status' | 'cancelled_reason' | 'expires_at'>,
+): boolean {
+  if (booking.status === 'cancelled') {
+    return booking.cancelled_reason === 'expired'
+  }
+
+  return booking.status === 'pending' && isBookingExpired(booking)
+}
+
 export function getBookingErrorMessage(error: unknown): string {
   const message = error instanceof Error ? error.message : String(error ?? '')
 
