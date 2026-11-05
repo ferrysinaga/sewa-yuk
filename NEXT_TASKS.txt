@@ -96,8 +96,11 @@ P0 - HARUS BERES SEBELUM QA DIJALANKAN
     file target; `tsc --noEmit` dan `vite build` lulus (warning chunk >500 kB
     tetap ada, dijadwalkan pada task 11).
 
-[ ] 4. Infrastruktur tes otomatis
-    File: package.json, vite.config.ts, file tes baru
+[x] 4. Infrastruktur tes otomatis
+    STATUS: SELESAI (5 November 2026)
+    File: package.json, vite.config.ts, playwright.config.ts,
+          src/lib/canvas.ts, src/test/setup.ts, src/**/*.test.ts,
+          e2e/smoke.spec.ts, e2e/sync.spec.ts, .env.e2e.example
     Rencana:
     - Tambah Vitest + @testing-library/react + jsdom
     - Script: "test", "test:watch", "test:coverage"
@@ -110,6 +113,19 @@ P0 - HARUS BERES SEBELUM QA DIJALANKAN
     - Tes E2E awal (2 browser context): SYNC-01, SYNC-02, SYNC-03
     Acceptance: "npm test" dan "npm run test:e2e" berjalan lokal; minimal
     skenario kritis di atas lulus.
+    Hasil: Vitest 5 + jsdom + Testing Library terpasang. Helper clamp,
+    snapToGrid, dan konstanta kanvas diekstrak ke src/lib/canvas.ts agar
+    dapat diuji tanpa mengubah perilaku drag-and-drop. 47 unit test lulus
+    (4 file): useBoothStore, canvas, lib/booking, lib/blueprint. Script
+    test, test:watch, test:coverage, dan test:e2e tersedia. Playwright
+    memakai Chromium, menjalankan dev server otomatis, dan memuat
+    .env.e2e. E2E smoke halaman login lulus; SYNC-01/02/03 memakai dua
+    browser context dan selector data-booth-id/data-booth-status, serta
+    otomatis dilewati dengan pesan jelas bila kredensial dua tenant,
+    event, dan booth belum diisi di .env.e2e. Verifikasi: npm test,
+    npm run test:coverage, npm run build, dan npm run test:e2e (1 lulus,
+    3 dilewati tanpa kredensial) berjalan. Catatan: SYNC perlu dijalankan
+    dengan akun uji nyata untuk membuktikan Realtime dan race condition.
 
 
 ===============================================================================

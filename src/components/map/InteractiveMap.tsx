@@ -542,6 +542,8 @@ export default function InteractiveMap({ activeCategory }: InteractiveMapProps) 
                 return (
                   <g
                     key={booth.id}
+                    data-booth-id={booth.id}
+                    data-booth-status={booth.status}
                     role="button"
                     tabIndex={0}
                     aria-pressed={isSelected}
