@@ -327,7 +327,7 @@ export default function TenantEventView() {
                 >
                   <span
                     className={`h-1.5 w-1.5 rounded-full ${
-                      blueprint.status === 'draft' ? 'bg-amber-500' : 'bg-gray-400'
+                      blueprint.status === 'draft' ? 'bg-clay' : 'bg-muted'
                     }`}
                   />
                   {role === 'organizer' ? 'Pratinjau organizer' : BLUEPRINT_STATUS_LABEL[blueprint.status]}

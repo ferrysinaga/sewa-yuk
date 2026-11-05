@@ -1,0 +1,194 @@
+DAFTAR TASK SELANJUTNYA - sewa-yuk
+Disusun dari gap analysis qa_checklist_test_plan.md vs kode aktual
+Status acuan commit: a1afc25
+Legenda prioritas: [P0] blocker QA / risiko data, [P1] penting, [P2] nice to have
+Centang [x] jika sudah selesai.
+
+CATATAN: Jangan mengubah routing, logika Supabase, logika Zustand, atau DnD
+yang sudah berjalan. Ikuti frontend.md (token warna, radius 6-10px, border tipis,
+tanpa gradient/blur/shadow tebal/emoji).
+
+
+===============================================================================
+P0 - HARUS BERES SEBELUM QA DIJALANKAN
+===============================================================================
+
+[x] 1. Sinkronkan qa_checklist_test_plan.md dengan aplikasi
+    STATUS: SELESAI (4 November 2026)
+    File: qa_checklist_test_plan.md
+    Perbaikan yang diperlukan:
+    - AUTH-01: tujuan setelah login admin adalah /admin (bukan /admin/dashboard)
+    - AUTH-04: logout ada di menu profil pada AppHeader (bukan sidebar admin)
+    - LAND-01: CTA hero menuju /event (bukan /events)
+    - DASH-01: buka /admin (bukan /admin/dashboard)
+    - MAP-02: status menggunakan warna + label teks; Reserved netral/dashed,
+      Booked abu-abu; bukan Reserved kuning
+    - MAP-03: sorotan booth memakai warna pine (isi + garis, bukan biru)
+    - MAP-02/03: booth tidak tersedia tetap bisa dipilih untuk inspeksi,
+      hanya tombol booking yang dinonaktifkan
+    - RESP-01: panel detail tampil di bawah peta (bukan bottom sheet),
+      atau putuskan untuk benar-benar membuat bottom sheet
+    - AUTH-03: tambahkan negative test tenant membuka /admin
+    Acceptance: seluruh route, warna, dan lokasi kontrol di dokumen cocok
+    dengan kode; tidak ada ekspektasi yang mustahil dipenuhi.
+    Hasil: dokumen naik ke versi 1.1.0. Route, label, dan warna sudah
+    disinkronkan; ditambah bagian 2.1 Konvensi Status Booth dan skenario
+    AUTH-05 (tenant membuka rute organizer). Contoh bug template juga
+    disesuaikan agar tidak lagi menyebut warna lama.
+
+[ ] 2. Booking expiry / auto-release booth
+    File: supabase/migrations/ (migrasi baru), src/pages/tenant/TenantBookings.tsx,
+          src/pages/admin/AdminBookings.tsx
+    Masalah: expires_at hanya ditampilkan, tidak pernah ditegakkan. Booking
+    pending menahan booth Reserved selamanya.
+    Rencana:
+    - Tambah RPC release_expired_bookings() yang:
+        * cari bookings status pending dengan expires_at < now()
+        * ubah status booking menjadi cancelled (alasan expired)
+        * ubah booth terkait dari Reserved menjadi Available
+        * gunakan FOR UPDATE agar aman dari race condition
+    - Jadwalkan via pg_cron (setiap 1-5 menit) atau panggil dari client
+      saat halaman bookings/event dibuka
+    - Tampilkan label "Kedaluwarsa" + tombol refresh status
+    - Pastikan realtime mengirim perubahan booth ke tenant lain
+    Acceptance: booking pending yang lewat batas otomatis cancelled dan
+    booth kembali Available tanpa intervensi manual.
+
+[x] 3. Redesign halaman yang belum mengikuti frontend.md
+    STATUS: SELESAI (5 November 2026)
+    File:
+    - src/pages/admin/BlueprintList.tsx
+    - src/pages/admin/AdminBookings.tsx
+    - src/pages/tenant/TenantBookings.tsx
+    - src/pages/admin/BlueprintEditor.tsx (bagian form metadata & tombol preview)
+    Ganti:
+    - bg-gray-50/60, bg-white, text-gray-*, border-gray-* -> token canvas,
+      surface, ink, muted, line
+    - blue-600/700, emerald, amber -> pine, pine-soft, clay, pine-dark
+    - rounded-xl / rounded-2xl -> rounded-[6px] / rounded-[8px] / rounded-[10px]
+    - shadow-sm / shadow-md / hover:shadow-md -> border tipis, tanpa shadow
+    - focus ring biru -> focus-visible:ring-pine
+    - skeleton animate-pulse -> placeholder statis (hormati reduced motion)
+    Acceptance: tidak ada lagi kelas blue-*/gray-*/rounded-2xl/shadow-* di
+    keempat file; tampilan konsisten dengan LandingPage & AdminDashboard.
+    Hasil: seluruh kelas lama pada 4 file sudah diganti token warm (canvas,
+    surface, ink, muted, line, pine, clay, unavailable), radius 6-10px, dan
+    border tipis. Loading skeleton diganti panel statis + spinner pine.
+    BlueprintImageUploader (bagian form metadata) dan konstanta badge/dot di
+    types/blueprint.ts & types/booking.ts ikut diselaraskan agar badge status
+    tidak lagi memakai amber/blue/emerald. Sisa pemakaian lama di AdminDashboard
+    dan TenantEventView juga dibersihkan. Verifikasi: tidak ada blue-*/gray-*/
+    emerald-*/amber-*/rounded-xl/rounded-2xl/shadow-*/animate-pulse di keempat
+    file target; `tsc --noEmit` dan `vite build` lulus (warning chunk >500 kB
+    tetap ada, dijadwalkan pada task 11).
+
+[ ] 4. Infrastruktur tes otomatis
+    File: package.json, vite.config.ts, file tes baru
+    Rencana:
+    - Tambah Vitest + @testing-library/react + jsdom
+    - Script: "test", "test:watch", "test:coverage"
+    - Tambah Playwright + script "test:e2e"
+    - Tes unit awal:
+        * useBoothStore: snap-to-grid, clamp batas kanvas, add/remove booth,
+          updateBoothDetails, updateBoothStatus
+        * lib/booking: formatCurrency, formatDateTime, getBookingErrorMessage
+        * lib/blueprint: isValidBlueprintId, slugifyBlueprintName
+    - Tes E2E awal (2 browser context): SYNC-01, SYNC-02, SYNC-03
+    Acceptance: "npm test" dan "npm run test:e2e" berjalan lokal; minimal
+    skenario kritis di atas lulus.
+
+
+===============================================================================
+P1 - PENTING
+===============================================================================
+
+[ ] 5. Ganti window.confirm dengan konfirmasi inline yang accessible
+    File: src/pages/admin/AdminBookings.tsx:197,
+          src/pages/tenant/TenantBookings.tsx:197
+    Pola acuan: src/components/map/BoothSidebar.tsx (role="alertdialog",
+    Escape untuk batal, autoFocus pada tombol Batal, aksi destruktif terpisah).
+    Acceptance: tidak ada window.confirm; keyboard dan screen reader bisa
+    membatalkan aksi.
+
+[ ] 6. Realtime booth INSERT/DELETE di kanvas tenant
+    File: src/pages/tenant/TenantEventView.tsx
+    Saat ini hanya menangani UPDATE. Tambahkan INSERT dan DELETE agar booth
+    yang ditambah/dihapus organizer langsung muncul/hilang (SYNC-01 penuh).
+    Acceptance: buka 2 tab; tambah/hapus booth di editor -> kanvas tenant
+    berubah tanpa reload.
+
+[ ] 7. Edit status booth di panel properti (EDIT-04 lanjutan)
+    File: src/components/map/BoothSidebar.tsx
+    Harga & kategori sudah bisa diedit; tambahkan select status
+    (Available/Reserved/Booked) memakai store updateBoothStatus, dengan
+    label teks + warna, bukan warna saja.
+    Acceptance: perubahan status langsung tercermin di kanvas dan tersimpan
+    saat "Simpan Perubahan Denah".
+
+[ ] 8. Optimasi render kanvas (PERF-01)
+    File: src/components/map/BlueprintCanvas.tsx, InteractiveMap.tsx
+    - Memoize komponen booth (React.memo) dan pisahkan seleksi dari data booth
+    - Hindari membuat ulang handler di dalam map
+    Acceptance: memilih/menggeser satu booth tidak me-render ulang semua booth;
+    tidak ada frame drop saat drag.
+
+[ ] 9. Audit aksesibilitas
+    - Pastikan setiap booth bisa dipilih via keyboard (Tab + Enter/Space)
+    - aria-label booth memuat kategori, harga, dan status
+    - Cek kontras WCAG AA untuk teks muted di atas canvas/surface
+    - Jalankan axe DevTools di Landing, /event/:id, /admin, /admin/bookings,
+      /bookings
+    Acceptance: tidak ada pelanggaran kontras/kontrol tanpa label; navigasi
+    keyboard menyeluruh.
+
+[ ] 10. Dokumentasi setup untuk tester
+    File: README.md (baru atau perluas)
+    Isi: prasyarat, env var Supabase, urutan migrasi, akun uji tenant/organizer,
+    data seed, cara menjalankan tes, dan daftar route aktual.
+    Acceptance: tester baru bisa menjalankan app + QA tanpa bertanya.
+
+
+===============================================================================
+P2 - KEBERSIHAN & CAKUPAN
+===============================================================================
+
+[ ] 11. Lazy-load route
+    File: src/App.tsx
+    Gunakan React.lazy + Suspense untuk halaman admin/tenant agar warning
+    chunk >500 kB hilang. Sertakan fallback loading yang tenang (tanpa pulse).
+
+[ ] 12. Perluas cakupan QA
+    Tambahkan suite yang belum ada di qa_checklist_test_plan.md:
+    - Publish / unpublish blueprint dan visibilitas draft ke tenant
+    - Filter & pencarian di EventExplorer
+    - Tandai sudah bayar dan batalkan booking (tenant)
+    - Verifikasi / tolak booking (organizer)
+    - Upload / hapus gambar denah
+    - Negative test RLS: tenant akses /admin, tenant baca blueprint draft,
+      anon mencoba update booth
+    - Skenario booking expiry setelah task P0 nomor 2 selesai
+
+[ ] 13. Kelola denah: hapus / ganti nama
+    File: src/pages/admin/BlueprintList.tsx
+    Saat ini hanya create + publish. Tambahkan hapus dengan konfirmasi inline
+    (menyebut jumlah booth dan booking terkait) serta edit nama/venue/tanggal.
+    Acceptance: aksi destruktif terpisah, ada konfirmasi, dan gagal dengan
+    pesan jelas bila masih ada booking aktif.
+
+[ ] 14. Bersihkan sisa kelas desain lama
+    Cari dan ganti sisa pemakaian blue-*/gray-*/emerald-*/amber-*/rounded-2xl/
+    shadow-* di src/ yang belum tercakup task 3.
+    Perintah bantu (PowerShell):
+      Select-String -Path src\**\*.tsx -Pattern 'bg-blue-|text-gray-|rounded-2xl|shadow-sm'
+    Acceptance: hasil pencarian kosong atau hanya untuk kasus yang disengaja.
+
+
+===============================================================================
+URUTAN EKSEKUSI YANG DISARANKAN
+===============================================================================
+1. Task 1 (QA doc) - cepat, mencegah bug palsu
+2. Task 3 (redesign 3 halaman) - dampak visual terbesar
+3. Task 2 (booking expiry) - risiko data
+4. Task 4 (infrastruktur tes)
+5. Task 5-10 (P1)
+6. Task 11-14 (P2)

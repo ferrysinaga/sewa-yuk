@@ -30,9 +30,9 @@ export const BLUEPRINT_STATUS_LABEL: Record<BlueprintStatus, string> = {
 }
 
 export const BLUEPRINT_STATUS_BADGE: Record<BlueprintStatus, string> = {
-  draft: 'bg-amber-50 text-amber-700 ring-amber-100',
-  published: 'bg-emerald-50 text-emerald-700 ring-emerald-100',
-  archived: 'bg-gray-100 text-gray-600 ring-gray-200',
+  draft: 'bg-clay-soft text-clay-dark ring-line',
+  published: 'bg-pine-soft text-pine-dark ring-line',
+  archived: 'bg-unavailable text-muted ring-line',
 }
 
 export function isBlueprintStatus(value: unknown): value is BlueprintStatus {
