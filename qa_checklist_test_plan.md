@@ -1,8 +1,8 @@
 # Dokumen Pengujian Kualitas (QA Checklist & Test Plan)
 **Proyek:** sewa-yuk — Platform Booking Booth Event Interaktif 2D
-**Versi:** 1.1.0
+**Versi:** 1.2.0
 **Stack Utama:** Vite, React, TypeScript, Tailwind CSS, Zustand, Supabase (Auth, DB, Realtime), `@dnd-kit/core`
-**Revisi terakhir:** 4 November 2026 — disinkronkan dengan route, warna, dan lokasi kontrol aktual (commit `a1afc25`).
+**Revisi terakhir:** 6 November 2026 — ditambah suite P2 (publikasi denah, filter/pencarian event, siklus booking, RLS negatif, expiry, gambar denah, dan pengelolaan denah).
 
 ---
 
@@ -93,6 +93,88 @@ diklik untuk diperiksa; hanya tombol pemesanan yang dinonaktifkan.
 | :--- | :--- | :--- | :--- | :---: |
 | **PERF-01** | Rendering Canvas Zustand | Lakukan drag/pilih booth berulang kali sambil memantau DevTools React. | Re-render hanya terjadi pada komponen terisolasi, tidak ada lag/frame-drop. | [ ] |
 | **RESP-01** | Tampilan Layar Ponsel | Buka halaman peta penyewa pada tampilan 375px (Mobile). | SVG dapat digeser/di-zoom (cubit, tombol zoom, atau Ctrl + scroll), legenda tetap terbaca, dan panel detail berpindah ke bawah peta (bukan *bottom sheet* melayang). Tombol pemesanan tetap dapat dijangkau tanpa scroll horizontal. | [ ] |
+
+---
+
+### TS-08: Publikasi, Visibilitas, dan Pengelolaan Denah
+| ID Skenario | Deskripsi Pengujian | Langkah Pengujian | Hasil yang Diharapkan | Status |
+| :--- | :--- | :--- | :--- | :---: |
+| **BLP-01** | Publikasi denah draft | Login organizer -> `/admin/blueprint` -> buat denah + minimal 1 booth -> klik **Publikasikan**. | Badge berubah menjadi *Dipublikasikan*, toast sukses muncul, dan denah tampil di `/event`. Tenant dapat membuka `/event/:id` dan memesan booth. | [ ] |
+| **BLP-02** | Unpublish / kembalikan ke draft | Dari `/admin/blueprint`, klik **Jadikan Draft** pada denah terpublikasi. | Denah hilang dari `/event`; akses langsung `/event/:id` sebagai tenant tidak menampilkan booth maupun data denah. REST API tenant untuk blueprint tersebut mengembalikan hasil kosong. | [ ] |
+| **BLP-03** | Denah baru default draft | Buat denah baru lewat tombol **Buat Denah Baru**, isi nama dan ID valid. | Denah tersimpan sebagai `draft`, tidak terlihat di `/event`, tetapi muncul di `/admin/blueprint` dan dapat disusun booth-nya. | [ ] |
+| **BLP-04** | Publish tanpa booth ditolak | Buat denah draft tanpa booth, lalu klik **Publikasikan**. | Muncul toast error "Tambahkan minimal satu booth…" dan status tetap `draft`. | [ ] |
+| **BLP-05** | Edit nama, venue, tanggal | Klik **Edit Detail** pada kartu denah, ubah nama/venue/tanggal, lalu **Simpan Detail**. | Perubahan tersimpan di Supabase, kartu langsung diperbarui, dan tetap sama setelah halaman dimuat ulang. ID denah/URL tidak berubah. | [ ] |
+| **BLP-06** | Hapus denah dengan konfirmasi inline | Klik **Hapus** pada denah tanpa booking aktif. | Panel `role="alertdialog"` muncul menyebut jumlah booth dan booking terkait. Tombol Batal menerima fokus awal, Escape menutup panel, dan konfirmasi menghapus denah beserta booth-nya. | [ ] |
+| **BLP-07** | Hapus denah dengan booking aktif ditolak | Buat booking `pending`/`awaiting_confirmation`/`confirmed` pada denah, lalu coba hapus denah. | Penghapusan dibatalkan dan muncul pesan jelas berisi jumlah booking aktif. Denah, booth, dan booking tetap utuh. | [ ] |
+| **BLP-08** | Hapus denah dengan riwayat booking selesai | Pastikan semua booking pada denah berstatus `cancelled`, lalu hapus denah. | Denah dan booth terhapus; baris booking tetap ada sebagai riwayat dengan `booth_id` menjadi `null`. | [ ] |
+
+---
+
+### TS-09: Penjelajahan Event — Filter & Pencarian
+| ID Skenario | Deskripsi Pengujian | Langkah Pengujian | Hasil yang Diharapkan | Status |
+| :--- | :--- | :--- | :--- | :---: |
+| **EXPL-01** | Filter kategori | Buka `/event` lalu klik filter **F&B**, **Teknologi**, atau **Pakaian**. | Hanya event yang memiliki booth pada kategori terpilih yang tampil; tombol filter aktif memakai `aria-pressed="true"`; teks jumlah berubah menjadi `X dari Y acara`. | [ ] |
+| **EXPL-02** | Pencarian nama/venue/deskripsi | Ketik kata kunci pada kolom **Cari nama event atau venue…**. | Daftar menyaring event secara case-insensitive berdasarkan nama, venue, deskripsi, atau kategori. Jumlah hasil ikut diperbarui. | [ ] |
+| **EXPL-03** | Kombinasi pencarian + kategori | Pilih satu kategori lalu ketik kata kunci yang hanya cocok pada kategori lain. | Hasil kosong karena filter diterapkan bersamaan. Reset mengembalikan seluruh event. | [ ] |
+| **EXPL-04** | Empty state pencarian | Ketik kata kunci yang tidak ada, misalnya `zzz-tidak-ada`. | Muncul pesan "Tidak ada event yang cocok…" dan tombol **Tampilkan semua acara** yang mereset pencarian dan kategori. | [ ] |
+| **EXPL-05** | Aksesibilitas kolom pencarian | Gunakan Tab menuju kolom pencarian dan filter, lalu operasikan dengan keyboard. | Kolom memiliki label aksesibel, fokus terlihat, dan seluruh kontrol dapat dioperasikan tanpa mouse. | [ ] |
+
+---
+
+### TS-10: Siklus Booking Penyewa
+| ID Skenario | Deskripsi Pengujian | Langkah Pengujian | Hasil yang Diharapkan | Status |
+| :--- | :--- | :--- | :--- | :---: |
+| **BOOK-01** | Buat booking | Login tenant -> `/event/:id` -> pilih booth `Available` -> **Pesan booth ini** -> pilih metode pembayaran -> konfirmasi. | Booking baru berstatus `pending` dengan kode `SWY-…` dan `expires_at` ±24 jam; booth berubah menjadi `Reserved` dan terlihat realtime di tab lain. | [ ] |
+| **BOOK-02** | Tandai sudah bayar | Di `/bookings`, buka booking `pending` lalu klik aksi **Sudah Bayar**. | Status berubah menjadi `awaiting_confirmation`; instruksi pembayaran berhenti ditampilkan; organizer melihat booking di `/admin/bookings`. | [ ] |
+| **BOOK-03** | Batalkan booking pending | Di `/bookings`, klik **Batalkan** pada booking `pending`, lalu konfirmasi lewat panel inline. | Status menjadi `cancelled`, booth kembali `Available`, dan perubahan terlihat realtime tanpa reload. Tombol Batal/Escape menutup panel tanpa mengubah data. | [ ] |
+| **BOOK-04** | Batalkan booking menunggu verifikasi | Batalkan booking `awaiting_confirmation` dari `/bookings`. | Booking menjadi `cancelled`, booth kembali `Available`, dan riwayat pembatalan tetap tampil. | [ ] |
+| **BOOK-05** | Booking confirmed tidak bisa dibatalkan tenant | Coba batalkan booking berstatus `confirmed`. | Aksi tidak tersedia atau ditolak dengan pesan jelas; status dan booth tidak berubah. | [ ] |
+| **BOOK-06** | Instruksi pembayaran | Buka booking `pending` untuk setiap metode (`va`, `transfer`, `qris`). | Instruksi sesuai metode tampil lengkap, termasuk kode/VA dan batas waktu; tidak ada data sensitif yang bocor ke tenant lain. | [ ] |
+
+---
+
+### TS-11: Verifikasi & Pembatalan Booking oleh Organizer
+| ID Skenario | Deskripsi Pengujian | Langkah Pengujian | Hasil yang Diharapkan | Status |
+| :--- | :--- | :--- | :--- | :---: |
+| **ADM-01** | Verifikasi booking | Login organizer -> `/admin/bookings` -> cari booking `awaiting_confirmation` -> klik **Verifikasi**. | Status menjadi `confirmed`, booth terkait menjadi `Booked`, toast sukses muncul, dan perubahan terlihat realtime di halaman tenant. | [ ] |
+| **ADM-02** | Tolak/batalkan booking | Pada booking `pending` atau `awaiting_confirmation`, klik **Batalkan** lalu konfirmasi lewat panel inline. | Status menjadi `cancelled`, booth kembali `Available`, dan tenant melihat status terbaru tanpa reload. Escape/Batal tidak mengubah data. | [ ] |
+| **ADM-03** | Booking confirmed tidak dapat dibatalkan organizer | Coba batalkan booking `confirmed`. | Aksi ditolak dengan pesan jelas dan status tetap `confirmed` (sesuai aturan RPC `cancel_booking`). | [ ] |
+| **ADM-04** | Filter dan pencarian booking | Gunakan filter status, filter event, dan kolom pencarian kode/nama/email tenant. | Hasil hanya menampilkan booking yang cocok; kombinasi filter bekerja bersamaan; empty state tampil jelas. | [ ] |
+| **ADM-05** | Ringkasan metrik | Amati kartu ringkasan setelah verifikasi/pembatalan. | Jumlah menunggu verifikasi, pending, confirmed, dan estimasi pendapatan berubah sesuai data terbaru. | [ ] |
+
+---
+
+### TS-12: Gambar Denah (Upload & Hapus)
+| ID Skenario | Deskripsi Pengujian | Langkah Pengujian | Hasil yang Diharapkan | Status |
+| :--- | :--- | :--- | :--- | :---: |
+| **IMG-01** | Upload gambar valid | Di editor denah, unggah `PNG`/`JPEG`/`WebP` berukuran < 5 MB, lalu simpan denah. | Pratinjau tampil, file tersimpan di bucket `blueprint-assets`, `image_url`/`image_path` terisi, dan gambar muncul di `/event` serta kartu `/admin/blueprint`. | [ ] |
+| **IMG-02** | Tolak file tidak valid | Coba unggah file > 5 MB atau tipe selain gambar yang diizinkan. | Upload ditolak dengan pesan jelas; gambar lama tidak berubah. | [ ] |
+| **IMG-03** | Ganti gambar | Unggah gambar baru lalu simpan. | Metadata menunjuk ke gambar baru dan file lama di Storage dihapus setelah penyimpanan berhasil. | [ ] |
+| **IMG-04** | Hapus gambar | Hapus gambar lewat kontrol uploader lalu simpan. | `image_url`/`image_path` menjadi `null`, kartu memakai placeholder denah, dan file di Storage terhapus. | [ ] |
+| **IMG-05** | Gagal upload tidak merusak data | Simulasikan jaringan gagal saat upload atau simpan. | Muncul pesan error, denah/booth lama tetap utuh, dan tidak ada file yatim baru. | [ ] |
+
+---
+
+### TS-13: Negative Test RLS & Otorisasi Database
+| ID Skenario | Deskripsi Pengujian | Langkah Pengujian | Hasil yang Diharapkan | Status |
+| :--- | :--- | :--- | :--- | :---: |
+| **RLS-01** | Tenant membuka rute organizer | Login tenant lalu akses `/admin`, `/admin/bookings`, dan `/admin/blueprint` via URL. | Dialihkan ke `/event`; tidak ada halaman admin yang dirender. | [ ] |
+| **RLS-02** | Tenant membaca blueprint draft | Dengan JWT tenant, panggil REST `GET /rest/v1/blueprints?id=eq.<draft-id>` memakai anon key + `Authorization: Bearer <tenant-jwt>`. | Respons `200` dengan array kosong (atau `404`), bukan data draft. | [ ] |
+| **RLS-03** | Anon mencoba update booth | Dengan anon key tanpa login, panggil `PATCH /rest/v1/booths?id=eq.<booth-id>` untuk mengubah `status`. | Ditolak `401/403` atau tidak ada baris yang terubah; status booth di DB tetap. | [ ] |
+| **RLS-04** | Anon mencoba insert booth | Dengan anon key, panggil `POST /rest/v1/booths`. | Ditolak `401/403`; tidak ada booth baru. | [ ] |
+| **RLS-05** | Tenant mengubah booking milik orang lain | Dengan JWT tenant A, panggil RPC `cancel_booking` memakai ID booking tenant B. | Ditolak dengan pesan "Anda tidak berhak…" dan booking tenant B tidak berubah. | [ ] |
+| **RLS-06** | Anon membaca booking | Dengan anon key, panggil `GET /rest/v1/bookings`. | Ditolak atau mengembalikan array kosong; tidak ada data tenant yang bocor. | [ ] |
+
+---
+
+### TS-14: Booking Expiry / Auto-Release
+| ID Skenario | Deskripsi Pengujian | Langkah Pengujian | Hasil yang Diharapkan | Status |
+| :--- | :--- | :--- | :--- | :---: |
+| **EXP-01** | Sweep booking kedaluwarsa | Buat booking `pending`, lalu di SQL Editor set `expires_at = now() - interval '1 minute'`, kemudian buka `/bookings` atau klik **Perbarui status**. | Booking menjadi `cancelled` dengan `cancelled_reason='expired'`; booth terkait kembali `Available` dan perubahan terlihat realtime. | [ ] |
+| **EXP-02** | Tampilan kedaluwarsa | Amati booking yang sudah melewati `expires_at` sebelum/sesudah sweep. | Badge **Kedaluwarsa** tampil, tombol bayar nonaktif, dan instruksi pembayaran tidak lagi ditawarkan. | [ ] |
+| **EXP-03** | Bayar setelah kedaluwarsa ditolak | Panggil `mark_booking_paid` pada booking `pending` yang sudah lewat `expires_at`. | RPC menolak dengan pesan jelas; status booking tidak berubah menjadi `awaiting_confirmation`. | [ ] |
+| **EXP-04** | Verifikasi setelah kedaluwarsa ditolak | Panggil `confirm_booking` pada booking `pending` yang sudah lewat `expires_at`. | RPC menolak dan booth tidak berubah menjadi `Booked`. | [ ] |
+| **EXP-05** | Sweep bersamaan aman | Jalankan `release_expired_bookings()` dua kali bersamaan pada data yang sama. | Tidak ada error race condition/duplikasi; hanya satu proses yang mengubah booking dan melepas booth. | [ ] |
 
 ---
 

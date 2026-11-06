@@ -222,35 +222,61 @@ P1 - PENTING
 P2 - KEBERSIHAN & CAKUPAN
 ===============================================================================
 
-[ ] 11. Lazy-load route
+[x] 11. Lazy-load route
+    STATUS: SELESAI (6 November 2026)
     File: src/App.tsx
-    Gunakan React.lazy + Suspense untuk halaman admin/tenant agar warning
-    chunk >500 kB hilang. Sertakan fallback loading yang tenang (tanpa pulse).
+    Seluruh halaman (Landing, Login, Register, admin, tenant) dimuat dengan
+    React.lazy dan dibungkus satu Suspense. Fallback RouteFallback berupa
+    panel statis role="status" aria-live="polite" tanpa animate-pulse.
+    Hasil build: warning chunk >500 kB hilang; chunk utama turun menjadi
+    484,29 kB dan halaman terpecah 0,35-82,49 kB (BlueprintEditor terbesar).
 
-[ ] 12. Perluas cakupan QA
-    Tambahkan suite yang belum ada di qa_checklist_test_plan.md:
-    - Publish / unpublish blueprint dan visibilitas draft ke tenant
-    - Filter & pencarian di EventExplorer
-    - Tandai sudah bayar dan batalkan booking (tenant)
-    - Verifikasi / tolak booking (organizer)
-    - Upload / hapus gambar denah
-    - Negative test RLS: tenant akses /admin, tenant baca blueprint draft,
-      anon mencoba update booth
-    - Skenario booking expiry setelah task P0 nomor 2 selesai
+[x] 12. Perluas cakupan QA
+    STATUS: SELESAI (6 November 2026)
+    File: qa_checklist_test_plan.md, src/pages/tenant/EventExplorer.tsx
+    Dokumen naik ke versi 1.2.0 dan menambah suite:
+    - TS-08 BLP-01..08: publish/unpublish, draft tersembunyi, publish tanpa
+      booth ditolak, edit detail, hapus dengan konfirmasi, blokir booking
+      aktif, dan penghapusan dengan riwayat.
+    - TS-09 EXPL-01..05: filter kategori dan pencarian EventExplorer.
+      Kolom pencarian (nama/venue/deskripsi/kategori) ditambahkan agar suite
+      sesuai dengan fitur aktual, termasuk empty state + reset.
+    - TS-10 BOOK-01..06: buat booking, tandai bayar, batalkan (pending dan
+      awaiting_confirmation), larangan batal confirmed, instruksi bayar.
+    - TS-11 ADM-01..05: verifikasi, tolak/batalkan, larangan batal confirmed,
+      filter/pencarian, dan metrik.
+    - TS-12 IMG-01..05: upload/ganti/hapus gambar denah, validasi file, dan
+      kegagalan jaringan.
+    - TS-13 RLS-01..06: tenant /admin, tenant baca draft, anon update/insert
+      booth, tenant ubah booking orang lain, anon baca bookings.
+    - TS-14 EXP-01..05: sweep expiry, badge kedaluwarsa, penolakan bayar/
+      verifikasi setelah expiry, dan sweep bersamaan.
+    Catatan: suite baru adalah checklist manual dengan data Supabase nyata;
+    tes otomatis yang ada tetap berjalan tanpa kredensial.
 
-[ ] 13. Kelola denah: hapus / ganti nama
+[x] 13. Kelola denah: hapus / ganti nama
+    STATUS: SELESAI (6 November 2026)
     File: src/pages/admin/BlueprintList.tsx
-    Saat ini hanya create + publish. Tambahkan hapus dengan konfirmasi inline
-    (menyebut jumlah booth dan booking terkait) serta edit nama/venue/tanggal.
-    Acceptance: aksi destruktif terpisah, ada konfirmasi, dan gagal dengan
-    pesan jelas bila masih ada booking aktif.
+    Daftar denah kini memuat ringkasan booking per blueprint. Setiap kartu
+    punya tombol Edit Detail (inline form nama, venue, tanggal) dan Hapus.
+    Hapus memakai InlineConfirm role="alertdialog" yang menyebut jumlah booth
+    dan booking terkait, dengan Batal/Escape dan pengembalian fokus. Denah
+    dengan booking aktif (pending/awaiting_confirmation/confirmed) ditolak
+    dengan pesan jelas. Bila aman, booth dihapus lebih dulu lalu blueprint;
+    booking selesai/dibatalkan tetap tersimpan sebagai riwayat dan booth_id
+    menjadi null lewat ON DELETE SET NULL. ID denah tidak diubah agar URL
+    event tetap stabil.
 
-[ ] 14. Bersihkan sisa kelas desain lama
-    Cari dan ganti sisa pemakaian blue-*/gray-*/emerald-*/amber-*/rounded-2xl/
-    shadow-* di src/ yang belum tercakup task 3.
-    Perintah bantu (PowerShell):
-      Select-String -Path src\**\*.tsx -Pattern 'bg-blue-|text-gray-|rounded-2xl|shadow-sm'
-    Acceptance: hasil pencarian kosong atau hanya untuk kasus yang disengaja.
+[x] 14. Bersihkan sisa kelas desain lama
+    STATUS: SELESAI (6 November 2026)
+    File: src/components/ui/Toast.tsx,
+          src/components/map/BlueprintWorkspace.tsx,
+          src/components/checkout/CheckoutModal.tsx
+    Sisa shadow-md (toast), shadow-lg (drag overlay palette), dan shadow-xl
+    (modal checkout) dihapus; panel tetap memakai border tipis dan radius
+    6-10px. Pencarian ulang untuk blue-*/gray-*/emerald-*/amber-*/
+    rounded-xl/rounded-2xl/rounded-3xl/shadow-*/animate-pulse/gradient/blur
+    di src/ tidak menemukan sisa pemakaian.
 
 
 ===============================================================================

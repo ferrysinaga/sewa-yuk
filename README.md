@@ -258,7 +258,9 @@ Audit aksesibilitas mencakup:
 ## 10. Alur QA singkat
 
 1. Login organizer → buka `/admin/blueprint/hall-a` → tambah/geser booth →
-   ubah status lewat panel properti → **Simpan Perubahan Denah**.
+   ubah status lewat panel properti → **Simpan Perubahan Denah**. Dari
+   `/admin/blueprint`, gunakan **Edit Detail** untuk nama/venue/tanggal atau
+   **Hapus** (konfirmasi inline) bila tidak ada booking aktif.
 2. Buka `/event/hall-a` di dua tab tenant berbeda. Tambah/hapus booth di
    editor organizer; kanvas kedua tab harus berubah tanpa reload.
 3. Dari tab tenant, pilih booth → **Pesan booth ini** → buat pesanan. Booth
@@ -283,6 +285,7 @@ Audit aksesibilitas mencakup:
 | Login berhasil tetapi diarahkan ke halaman salah | `user_metadata.role` salah | Perbaiki role, logout, login ulang |
 | Tenant tidak bisa membuka `/admin` | Memang dibatasi | Gunakan akun organizer |
 | Booth tidak muncul di `/event` | Blueprint masih `draft` | Publikasikan lewat `/admin/blueprint` |
+| Denah tidak bisa dihapus | Masih ada booking aktif | Selesaikan atau batalkan booking terkait di `/admin/bookings` |
 | Perubahan booth tidak realtime | Realtime belum aktif | Aktifkan `booths` dan `bookings` di Database → Replication |
 | E2E SYNC dilewati | `.env.e2e` belum lengkap | Isi semua variabel dan sediakan booth `Available` |
 | `npm` ditolak di PowerShell | Execution policy | Gunakan `npm.cmd` |
@@ -293,7 +296,8 @@ Audit aksesibilitas mencakup:
   sudah berjalan tanpa alasan kuat.
 - Ikuti `frontend.md`: token warna warm, radius 6–10px, border tipis, tanpa
   gradient/blur/shadow tebal/emoji.
-- Peringatan ukuran chunk >500 kB masih muncul saat build; optimasi
-  lazy-load route dijadwalkan pada task P2 berikutnya.
+- Route sudah di-lazy-load per halaman sehingga bundle awal berada di bawah
+  ambang peringatan 500 kB. Jika menambah dependensi besar, pantau kembali
+  ukuran chunk saat build.
 - Error boundary belum disediakan secara global; kegagalan data ditampilkan
   sebagai panel error di tiap halaman.
