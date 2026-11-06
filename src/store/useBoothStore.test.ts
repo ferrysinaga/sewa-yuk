@@ -37,6 +37,7 @@ function resetStore() {
     blueprintImageUrl: null,
     isDirty: false,
     deletedBoothIds: [],
+    boothStatusBaseline: {},
   })
 }
 
@@ -263,6 +264,7 @@ describe('loadBlueprint dan markSaved', () => {
     expect(state.booths).toEqual([])
     expect(state.isDirty).toBe(false)
     expect(state.deletedBoothIds).toEqual([])
+    expect(state.boothStatusBaseline).toEqual({})
   })
 
   it('menghapus penanda kotor dan daftar booth terhapus setelah disimpan', () => {
@@ -275,6 +277,21 @@ describe('loadBlueprint dan markSaved', () => {
     const state = useBoothStore.getState()
     expect(state.isDirty).toBe(false)
     expect(state.deletedBoothIds).toEqual([])
+  })
+
+  it('memperbarui baseline status hanya setelah denah disimpan', () => {
+    const booth = createBooth()
+
+    useBoothStore.getState().addBooth(booth)
+    useBoothStore.getState().markSaved()
+    expect(useBoothStore.getState().boothStatusBaseline[booth.id]).toBe('Available')
+
+    useBoothStore.getState().updateBoothStatus(booth.id, 'Booked')
+    useBoothStore.getState().markDirty()
+    expect(useBoothStore.getState().boothStatusBaseline[booth.id]).toBe('Available')
+
+    useBoothStore.getState().markSaved()
+    expect(useBoothStore.getState().boothStatusBaseline[booth.id]).toBe('Booked')
   })
 })
 

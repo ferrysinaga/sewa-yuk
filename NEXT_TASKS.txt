@@ -132,50 +132,90 @@ P0 - HARUS BERES SEBELUM QA DIJALANKAN
 P1 - PENTING
 ===============================================================================
 
-[ ] 5. Ganti window.confirm dengan konfirmasi inline yang accessible
-    File: src/pages/admin/AdminBookings.tsx:197,
-          src/pages/tenant/TenantBookings.tsx:197
-    Pola acuan: src/components/map/BoothSidebar.tsx (role="alertdialog",
-    Escape untuk batal, autoFocus pada tombol Batal, aksi destruktif terpisah).
-    Acceptance: tidak ada window.confirm; keyboard dan screen reader bisa
-    membatalkan aksi.
+[x] 5. Ganti window.confirm dengan konfirmasi inline yang accessible
+    STATUS: SELESAI (6 November 2026)
+    File: src/components/ui/InlineConfirm.tsx (baru),
+          src/pages/admin/AdminBookings.tsx,
+          src/pages/tenant/TenantBookings.tsx, e2e/sync.spec.ts
+    Komponen InlineConfirm memakai role="alertdialog", aria-labelledby/
+    aria-describedby, autoFocus pada tombol Batal, Escape untuk batal, focus
+    trap Tab/Shift+Tab, dan mengembalikan fokus ke pemicu saat ditutup.
+    AdminBookings menampilkan baris konfirmasi di bawah baris pesanan;
+    TenantBookings menampilkan panel di footer kartu. Keduanya memakai
+    aria-expanded/aria-controls dengan id unik. Tidak ada lagi
+    window.confirm di src/. E2E SYNC menutup konfirmasi lewat
+    getByRole('alertdialog').
 
-[ ] 6. Realtime booth INSERT/DELETE di kanvas tenant
-    File: src/pages/tenant/TenantEventView.tsx
-    Saat ini hanya menangani UPDATE. Tambahkan INSERT dan DELETE agar booth
-    yang ditambah/dihapus organizer langsung muncul/hilang (SYNC-01 penuh).
-    Acceptance: buka 2 tab; tambah/hapus booth di editor -> kanvas tenant
-    berubah tanpa reload.
+[x] 6. Realtime booth INSERT/DELETE di kanvas tenant
+    STATUS: SELESAI (6 November 2026)
+    File: src/pages/tenant/TenantEventView.tsx, src/store/useBoothStore.ts
+    Langganan diubah dari event UPDATE menjadi '*'. Payload INSERT/UPDATE
+    yang lengkap dipetakan lewat mapRowToBooth dan dimasukkan dengan
+    upsertRealtimeBooth; DELETE memanggil removeRealtimeBooth. Baris parsial
+    tetap fallback ke updateBoothStatus. Kedua aksi realtime tidak menandai
+    isDirty, tidak menambah deletedBoothIds, dan tidak mengubah pilihan aktif.
+    Toast "booth dikunci penyewa lain" dipertahankan khusus UPDATE dari
+    Available ke status terisi. Unit test baru mencakup kedua aksi.
+    Catatan: verifikasi 2 tab dengan Supabase nyata menunggu kredensial
+    .env.e2e; skenario SYNC-01/02/03 sudah tersedia dan otomatis dilewati
+    tanpa kredensial.
 
-[ ] 7. Edit status booth di panel properti (EDIT-04 lanjutan)
-    File: src/components/map/BoothSidebar.tsx
-    Harga & kategori sudah bisa diedit; tambahkan select status
-    (Available/Reserved/Booked) memakai store updateBoothStatus, dengan
-    label teks + warna, bukan warna saja.
-    Acceptance: perubahan status langsung tercermin di kanvas dan tersimpan
-    saat "Simpan Perubahan Denah".
+[x] 7. Edit status booth di panel properti (EDIT-04 lanjutan)
+    STATUS: SELESAI (6 November 2026)
+    File: src/components/map/BoothSidebar.tsx,
+          src/pages/admin/BlueprintEditor.tsx, src/store/useBoothStore.ts
+    Panel properti menambah select status Available/Reserved/Booked dengan
+    label teks Indonesia + hint, memakai updateBoothStatus lalu markDirty agar
+    kanvas langsung berubah dan denah ditandai belum disimpan. Kelas lama
+    gray/blue/rounded-xl/shadow dibersihkan. Saat menyimpan, payload upsert
+    utama sengaja tetap tanpa status; status hanya dikirim terpisah untuk
+    booth yang benar-benar diubah organizer, sehingga status Reserved/Booked
+    dari penyewa tidak tertimpa. Baseline status disimpan di store
+    (boothStatusBaseline) dan diperbarui saat load/save, sehingga tetap benar
+    walau editor ditutup-buka dengan perubahan belum disimpan.
 
-[ ] 8. Optimasi render kanvas (PERF-01)
-    File: src/components/map/BlueprintCanvas.tsx, InteractiveMap.tsx
-    - Memoize komponen booth (React.memo) dan pisahkan seleksi dari data booth
-    - Hindari membuat ulang handler di dalam map
-    Acceptance: memilih/menggeser satu booth tidak me-render ulang semua booth;
-    tidak ada frame drop saat drag.
+[x] 8. Optimasi render kanvas (PERF-01)
+    STATUS: SELESAI (6 November 2026)
+    File: src/components/map/InteractiveMap.tsx,
+          src/components/map/BlueprintCanvas.tsx
+    Booth tenant diekstrak menjadi TenantBooth yang dibungkus React.memo,
+    memilih seleksi lewat selector Zustand per booth, dan memakai useCallback
+    untuk handler pilih/Enter/Space/Escape. BoothRect di editor sudah memo dan
+    kini punya handler keyboard stabil yang tetap meneruskan event ke sensor
+    keyboard dnd-kit. Handler tidak lagi dibuat ulang di dalam map.
 
-[ ] 9. Audit aksesibilitas
-    - Pastikan setiap booth bisa dipilih via keyboard (Tab + Enter/Space)
-    - aria-label booth memuat kategori, harga, dan status
-    - Cek kontras WCAG AA untuk teks muted di atas canvas/surface
-    - Jalankan axe DevTools di Landing, /event/:id, /admin, /admin/bookings,
-      /bookings
-    Acceptance: tidak ada pelanggaran kontras/kontrol tanpa label; navigasi
-    keyboard menyeluruh.
+[x] 9. Audit aksesibilitas
+    STATUS: SELESAI (6 November 2026)
+    File: e2e/a11y.spec.ts (baru), src/components/map/*, src/pages/landing/*,
+          src/components/layout/AppHeader.tsx, package.json,
+          .env.e2e.example
+    Setiap booth di Landing, kanvas tenant, dan editor dapat dipilih dengan
+    Tab + Enter/Space dan dilepas dengan Escape. aria-label memuat kategori,
+    status, harga (dan ukuran di editor). axe-core dijalankan lewat
+    @axe-core/playwright dengan tag WCAG 2.0/2.1 A/AA untuk Landing, /event,
+    /event/:id, /admin, /admin/bookings, dan /bookings. Pelanggaran
+    label-content-name-mismatch diperbaiki dengan memisahkan text node SVG
+    dan menyelaraskan urutan aria-label; kontras diperiksa oleh rule axe.
+    A11Y-01 (Landing) dan A11Y-02 (/event) lulus. A11Y-03 s.d. A11Y-06 dan
+    audit route terautentikasi otomatis dilewati dengan pesan jelas sampai
+    E2E_EVENT_ID serta kredensial organizer/tenant diisi di .env.e2e.
+    .env.e2e.example sudah memuat E2E_ORGANIZER_EMAIL/PASSWORD.
 
-[ ] 10. Dokumentasi setup untuk tester
-    File: README.md (baru atau perluas)
-    Isi: prasyarat, env var Supabase, urutan migrasi, akun uji tenant/organizer,
-    data seed, cara menjalankan tes, dan daftar route aktual.
-    Acceptance: tester baru bisa menjalankan app + QA tanpa bertanya.
+[x] 10. Dokumentasi setup untuk tester
+    STATUS: SELESAI (6 November 2026)
+    File: README.md (baru), supabase/seed.sql (baru),
+          .env.e2e.example
+    README memuat prasyarat Node, instalasi, env Supabase, urutan 7 migrasi,
+    aktivasi Realtime/Storage/pg_cron, pembuatan akun organizer + 2 tenant
+    beserta perbaikan role di user_metadata, seed booth hall-a, perintah tes
+    unit/coverage/build/E2E/axe, variabel .env.e2e, tabel route aktual,
+    alur QA singkat, dan troubleshooting. seed.sql menambah 6 booth contoh
+    idempoten pada hall-a dengan UUID tetap yang bisa dipakai sebagai
+    E2E_BOOTH_ID.
+    Verifikasi P1: tsc --noEmit lulus, 51 unit test lulus, test:coverage
+    lulus tanpa threshold, build lulus (warning chunk >500 kB tetap ada,
+    dijadwalkan task 11), dan test:e2e lulus (3 lulus, 7 dilewati tanpa
+    kredensial).
 
 
 ===============================================================================
