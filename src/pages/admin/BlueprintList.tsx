@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import AppHeader from '../../components/layout/AppHeader'
+import InlineConfirm from '../../components/ui/InlineConfirm'
 import { useToast } from '../../components/ui/Toast'
 import {
   getBlueprintErrorMessage,
@@ -13,6 +14,7 @@ import {
   BLUEPRINT_STATUS_LABEL,
 } from '../../types/blueprint'
 import type { BlueprintRow, BlueprintStatus } from '../../types/blueprint'
+import type { BookingStatus } from '../../types/booking'
 import type { BoothStatus } from '../../types/booth'
 
 interface BoothSummaryRow {
@@ -20,10 +22,29 @@ interface BoothSummaryRow {
   status: BoothStatus
 }
 
+interface BookingSummaryRow {
+  blueprint_id: string
+  status: BookingStatus
+}
+
 interface BlueprintSummary extends BlueprintRow {
   totalBooths: number
   availableBooths: number
+  totalBookings: number
+  activeBookings: number
 }
+
+interface EditDraft {
+  name: string
+  venue: string
+  eventDate: string
+}
+
+const ACTIVE_BOOKING_STATUSES: BookingStatus[] = [
+  'pending',
+  'awaiting_confirmation',
+  'confirmed',
+]
 
 function getCreateFormError(name: string, id: string) {
   if (!name.trim()) return 'Nama denah wajib diisi.'
@@ -40,10 +61,22 @@ export default function BlueprintList() {
 
   const [blueprints, setBlueprints] = useState<BlueprintRow[]>([])
   const [booths, setBooths] = useState<BoothSummaryRow[]>([])
+  const [bookings, setBookings] = useState<BookingSummaryRow[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [reloadToken, setReloadToken] = useState(0)
   const [updatingIds, setUpdatingIds] = useState<string[]>([])
+
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [editDraft, setEditDraft] = useState<EditDraft>({
+    name: '',
+    venue: '',
+    eventDate: '',
+  })
+  const [editError, setEditError] = useState<string | null>(null)
+  const [savingEditId, setSavingEditId] = useState<string | null>(null)
+  const [confirmingDeleteId, setConfirmingDeleteId] = useState<string | null>(null)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
 
   const [showCreate, setShowCreate] = useState(false)
   const [creating, setCreating] = useState(false)
@@ -68,12 +101,13 @@ export default function BlueprintList() {
     setError(null)
 
     const loadBlueprints = async () => {
-      const [blueprintResult, boothResult] = await Promise.all([
+      const [blueprintResult, boothResult, bookingResult] = await Promise.all([
         supabase
           .from('blueprints')
           .select('id, name, venue, event_date, description, status, image_url, image_path')
           .order('created_at', { ascending: false }),
         supabase.from('booths').select('blueprint_id, status'),
+        supabase.from('bookings').select('blueprint_id, status'),
       ])
 
       if (cancelled) return
@@ -90,8 +124,15 @@ export default function BlueprintList() {
         return
       }
 
+      if (bookingResult.error) {
+        setError(getBlueprintErrorMessage(bookingResult.error))
+        setLoading(false)
+        return
+      }
+
       setBlueprints((blueprintResult.data ?? []) as BlueprintRow[])
       setBooths((boothResult.data ?? []) as BoothSummaryRow[])
+      setBookings((bookingResult.data ?? []) as BookingSummaryRow[])
       setLoading(false)
     }
 
@@ -106,14 +147,21 @@ export default function BlueprintList() {
     () =>
       blueprints.map((blueprint) => {
         const eventBooths = booths.filter((booth) => booth.blueprint_id === blueprint.id)
+        const eventBookings = bookings.filter(
+          (booking) => booking.blueprint_id === blueprint.id,
+        )
 
         return {
           ...blueprint,
           totalBooths: eventBooths.length,
           availableBooths: eventBooths.filter((booth) => booth.status === 'Available').length,
+          totalBookings: eventBookings.length,
+          activeBookings: eventBookings.filter((booking) =>
+            ACTIVE_BOOKING_STATUSES.includes(booking.status),
+          ).length,
         }
       }),
-    [blueprints, booths],
+    [blueprints, bookings, booths],
   )
 
   const publishedCount = summaries.filter((blueprint) => blueprint.status === 'published').length
@@ -214,6 +262,119 @@ export default function BlueprintList() {
       showToast(`Gagal mengubah status denah: ${getBlueprintErrorMessage(updateError)}`, 'error')
     } finally {
       setUpdatingIds((current) => current.filter((id) => id !== blueprint.id))
+    }
+  }
+
+  const startEdit = (blueprint: BlueprintSummary) => {
+    setEditingId(blueprint.id)
+    setEditDraft({
+      name: blueprint.name,
+      venue: blueprint.venue ?? '',
+      eventDate: blueprint.event_date ?? '',
+    })
+    setEditError(null)
+    setConfirmingDeleteId(null)
+  }
+
+  const cancelEdit = () => {
+    setEditingId(null)
+    setEditError(null)
+  }
+
+  const handleSaveEdit = async (blueprint: BlueprintSummary) => {
+    const nextName = editDraft.name.trim()
+
+    if (!nextName) {
+      setEditError('Nama denah wajib diisi.')
+      return
+    }
+
+    if (!isSupabaseConfigured) {
+      setEditError('Supabase belum dikonfigurasi. Tidak dapat menyimpan perubahan.')
+      return
+    }
+
+    setSavingEditId(blueprint.id)
+    setEditError(null)
+
+    try {
+      const nextVenue = editDraft.venue.trim() || null
+      const nextEventDate = editDraft.eventDate.trim() || null
+
+      const { error: updateError } = await supabase
+        .from('blueprints')
+        .update({
+          name: nextName,
+          venue: nextVenue,
+          event_date: nextEventDate,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', blueprint.id)
+
+      if (updateError) throw updateError
+
+      setBlueprints((current) =>
+        current.map((row) =>
+          row.id === blueprint.id
+            ? { ...row, name: nextName, venue: nextVenue, event_date: nextEventDate }
+            : row,
+        ),
+      )
+      setEditingId(null)
+      showToast(`Detail denah "${nextName}" berhasil diperbarui.`, 'success')
+    } catch (saveError) {
+      setEditError(getBlueprintErrorMessage(saveError))
+    } finally {
+      setSavingEditId(null)
+    }
+  }
+
+  const handleDelete = async (blueprint: BlueprintSummary) => {
+    if (deletingId) return
+
+    if (!isSupabaseConfigured) {
+      showToast('Supabase belum dikonfigurasi. Tidak dapat menghapus denah.', 'error')
+      return
+    }
+
+    if (blueprint.activeBookings > 0) {
+      setConfirmingDeleteId(null)
+      showToast(
+        `Denah "${blueprint.name}" masih memiliki ${blueprint.activeBookings} booking aktif. Selesaikan atau batalkan booking tersebut sebelum menghapus denah.`,
+        'error',
+      )
+      return
+    }
+
+    setDeletingId(blueprint.id)
+
+    try {
+      // Booth dihapus lebih dulu agar tidak menjadi data yatim. Booking yang
+      // sudah selesai/dibatalkan tetap tersimpan sebagai riwayat; booth_id
+      // pada booking otomatis menjadi null lewat ON DELETE SET NULL.
+      const { error: boothDeleteError } = await supabase
+        .from('booths')
+        .delete()
+        .eq('blueprint_id', blueprint.id)
+
+      if (boothDeleteError) throw boothDeleteError
+
+      const { error: blueprintDeleteError } = await supabase
+        .from('blueprints')
+        .delete()
+        .eq('id', blueprint.id)
+
+      if (blueprintDeleteError) throw blueprintDeleteError
+
+      setBlueprints((current) => current.filter((row) => row.id !== blueprint.id))
+      setBooths((current) => current.filter((row) => row.blueprint_id !== blueprint.id))
+      setConfirmingDeleteId(null)
+      if (editingId === blueprint.id) cancelEdit()
+      showToast(`Denah "${blueprint.name}" beserta booth di dalamnya berhasil dihapus.`, 'success')
+    } catch (deleteError) {
+      showToast(`Gagal menghapus denah: ${getBlueprintErrorMessage(deleteError)}`, 'error')
+    } finally {
+      setDeletingId(null)
     }
   }
 
@@ -504,18 +665,125 @@ export default function BlueprintList() {
                     </div>
                   )}
 
-                  <h2 className="mt-3 text-base font-semibold text-ink">{blueprint.name}</h2>
-                  <p className="mt-1 text-xs text-muted">
-                    {blueprint.venue || 'Venue belum diatur'}
-                  </p>
-                  <p className="mt-0.5 text-xs text-muted">
-                    {blueprint.event_date || 'Tanggal belum diatur'}
-                  </p>
+                  {editingId === blueprint.id ? (
+                    <div
+                      id={`edit-form-${blueprint.id}`}
+                      className="mt-3 rounded-[8px] border border-line bg-canvas p-3"
+                    >
+                      <p className="text-xs font-semibold text-ink">Edit detail denah</p>
+                      <p className="mt-1 text-[11px] leading-relaxed text-muted">
+                        ID denah tetap <span className="font-mono">{blueprint.id}</span> agar tautan
+                        event tidak berubah.
+                      </p>
 
-                  {blueprint.description && (
-                    <p className="mt-2 line-clamp-2 text-xs leading-relaxed text-muted">
-                      {blueprint.description}
-                    </p>
+                      <div className="mt-3 space-y-2.5">
+                        <div>
+                          <label
+                            htmlFor={`edit-name-${blueprint.id}`}
+                            className="text-[11px] font-medium text-ink"
+                          >
+                            Nama denah
+                          </label>
+                          <input
+                            id={`edit-name-${blueprint.id}`}
+                            type="text"
+                            value={editDraft.name}
+                            onChange={(event) =>
+                              setEditDraft((current) => ({
+                                ...current,
+                                name: event.target.value,
+                              }))
+                            }
+                            className="mt-1 w-full rounded-[6px] border border-line bg-surface px-2.5 py-1.5 text-xs text-ink placeholder:text-muted focus:border-pine focus:outline-none focus:ring-2 focus:ring-pine-soft"
+                          />
+                        </div>
+                        <div>
+                          <label
+                            htmlFor={`edit-venue-${blueprint.id}`}
+                            className="text-[11px] font-medium text-ink"
+                          >
+                            Venue
+                          </label>
+                          <input
+                            id={`edit-venue-${blueprint.id}`}
+                            type="text"
+                            value={editDraft.venue}
+                            onChange={(event) =>
+                              setEditDraft((current) => ({
+                                ...current,
+                                venue: event.target.value,
+                              }))
+                            }
+                            placeholder="Nama venue"
+                            className="mt-1 w-full rounded-[6px] border border-line bg-surface px-2.5 py-1.5 text-xs text-ink placeholder:text-muted focus:border-pine focus:outline-none focus:ring-2 focus:ring-pine-soft"
+                          />
+                        </div>
+                        <div>
+                          <label
+                            htmlFor={`edit-date-${blueprint.id}`}
+                            className="text-[11px] font-medium text-ink"
+                          >
+                            Tanggal event
+                          </label>
+                          <input
+                            id={`edit-date-${blueprint.id}`}
+                            type="text"
+                            value={editDraft.eventDate}
+                            onChange={(event) =>
+                              setEditDraft((current) => ({
+                                ...current,
+                                eventDate: event.target.value,
+                              }))
+                            }
+                            placeholder="12 - 15 Maret 2026"
+                            className="mt-1 w-full rounded-[6px] border border-line bg-surface px-2.5 py-1.5 text-xs text-ink placeholder:text-muted focus:border-pine focus:outline-none focus:ring-2 focus:ring-pine-soft"
+                          />
+                        </div>
+                      </div>
+
+                      {editError && (
+                        <p
+                          role="alert"
+                          className="mt-3 rounded-[6px] border border-red-200 bg-red-50 px-2.5 py-2 text-[11px] leading-relaxed text-red-700"
+                        >
+                          {editError}
+                        </p>
+                      )}
+
+                      <div className="mt-3 flex flex-col gap-2 sm:flex-row">
+                        <button
+                          type="button"
+                          onClick={() => void handleSaveEdit(blueprint)}
+                          disabled={savingEditId === blueprint.id}
+                          className="inline-flex flex-1 items-center justify-center rounded-[6px] bg-pine px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-pine-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+                        >
+                          {savingEditId === blueprint.id ? 'Menyimpan...' : 'Simpan Detail'}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={cancelEdit}
+                          className="inline-flex flex-1 items-center justify-center rounded-[6px] border border-line bg-surface px-3 py-2 text-xs font-semibold text-ink transition-colors hover:bg-canvas focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2"
+                        >
+                          Batal
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      <h2 className="mt-3 text-base font-semibold text-ink">{blueprint.name}</h2>
+                      <p className="mt-1 text-xs text-muted">
+                        {blueprint.venue || 'Venue belum diatur'}
+                      </p>
+                      <p className="mt-0.5 text-xs text-muted">
+                        {blueprint.event_date || 'Tanggal belum diatur'}
+                      </p>
+
+                      {blueprint.description && (
+                        <p className="mt-2 line-clamp-2 text-xs leading-relaxed text-muted">
+                          {blueprint.description}
+                        </p>
+                      )}
+                    </>
                   )}
 
                   <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
@@ -563,6 +831,58 @@ export default function BlueprintList() {
                         {isUpdating ? 'Menyimpan...' : isPublished ? 'Jadikan Draft' : 'Publikasikan'}
                       </button>
                     </div>
+
+                    <div className="grid grid-cols-2 gap-2">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          editingId === blueprint.id ? cancelEdit() : startEdit(blueprint)
+                        }
+                        aria-expanded={editingId === blueprint.id}
+                        aria-controls={
+                          editingId === blueprint.id ? `edit-form-${blueprint.id}` : undefined
+                        }
+                        className="inline-flex items-center justify-center rounded-[8px] border border-line bg-surface px-3 py-2 text-xs font-semibold text-ink transition-colors hover:bg-canvas focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2"
+                      >
+                        {editingId === blueprint.id ? 'Tutup Edit' : 'Edit Detail'}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (editingId === blueprint.id) cancelEdit()
+                          setConfirmingDeleteId((current) =>
+                            current === blueprint.id ? null : blueprint.id,
+                          )
+                        }}
+                        aria-expanded={confirmingDeleteId === blueprint.id}
+                        aria-controls={
+                          confirmingDeleteId === blueprint.id
+                            ? `delete-blueprint-${blueprint.id}`
+                            : undefined
+                        }
+                        disabled={deletingId === blueprint.id}
+                        className="inline-flex items-center justify-center rounded-[8px] border border-red-200 bg-surface px-3 py-2 text-xs font-semibold text-red-700 transition-colors hover:bg-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+                      >
+                        {deletingId === blueprint.id ? 'Menghapus...' : 'Hapus'}
+                      </button>
+                    </div>
+
+                    {confirmingDeleteId === blueprint.id && (
+                      <InlineConfirm
+                        id={`delete-blueprint-${blueprint.id}`}
+                        title={`Hapus denah "${blueprint.name}"?`}
+                        description={
+                          blueprint.activeBookings > 0
+                            ? `Denah ini masih memiliki ${blueprint.activeBookings} booking aktif dari total ${blueprint.totalBookings} booking. Selesaikan atau batalkan booking tersebut sebelum menghapus.`
+                            : blueprint.totalBooths > 0
+                              ? `Denah dan ${blueprint.totalBooths} booth di dalamnya akan dihapus permanen. ${blueprint.totalBookings} booking terkait tetap tersimpan sebagai riwayat.`
+                              : `Denah akan dihapus permanen. ${blueprint.totalBookings} booking terkait tetap tersimpan sebagai riwayat.`
+                        }
+                        confirmLabel={deletingId === blueprint.id ? 'Menghapus...' : 'Hapus denah'}
+                        onConfirm={() => void handleDelete(blueprint)}
+                        onCancel={() => setConfirmingDeleteId(null)}
+                      />
+                    )}
                   </div>
                 </article>
               )

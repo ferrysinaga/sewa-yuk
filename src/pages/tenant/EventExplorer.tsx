@@ -46,6 +46,7 @@ export default function EventExplorer() {
   const [blueprints, setBlueprints] = useState<BlueprintRow[]>([])
   const [booths, setBooths] = useState<BoothSummaryRow[]>([])
   const [activeCategory, setActiveCategory] = useState<BoothCategory | 'all'>('all')
+  const [search, setSearch] = useState('')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [reloadToken, setReloadToken] = useState(0)
@@ -125,10 +126,16 @@ export default function EventExplorer() {
     [blueprints, booths],
   )
 
-  const visibleEvents =
-    activeCategory === 'all'
-      ? events
-      : events.filter((event) => event.categories.includes(activeCategory))
+  const searchTerm = search.trim().toLowerCase()
+
+  const visibleEvents = events.filter((event) => {
+    if (activeCategory !== 'all' && !event.categories.includes(activeCategory)) return false
+    if (!searchTerm) return true
+
+    const haystack =
+      `${event.name} ${event.venue ?? ''} ${event.description ?? ''} ${event.categories.join(' ')}`.toLowerCase()
+    return haystack.includes(searchTerm)
+  })
 
   return (
     <div className="min-h-screen bg-canvas text-ink">
@@ -164,6 +171,19 @@ export default function EventExplorer() {
         </div>
 
         <div className="mt-8 flex flex-wrap items-center gap-x-4 gap-y-3 border-y border-line py-3">
+          <div className="w-full sm:w-auto">
+            <label htmlFor="event-search" className="sr-only">
+              Cari event berdasarkan nama, venue, atau deskripsi
+            </label>
+            <input
+              id="event-search"
+              type="search"
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+              placeholder="Cari nama event atau venue…"
+              className="min-h-[38px] w-full rounded-[6px] border border-line bg-surface px-3 py-1.5 text-xs text-ink placeholder:text-muted focus:border-pine focus:outline-none focus:ring-2 focus:ring-pine-soft sm:w-64"
+            />
+          </div>
           <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted">
             Kategori
           </span>
@@ -231,14 +251,21 @@ export default function EventExplorer() {
         {!loading && !error && events.length > 0 && visibleEvents.length === 0 && (
           <div className="mt-8 rounded-[10px] border border-dashed border-line bg-surface px-6 py-12 text-center">
             <p className="text-sm font-semibold text-ink">
-              Tidak ada event dengan kategori {categoryLabel[activeCategory]}
+              {searchTerm
+                ? `Tidak ada event yang cocok dengan "${search.trim()}"`
+                : `Tidak ada event dengan kategori ${categoryLabel[activeCategory]}`}
             </p>
             <p className="mx-auto mt-1 max-w-sm text-xs leading-relaxed text-muted">
-              Coba pilih kategori lain untuk melihat event yang tersedia.
+              {searchTerm
+                ? 'Coba kata kunci lain atau reset filter untuk melihat semua acara.'
+                : 'Coba pilih kategori lain untuk melihat event yang tersedia.'}
             </p>
             <button
               type="button"
-              onClick={() => setActiveCategory('all')}
+              onClick={() => {
+                setActiveCategory('all')
+                setSearch('')
+              }}
               className="mt-4 inline-flex items-center justify-center rounded-[6px] bg-pine px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-pine-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 focus-visible:ring-offset-surface motion-reduce:transition-none"
             >
               Tampilkan semua acara

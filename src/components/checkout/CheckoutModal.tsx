@@ -116,7 +116,7 @@ export default function CheckoutModal({
         role="dialog"
         aria-modal="true"
         aria-labelledby="checkout-title"
-        className="relative z-10 flex max-h-[92vh] w-full max-w-lg flex-col overflow-hidden rounded-t-[10px] border border-line bg-surface shadow-xl sm:rounded-[10px]"
+        className="relative z-10 flex max-h-[92vh] w-full max-w-lg flex-col overflow-hidden rounded-t-[10px] border border-line bg-surface sm:rounded-[10px]"
       >
         <div className="flex items-start justify-between gap-4 border-b border-line px-5 py-4 sm:px-6">
           <div>
