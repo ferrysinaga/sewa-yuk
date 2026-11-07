@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import AppHeader from '../../components/layout/AppHeader'
 import InlineConfirm from '../../components/ui/InlineConfirm'
 import { useToast } from '../../components/ui/Toast'
+import { useBookingClock } from '../../hooks/useBookingClock'
 import { useBookingFeed } from '../../hooks/useBookingFeed'
 import { formatCurrency, formatDateTime, getBookingErrorMessage, isExpiredBooking } from '../../lib/booking'
 import { sweepExpiredBookings } from '../../lib/bookingExpiry'
@@ -43,6 +44,9 @@ export default function AdminBookings() {
   const [updatingId, setUpdatingId] = useState<string | null>(null)
   const [confirmingCancelId, setConfirmingCancelId] = useState<string | null>(null)
   const [refreshing, setRefreshing] = useState(false)
+
+  const hasPendingBooking = bookings.some((booking) => booking.status === 'pending')
+  const now = useBookingClock(hasPendingBooking)
 
   const isLive = useBookingFeed({ userId: null, setBookings })
 
@@ -125,13 +129,13 @@ export default function AdminBookings() {
       (booking) => booking.status === 'awaiting_confirmation',
     ).length
     const pending = bookings.filter(
-      (booking) => booking.status === 'pending' && !isExpiredBooking(booking),
+      (booking) => booking.status === 'pending' && !isExpiredBooking(booking, now),
     ).length
     const confirmed = bookings.filter((booking) => booking.status === 'confirmed')
     const revenue = confirmed.reduce((sum, booking) => sum + booking.price, 0)
 
     return { awaiting, pending, confirmed: confirmed.length, revenue }
-  }, [bookings])
+  }, [bookings, now])
 
   const handleConfirm = async (booking: BookingRow) => {
     if (updatingId) return
@@ -432,7 +436,7 @@ export default function AdminBookings() {
                     {filteredBookings.map((booking) => {
                       const event = blueprintById.get(booking.blueprint_id)
                       const isUpdating = updatingId === booking.id
-                      const expired = isExpiredBooking(booking)
+                      const expired = isExpiredBooking(booking, now)
                       const canCancel =
                         booking.status === 'pending' ||
                         booking.status === 'awaiting_confirmation'

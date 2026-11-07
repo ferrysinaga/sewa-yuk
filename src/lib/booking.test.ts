@@ -3,7 +3,10 @@ import {
   formatCurrency,
   formatDate,
   formatDateTime,
+  formatRemaining,
   getBookingErrorMessage,
+  getRemainingMs,
+  isExpiredBooking,
 } from './booking'
 
 describe('formatCurrency', () => {
@@ -51,6 +54,84 @@ describe('formatDate', () => {
   it('mengembalikan tanda pisah untuk nilai kosong atau tidak valid', () => {
     expect(formatDate(null)).toBe('—')
     expect(formatDate('tidak-valid')).toBe('—')
+  })
+})
+
+describe('getRemainingMs', () => {
+  const now = new Date('2026-11-07T10:00:00.000Z').getTime()
+
+  it('menghitung sisa waktu terhadap waktu acuan', () => {
+    expect(getRemainingMs('2026-11-07T10:00:10.000Z', now)).toBe(10_000)
+    expect(getRemainingMs('2026-11-07T09:59:50.000Z', now)).toBe(-10_000)
+  })
+
+  it('mengembalikan null untuk batas kosong atau tidak valid', () => {
+    expect(getRemainingMs(null, now)).toBeNull()
+    expect(getRemainingMs('bukan-tanggal', now)).toBeNull()
+  })
+})
+
+describe('formatRemaining', () => {
+  it('memformat durasi sebagai jam, menit, dan detik', () => {
+    expect(formatRemaining(3_600_000)).toBe('01:00:00')
+    expect(formatRemaining(86_381_000)).toBe('23:59:41')
+    expect(formatRemaining(59_400)).toBe('00:01:00')
+  })
+
+  it('menampilkan Kedaluwarsa saat waktu habis', () => {
+    expect(formatRemaining(0)).toBe('Kedaluwarsa')
+    expect(formatRemaining(-1)).toBe('Kedaluwarsa')
+  })
+
+  it('menampilkan tanda pisah bila batas tidak tersedia', () => {
+    expect(formatRemaining(null)).toBe('—')
+  })
+})
+
+describe('isExpiredBooking', () => {
+  const now = new Date('2026-11-07T10:00:00.000Z').getTime()
+
+  it('menandai pending yang batasnya sudah lewat', () => {
+    expect(
+      isExpiredBooking(
+        { status: 'pending', cancelled_reason: null, expires_at: '2026-11-07T09:59:59.000Z' },
+        now,
+      ),
+    ).toBe(true)
+    expect(
+      isExpiredBooking(
+        { status: 'pending', cancelled_reason: null, expires_at: '2026-11-07T10:00:01.000Z' },
+        now,
+      ),
+    ).toBe(false)
+  })
+
+  it('hanya menandai cancelled yang alasannya expired', () => {
+    expect(
+      isExpiredBooking(
+        { status: 'cancelled', cancelled_reason: 'expired', expires_at: null },
+        now,
+      ),
+    ).toBe(true)
+    expect(
+      isExpiredBooking(
+        { status: 'cancelled', cancelled_reason: 'manual', expires_at: null },
+        now,
+      ),
+    ).toBe(false)
+  })
+
+  it('tidak menandai awaiting_confirmation sebagai kedaluwarsa', () => {
+    expect(
+      isExpiredBooking(
+        {
+          status: 'awaiting_confirmation',
+          cancelled_reason: null,
+          expires_at: '2026-11-07T09:00:00.000Z',
+        },
+        now,
+      ),
+    ).toBe(false)
   })
 })
 

@@ -462,7 +462,28 @@ P1 - RISIKO VISUAL, REGRESI, DAN OPERASIONAL
     bukan layar putih; fallback dapat dioperasikan keyboard; simulasi chunk
     gagal memicu satu kali reload; build dan test lulus.
 
-[ ] 19. Hitungan waktu nyata dan auto-sweep booking kedaluwarsa
+[x] 19. Hitungan waktu nyata dan auto-sweep booking kedaluwarsa
+    STATUS: SELESAI (7 November 2026)
+    File: src/lib/booking.ts, src/lib/booking.test.ts,
+          src/types/booking.ts, src/components/checkout/CheckoutModal.tsx,
+          src/hooks/useBookingClock.ts (baru),
+          src/hooks/useBookingClock.test.tsx (baru),
+          src/hooks/useExpiredBookingSweep.ts (baru),
+          src/hooks/useExpiredBookingSweep.test.tsx (baru),
+          src/pages/tenant/TenantBookings.tsx,
+          src/pages/admin/AdminBookings.tsx
+    Hasil: getRemainingMs dan formatRemaining (HH:MM:SS / Kedaluwarsa)
+    ditambahkan ke lib/booking.ts; isBookingExpired/isExpiredBooking menerima
+    waktu acuan agar dapat diuji dengan fake timers. Hook useBookingClock
+    memperbarui waktu tiap detik hanya selama ada booking pending dan berhenti
+    saat tidak ada pending/unmount. TenantBookings menampilkan "Sisa HH:MM:SS"
+    di dekat batas pembayaran, sedangkan AdminBookings memakai clock yang sama
+    agar badge Kedaluwarsa muncul tanpa reload. Hook useExpiredBookingSweep
+    memanggil sweep sekali per pasangan booking + expires_at, lalu memuat ulang
+    daftar; deadline yang sama tidak memicu RPC berulang. BOOKING_HOLD_HOURS =
+    24 dipusatkan di types/booking.ts dan dipakai CheckoutModal. Verifikasi:
+    tsc --noEmit lulus, 76 unit test lulus (14 test baru termasuk fake timers),
+    dan build lulus.
     Masalah: isExpiredBooking hanya dihitung saat render. Halaman yang sudah
     terbuka tidak berubah status sampai user menekan "Perbarui status" atau
     reload. Ini bertentangan dengan pengalaman "auto-release" yang dijanjikan

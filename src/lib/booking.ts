@@ -28,15 +28,45 @@ export function formatDate(value: string | null): string {
 }
 
 /**
+ * Sisa waktu pembayaran dalam milidetik. Nilai negatif berarti batas sudah
+ * terlewat, sedangkan null berarti booking tidak memiliki batas yang valid.
+ */
+export function getRemainingMs(expiresAt: string | null, now: number = Date.now()): number | null {
+  if (!expiresAt) return null
+
+  const expiresAtMs = new Date(expiresAt).getTime()
+
+  if (Number.isNaN(expiresAtMs)) return null
+
+  return expiresAtMs - now
+}
+
+/** Format hitungan waktu menjadi "HH:MM:SS" atau "Kedaluwarsa". */
+export function formatRemaining(remainingMs: number | null): string {
+  if (remainingMs === null) return '—'
+  if (remainingMs <= 0) return 'Kedaluwarsa'
+
+  const totalSeconds = Math.ceil(remainingMs / 1000)
+  const hours = Math.floor(totalSeconds / 3600)
+  const minutes = Math.floor((totalSeconds % 3600) / 60)
+  const seconds = totalSeconds % 60
+
+  return [hours, minutes, seconds]
+    .map((value) => String(value).padStart(2, '0'))
+    .join(':')
+}
+
+/**
  * True bila batas pembayaran booking sudah lewat. Dipakai untuk menonaktifkan
  * aksi "Saya sudah bayar" sebelum sweep server sempat membatalkan booking.
  */
-export function isBookingExpired(booking: Pick<BookingRow, 'expires_at'>): boolean {
-  if (!booking.expires_at) return false
+export function isBookingExpired(
+  booking: Pick<BookingRow, 'expires_at'>,
+  now: number = Date.now(),
+): boolean {
+  const remaining = getRemainingMs(booking.expires_at, now)
 
-  const expiresAt = new Date(booking.expires_at).getTime()
-
-  return !Number.isNaN(expiresAt) && expiresAt <= Date.now()
+  return remaining !== null && remaining <= 0
 }
 
 /**
@@ -47,12 +77,13 @@ export function isBookingExpired(booking: Pick<BookingRow, 'expires_at'>): boole
  */
 export function isExpiredBooking(
   booking: Pick<BookingRow, 'status' | 'cancelled_reason' | 'expires_at'>,
+  now: number = Date.now(),
 ): boolean {
   if (booking.status === 'cancelled') {
     return booking.cancelled_reason === 'expired'
   }
 
-  return booking.status === 'pending' && isBookingExpired(booking)
+  return booking.status === 'pending' && isBookingExpired(booking, now)
 }
 
 export function getBookingErrorMessage(error: unknown): string {
