@@ -34,3 +34,4 @@ test-results
 
 .env.example
 qa_checklist_test_plan.md
+NEXT_TASKS.txt
