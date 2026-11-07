@@ -1,5 +1,6 @@
 import { lazy, Suspense, useEffect } from 'react'
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
+import AppErrorBoundary from './components/layout/AppErrorBoundary'
 import { ToastProvider } from './components/ui/Toast'
 import ProtectedRoute from './components/layout/ProtectedRoute'
 import { useAuthStore } from './store/useAuthStore'
@@ -74,7 +75,9 @@ export default function App() {
   return (
     <BrowserRouter>
       <ToastProvider>
-        <AppRoutes />
+        <AppErrorBoundary>
+          <AppRoutes />
+        </AppErrorBoundary>
       </ToastProvider>
     </BrowserRouter>
   )

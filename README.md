@@ -299,5 +299,9 @@ Audit aksesibilitas mencakup:
 - Route sudah di-lazy-load per halaman sehingga bundle awal berada di bawah
   ambang peringatan 500 kB. Jika menambah dependensi besar, pantau kembali
   ukuran chunk saat build.
-- Error boundary belum disediakan secara global; kegagalan data ditampilkan
-  sebagai panel error di tiap halaman.
+- Error boundary global tersedia di
+  `src/components/layout/AppErrorBoundary.tsx`. Jika render gagal atau chunk
+  lazy tidak dapat dimuat, fallback "Terjadi kesalahan" tampil dengan tombol
+  "Muat ulang" dan "Kembali ke beranda". Kegagalan chunk memicu reload
+  otomatis satu kali per sesi tab (penanda `sessionStorage`) untuk menghindari
+  loop; penanda dihapus setelah halaman berhasil dimuat.
