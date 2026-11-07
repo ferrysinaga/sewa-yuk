@@ -1,6 +1,12 @@
 import { useEffect, useState } from 'react'
 import type { ReactNode } from 'react'
 import { useDraggable } from '@dnd-kit/core'
+import {
+  BOOTH_CATEGORY_LABEL as categoryLabel,
+  BOOTH_STATUS_LABEL as statusLabel,
+  BOOTH_STATUS_META,
+  formatPrice,
+} from '../../lib/boothDisplay'
 import { useBoothStore } from '../../store/useBoothStore'
 import type { Booth, BoothCategory, BoothStatus, BoothTemplate } from '../../types/booth'
 
@@ -9,24 +15,6 @@ export const boothTemplates: BoothTemplate[] = [
   { category: 'F&B', width: 140, height: 100, price: 3800000 },
   { category: 'Apparel', width: 120, height: 100, price: 3200000 },
 ]
-
-const categoryLabel: Record<BoothCategory, string> = {
-  Tech: 'Teknologi',
-  'F&B': 'F&B',
-  Apparel: 'Pakaian',
-}
-
-const statusLabel: Record<BoothStatus, string> = {
-  Available: 'Tersedia',
-  Reserved: 'Dipesan',
-  Booked: 'Terisi',
-}
-
-const statusBadgeClass: Record<BoothStatus, string> = {
-  Available: 'border border-line bg-pine-soft text-pine',
-  Reserved: 'border border-line bg-clay-soft text-clay-dark',
-  Booked: 'border border-line bg-unavailable-deep text-ink',
-}
 
 const categoryIcon: Record<BoothCategory, ReactNode> = {
   Tech: (
@@ -45,13 +33,6 @@ const categoryIcon: Record<BoothCategory, ReactNode> = {
     </svg>
   ),
 }
-
-const formatPrice = (price: number) =>
-  new Intl.NumberFormat('id-ID', {
-    style: 'currency',
-    currency: 'IDR',
-    maximumFractionDigits: 0,
-  }).format(price)
 
 const categoryOptions: BoothCategory[] = ['Tech', 'F&B', 'Apparel']
 const statusOptions: BoothStatus[] = ['Available', 'Reserved', 'Booked']
@@ -246,7 +227,7 @@ export default function BoothSidebar() {
                 <p className="text-xs tabular-nums text-muted">ID: {activeBooth.id.slice(0, 8)}</p>
               </div>
               <span
-                className={`shrink-0 rounded-[4px] px-2.5 py-1 text-[11px] font-semibold ${statusBadgeClass[activeBooth.status]}`}
+                className={`shrink-0 rounded-[4px] px-2.5 py-1 text-[11px] font-semibold ${BOOTH_STATUS_META[activeBooth.status].badge}`}
               >
                 {statusLabel[activeBooth.status]}
               </span>

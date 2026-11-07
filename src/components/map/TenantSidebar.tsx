@@ -1,3 +1,9 @@
+import {
+  BOOTH_CATEGORY_LABEL as categoryLabel,
+  BOOTH_STATUS_LABEL as statusLabel,
+  BOOTH_STATUS_META,
+  formatPrice,
+} from '../../lib/boothDisplay'
 import { useBoothStore } from '../../store/useBoothStore'
 import type { BoothCategory, BoothStatus } from '../../types/booth'
 
@@ -8,35 +14,17 @@ const categoryFilters: { value: BoothCategory | 'all'; label: string }[] = [
   { value: 'Apparel', label: 'Pakaian' },
 ]
 
-const categoryLabel: Record<BoothCategory, string> = {
-  Tech: 'Teknologi',
-  'F&B': 'F&B',
-  Apparel: 'Pakaian',
-}
-
-const statusLabel: Record<BoothStatus, string> = {
-  Available: 'Tersedia',
-  Reserved: 'Dipesan',
-  Booked: 'Terisi',
-}
-
+// Reserved sengaja netral/dashed di peta tenant agar tidak terlihat tersedia.
 const statusBadgeClass: Record<BoothStatus, string> = {
-  Available: 'border border-line bg-pine-soft text-pine',
+  Available: BOOTH_STATUS_META.Available.badge,
   Reserved: 'border border-dashed border-muted bg-unavailable text-ink',
-  Booked: 'border border-line bg-unavailable-deep text-ink',
+  Booked: BOOTH_STATUS_META.Booked.badge,
 }
 
 const statusExplanation: Record<Exclude<BoothStatus, 'Available'>, string> = {
   Reserved: 'Booth ini sedang ditahan untuk penyewa lain dan belum bisa dipesan.',
   Booked: 'Booth ini sudah terisi. Pilih booth bertanda tersedia untuk melanjutkan.',
 }
-
-const formatPrice = (price: number) =>
-  new Intl.NumberFormat('id-ID', {
-    style: 'currency',
-    currency: 'IDR',
-    maximumFractionDigits: 0,
-  }).format(price)
 
 interface TenantSidebarProps {
   activeCategory: BoothCategory | 'all'

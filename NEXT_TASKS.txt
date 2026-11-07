@@ -359,7 +359,32 @@ P1 - RISIKO VISUAL, REGRESI, DAN OPERASIONAL
     /admin/bookings, /bookings tetap lulus; tampilan error/batal/hapus
     tetap jelas.
 
-[ ] 16. Satukan sumber label booth, format harga, dan mapper row
+[x] 16. Satukan sumber label booth, format harga, dan mapper row
+    STATUS: SELESAI (7 November 2026)
+    File: src/lib/boothDisplay.ts (baru), src/lib/boothRow.ts (baru),
+          src/lib/currency.ts (baru), src/lib/booking.ts,
+          src/lib/boothRow.test.ts (baru),
+          src/pages/landing/LandingPage.tsx,
+          src/components/map/InteractiveMap.tsx,
+          src/components/map/TenantSidebar.tsx,
+          src/components/map/BoothSidebar.tsx,
+          src/components/map/BlueprintCanvas.tsx,
+          src/components/checkout/CheckoutModal.tsx,
+          src/pages/admin/AdminDashboard.tsx,
+          src/pages/admin/BlueprintEditor.tsx,
+          src/pages/tenant/EventExplorer.tsx,
+          src/pages/tenant/TenantEventView.tsx
+    Hasil: BOOTH_CATEGORY_LABEL, BOOTH_STATUS_LABEL, BOOTH_STATUS_META
+    (label/dot/badge/bar), dan formatPrice kini hanya ada di
+    boothDisplay.ts; formatCurrency di currency.ts menjadi satu-satunya
+    implementasi Intl dan tetap diekspor ulang oleh lib/booking.ts.
+    BoothRow, mapRowToBooth, dan isCompleteBoothRow dipusatkan di
+    boothRow.ts dan dipakai BlueprintEditor, TenantEventView, serta
+    AdminDashboard. Seluruh salinan lokal categoryLabel/statusLabel/
+    formatPrice/mapRowToBooth dihapus. Peta tenant tetap memakai badge
+    Reserved netral/dashed sesuai QA MAP-02. Verifikasi: tsc --noEmit
+    lulus, 62 unit test lulus (10 test baru untuk mapper), build lulus,
+    A11Y-01/A11Y-02 dan smoke login lulus.
     Masalah: definisi yang sama disalin di banyak file sehingga rawan
     berbeda saat ada perubahan.
     Bukti duplikasi:
@@ -384,7 +409,22 @@ P1 - RISIKO VISUAL, REGRESI, DAN OPERASIONAL
     mapRowToBooth ganda di src/; output visual dan aria-label identik;
     `npm test` lulus.
 
-[ ] 17. Satukan reducer dan langganan realtime booking
+[x] 17. Satukan reducer dan langganan realtime booking
+    STATUS: SELESAI (7 November 2026)
+    File: src/lib/bookingRealtime.ts (baru),
+          src/lib/bookingRealtime.test.ts (baru),
+          src/hooks/useBookingFeed.ts (baru),
+          src/pages/admin/AdminBookings.tsx,
+          src/pages/tenant/TenantBookings.tsx
+    Hasil: applyBookingChange dan tipe BookingRealtimePayload dipusatkan di
+    bookingRealtime.ts. UPDATE dengan payload parsial kini menggabungkan
+    field lama, sedangkan INSERT/UPDATE id baru tetap menambah di depan dan
+    DELETE memakai old.id. Hook useBookingFeed mengelola channel
+    `admin-bookings` / `tenant-bookings-<id>`, filter user_id, cleanup
+    removeChannel, log CHANNEL_ERROR, dan mengembalikan status live untuk
+    badge admin. Kedua halaman tidak lagi menyimpan salinan reducer/efek.
+    Verifikasi: 62 unit test lulus (6 test reducer baru), tsc --noEmit
+    lulus, build lulus, dan E2E publik 3 lulus (4 axe berautentikasi skip).
     Masalah: logika realtime booking disalin persis di dua halaman. Risiko:
     perbaikan di satu tempat tidak ikut ke tempat lain.
     Bukti:

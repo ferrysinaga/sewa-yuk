@@ -1,25 +1,13 @@
 import { memo, useCallback } from 'react'
 import type { KeyboardEvent as ReactKeyboardEvent, RefObject } from 'react'
 import { useDraggable, useDroppable } from '@dnd-kit/core'
+import { BOOTH_STATUS_LABEL as statusLabel, formatPrice } from '../../lib/boothDisplay'
 import { useBoothStore } from '../../store/useBoothStore'
-import type { Booth, BoothStatus } from '../../types/booth'
+import type { Booth } from '../../types/booth'
 
 const CANVAS_WIDTH = 1000
 const CANVAS_HEIGHT = 640
 const GRID_SIZE = 20
-
-const statusLabel: Record<BoothStatus, string> = {
-  Available: 'Tersedia',
-  Reserved: 'Dipesan',
-  Booked: 'Terisi',
-}
-
-const formatPrice = (price: number) =>
-  new Intl.NumberFormat('id-ID', {
-    style: 'currency',
-    currency: 'IDR',
-    maximumFractionDigits: 0,
-  }).format(price)
 
 interface BoothRectProps {
   booth: Booth

@@ -1,12 +1,8 @@
 import type { BookingRow, PaymentMethod } from '../types/booking'
 import { PAYMENT_METHOD_LABEL } from '../types/booking'
+import { formatCurrency } from './currency'
 
-export const formatCurrency = (value: number) =>
-  new Intl.NumberFormat('id-ID', {
-    style: 'currency',
-    currency: 'IDR',
-    maximumFractionDigits: 0,
-  }).format(value)
+export { formatCurrency }
 
 export function formatDateTime(value: string | null): string {
   if (!value) return '—'
