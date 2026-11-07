@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import AppHeader from '../../components/layout/AppHeader'
+import { EmptyPanel, ErrorPanel, LoadingPanel } from '../../components/ui/StatePanel'
 import { getBoothCategoryLabel } from '../../lib/boothDisplay'
 import { getBlueprintErrorMessage } from '../../lib/blueprint'
 import { sweepExpiredBookings } from '../../lib/bookingExpiry'
@@ -208,63 +209,56 @@ export default function EventExplorer() {
         </div>
 
         {loading && (
-          <div className="mt-6 flex min-h-[260px] items-center justify-center rounded-[10px] border border-line bg-surface px-6">
-            <div className="flex flex-col items-center gap-3 text-center">
-              <span
-                aria-hidden="true"
-                className="h-8 w-8 animate-spin rounded-full border-2 border-line border-t-pine"
-              />
-              <p className="text-sm font-medium text-ink">Memuat event yang tersedia…</p>
-            </div>
-          </div>
+          <LoadingPanel
+            title="Memuat event yang tersedia…"
+            minHeightClassName="min-h-[260px]"
+          />
         )}
 
         {!loading && error && (
-          <div className="mt-6 rounded-[10px] border border-line bg-surface p-8 text-center">
-            <h2 className="text-lg font-semibold text-ink">Gagal memuat event</h2>
-            <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-muted">{error}</p>
-            <button
-              type="button"
-              onClick={() => setReloadToken((token) => token + 1)}
-              className="mt-5 inline-flex items-center justify-center rounded-[6px] bg-pine px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-pine-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 focus-visible:ring-offset-surface motion-reduce:transition-none"
-            >
-              Coba lagi
-            </button>
-          </div>
+          <ErrorPanel
+            title="Gagal memuat event"
+            description={error}
+            showIcon={false}
+            onRetry={() => setReloadToken((token) => token + 1)}
+          />
         )}
 
         {!loading && !error && events.length === 0 && (
-          <div className="mt-6 rounded-[10px] border border-dashed border-line bg-surface px-6 py-12 text-center">
-            <h2 className="text-base font-semibold text-ink">Belum ada event aktif</h2>
-            <p className="mx-auto mt-2 max-w-sm text-sm leading-relaxed text-muted">
-              Penyelenggara belum mempublikasikan denah event. Cek kembali dalam beberapa waktu.
-            </p>
-          </div>
+          <EmptyPanel
+            title="Belum ada event aktif"
+            description="Penyelenggara belum mempublikasikan denah event. Cek kembali dalam beberapa waktu."
+          />
         )}
 
         {!loading && !error && events.length > 0 && visibleEvents.length === 0 && (
-          <div className="mt-8 rounded-[10px] border border-dashed border-line bg-surface px-6 py-12 text-center">
-            <p className="text-sm font-semibold text-ink">
-              {searchTerm
+          <EmptyPanel
+            className="mt-8"
+            compact
+            titleAs="p"
+            title={
+              searchTerm
                 ? `Tidak ada event yang cocok dengan "${search.trim()}"`
-                : `Tidak ada event dengan kategori ${getBoothCategoryLabel(activeCategory)}`}
-            </p>
-            <p className="mx-auto mt-1 max-w-sm text-xs leading-relaxed text-muted">
-              {searchTerm
+                : `Tidak ada event dengan kategori ${getBoothCategoryLabel(activeCategory)}`
+            }
+            description={
+              searchTerm
                 ? 'Coba kata kunci lain atau reset filter untuk melihat semua acara.'
-                : 'Coba pilih kategori lain untuk melihat event yang tersedia.'}
-            </p>
-            <button
-              type="button"
-              onClick={() => {
-                setActiveCategory('all')
-                setSearch('')
-              }}
-              className="mt-4 inline-flex items-center justify-center rounded-[6px] bg-pine px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-pine-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 focus-visible:ring-offset-surface motion-reduce:transition-none"
-            >
-              Tampilkan semua acara
-            </button>
-          </div>
+                : 'Coba pilih kategori lain untuk melihat event yang tersedia.'
+            }
+            action={
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveCategory('all')
+                  setSearch('')
+                }}
+                className="inline-flex items-center justify-center rounded-[6px] bg-pine px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-pine-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 focus-visible:ring-offset-surface motion-reduce:transition-none"
+              >
+                Tampilkan semua acara
+              </button>
+            }
+          />
         )}
 
         {!loading && !error && visibleEvents.length > 0 && (

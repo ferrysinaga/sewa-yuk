@@ -585,7 +585,26 @@ P1 - RISIKO VISUAL, REGRESI, DAN OPERASIONAL
 P2 - KUALITAS, PERFORMA, DAN KEJELASAN KODE
 ===============================================================================
 
-[ ] 22. Ekstrak panel Loading/Error/Empty bersama
+[x] 22. Ekstrak panel Loading/Error/Empty bersama
+    STATUS: SELESAI (7 November 2026)
+    File: src/components/ui/StatePanel.tsx (baru),
+          src/pages/tenant/EventExplorer.tsx,
+          src/pages/tenant/TenantEventView.tsx,
+          src/pages/tenant/TenantBookings.tsx,
+          src/pages/admin/AdminBookings.tsx,
+          src/pages/admin/AdminDashboard.tsx,
+          src/pages/admin/BlueprintList.tsx,
+          src/pages/admin/BlueprintEditor.tsx,
+          src/components/layout/ProtectedRoute.tsx
+    Hasil: StatePanel.tsx mengekspor LoadingPanel, ErrorPanel (varian panel dan
+    inline), serta EmptyPanel. LoadingPanel memakai role="status" dan
+    aria-live="polite"; ErrorPanel memakai role="alert"; spinner memakai
+    motion-reduce:animate-none. Seluruh panel status besar di halaman tenant,
+    admin, editor denah, dan ProtectedRoute kini memakai komponen bersama tanpa
+    mengubah teks yang sudah disetujui QA. Varian bare dipakai ProtectedRoute,
+    varian inline dipakai error editor denah, dan EmptyPanel menangani empty
+    state event serta denah. Verifikasi: tsc --noEmit lulus, 83 unit test lulus,
+    build lulus, dan E2E a11y + smoke 3 lulus (4 axe berautentikasi skip).
     Masalah: markup panel status disalin di banyak halaman dengan detail
     aksesibilitas yang sedikit berbeda (sebagian tanpa role="status" atau
     aria-live).
