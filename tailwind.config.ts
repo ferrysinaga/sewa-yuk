@@ -25,6 +25,12 @@ export default {
           DEFAULT: 'var(--color-unavailable)',
           deep: 'var(--color-unavailable-deep)',
         },
+        danger: {
+          DEFAULT: 'var(--color-danger)',
+          dark: 'var(--color-danger-dark)',
+          soft: 'var(--color-danger-soft)',
+        },
+        overlay: 'var(--color-overlay)',
       },
     },
   },

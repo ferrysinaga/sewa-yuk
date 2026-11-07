@@ -280,7 +280,7 @@ P2 - KEBERSIHAN & CAKUPAN
 
 
 ===============================================================================
-URUTAN EKSEKUSI YANG DISARANKAN
+URUTAN EKSEKUSI FASE 1 YANG DISARANKAN (SELESAI)
 ===============================================================================
 1. Task 1 (QA doc) - cepat, mencegah bug palsu
 2. Task 3 (redesign 3 halaman) - dampak visual terbesar
@@ -288,3 +288,516 @@ URUTAN EKSEKUSI YANG DISARANKAN
 4. Task 4 (infrastruktur tes)
 5. Task 5-10 (P1)
 6. Task 11-14 (P2)
+
+
+===============================================================================
+FASE 2 - ITERASI & IMPROVEMENT
+===============================================================================
+Status acuan: de006e4 (setelah PR #17, seluruh task 1-14 selesai)
+Fokus: konsistensi desain, menghilangkan duplikasi, ketahanan runtime,
+akurasi status kedaluwarsa, cakupan tes, dan otomasi verifikasi.
+
+CATATAN FASE 2:
+- Tetap jangan mengubah routing, RPC/skema Supabase, logika Zustand, atau DnD
+  yang sudah berjalan. Refactor hanya memindahkan kode, bukan mengubah perilaku.
+- Setiap task wajib lulus `tsc --noEmit`, `npm test`, dan `npm run build`.
+- Ikuti frontend.md: token warna warm, radius 6-10px, border tipis, tanpa
+  gradient/blur/shadow tebal/emoji, hormati prefers-reduced-motion.
+
+
+===============================================================================
+P1 - RISIKO VISUAL, REGRESI, DAN OPERASIONAL
+===============================================================================
+
+[x] 15. Bersihkan sisa warna non-token (red-* dan overlay hitam)
+    STATUS: SELESAI (7 November 2026)
+    File: src/style.css, tailwind.config.ts,
+          src/components/ui/InlineConfirm.tsx, src/components/ui/Toast.tsx,
+          src/components/map/BoothSidebar.tsx,
+          src/components/admin/BlueprintImageUploader.tsx,
+          src/pages/Login.tsx, src/pages/Register.tsx,
+          src/pages/tenant/TenantBookings.tsx,
+          src/pages/admin/AdminBookings.tsx,
+          src/pages/admin/BlueprintEditor.tsx,
+          src/pages/admin/BlueprintList.tsx,
+          src/components/checkout/CheckoutModal.tsx
+    Token semantic danger (#a23b28), danger-dark (#7f2d1f), danger-soft
+    (#f7e7e2), dan overlay (rgba(34, 41, 35, 0.45)) ditambahkan ke
+    src/style.css dan tailwind.config.ts. Seluruh red-* diganti
+    danger/danger-dark/danger-soft dan bg-black/50 diganti bg-overlay pada
+    11 file komponen/halaman. Warna global :root juga memakai token
+    ink/canvas. Pencarian red- dan bg-black di src/ tidak menemukan hasil;
+    tsc --noEmit lulus, 52 unit test lulus, npm run build lulus, dan
+    A11Y-01/A11Y-02 lulus (4 tes axe berautentikasi skip karena .env.e2e
+    tidak tersedia).
+    Masalah: task 14 hanya memeriksa blue/gray/emerald/amber. Audit ulang
+    menemukan 32 baris memakai red-50/100/200/300/400/500/600/700/800 dan
+    1 overlay bg-black/50. Ini membuat tema tidak konsisten dan berpotensi
+    gagal kontras saat token diubah.
+    Bukti:
+    - src/components/ui/InlineConfirm.tsx: default panel + tombol konfirmasi
+      memakai red-200/red-50/red-800/red-700/red-600/red-700.
+    - src/components/ui/Toast.tsx: border-l-red-500, bg-red-50, text-red-600.
+    - src/components/map/BoothSidebar.tsx: panel hapus booth red-200/50/700.
+    - src/components/admin/BlueprintImageUploader.tsx: error & tombol hapus.
+    - src/pages/Login.tsx & Register.tsx: border-red-300, text-red-600.
+    - src/pages/admin/BlueprintList.tsx, BlueprintEditor.tsx,
+      AdminBookings.tsx, src/pages/tenant/TenantBookings.tsx: panel error,
+      tombol batalkan, dan ring merah.
+    - src/components/checkout/CheckoutModal.tsx:107 overlay bg-black/50.
+    Rencana:
+    - Tambah token semantik di src/style.css dan tailwind.config.ts:
+      danger (mis. #a23b28), danger-dark (#7f2d1f), danger-soft (#f7e7e2).
+      Nilai boleh diturunkan dari clay agar tetap hangat, bukan merah neon.
+    - Ganti seluruh red-* dengan danger/danger-dark/danger-soft.
+    - Ganti bg-black/50 dengan bg-ink/45 (atau token overlay) agar selaras
+      dengan warna teks, tetap tanpa blur.
+    - Status "pending" tetap memakai clay; aksi destruktif memakai danger
+      plus label teks, bukan warna saja.
+    Acceptance: pencarian `red-` dan `bg-black` di src/ tidak menemukan
+    hasil; axe WCAG AA untuk Landing, /event, /event/:id, /admin,
+    /admin/bookings, /bookings tetap lulus; tampilan error/batal/hapus
+    tetap jelas.
+
+[ ] 16. Satukan sumber label booth, format harga, dan mapper row
+    Masalah: definisi yang sama disalin di banyak file sehingga rawan
+    berbeda saat ada perubahan.
+    Bukti duplikasi:
+    - categoryLabel: LandingPage.tsx:43, InteractiveMap.tsx:19,
+      CheckoutModal.tsx:12, AdminDashboard.tsx:69, TenantSidebar.tsx:11,
+      BoothSidebar.tsx:13, EventExplorer.tsx:22.
+    - statusLabel: LandingPage.tsx:49, InteractiveMap.tsx:25,
+      AdminDashboard.tsx:42, TenantSidebar.tsx:17, BoothSidebar.tsx:19,
+      BlueprintCanvas.tsx:11.
+    - formatPrice: LandingPage.tsx:36, InteractiveMap.tsx:12,
+      AdminDashboard.tsx:75, TenantSidebar.tsx:34, BoothSidebar.tsx:49,
+      BlueprintCanvas.tsx:17, serta formatCurrency di lib/booking.ts.
+    - mapRowToBooth: BlueprintEditor.tsx:31 dan TenantEventView.tsx:42.
+    Rencana:
+    - Buat src/lib/boothDisplay.ts berisi BOOTH_CATEGORY_LABEL,
+      BOOTH_STATUS_LABEL, BOOTH_STATUS_META (dot/badge/bar), formatPrice.
+    - Buat src/lib/boothRow.ts berisi mapRowToBooth, isCompleteBoothRow,
+      dan tipe BoothRow.
+    - Ganti definisi lokal dengan import; jangan ubah markup/kelas visual.
+    - Tambah unit test untuk mapper (row lengkap, row parsial, status valid).
+    Acceptance: tidak ada lagi definisi categoryLabel/statusLabel/formatPrice/
+    mapRowToBooth ganda di src/; output visual dan aria-label identik;
+    `npm test` lulus.
+
+[ ] 17. Satukan reducer dan langganan realtime booking
+    Masalah: logika realtime booking disalin persis di dua halaman. Risiko:
+    perbaikan di satu tempat tidak ikut ke tempat lain.
+    Bukti:
+    - applyBookingChange identik di AdminBookings.tsx:37 dan
+      TenantBookings.tsx:44 (INSERT/UPDATE/DELETE).
+    - Efek channel `bookings` juga diduplikasi, termasuk penanganan
+      CHANNEL_ERROR yang hanya console.warn.
+    Rencana:
+    - Buat src/lib/bookingRealtime.ts: applyBookingChange(current, payload)
+      + tipe payload, dengan unit test.
+    - Buat hook src/hooks/useBookingFeed.ts (opsional tetapi disarankan):
+      menerima filter userId|null, mengelola channel, applyBookingChange,
+      dan mengembalikan status koneksi. Channel name tetap sama
+      (`tenant-bookings-<id>`, `admin-bookings`) agar tidak mengubah perilaku.
+    - Halaman hanya memakai hook/reducer tersebut.
+    Acceptance: hanya satu implementasi applyBookingChange; unit test
+    INSERT/UPDATE/DELETE/row parsial lulus; halaman tenant dan admin tetap
+    menerima perubahan realtime tanpa reload.
+
+[ ] 18. Error boundary global + pemulihan chunk lazy
+    Masalah: README bagian 12 mencatat belum ada error boundary global.
+    Render error atau kegagalan memuat chunk setelah deploy baru akan
+    menghasilkan layar putih tanpa jalan pulih. Route sudah lazy-load
+    (App.tsx), sehingga risiko ini nyata.
+    Rencana:
+    - Buat src/components/layout/AppErrorBoundary.tsx (class component).
+      Fallback memakai token warm, role="alert", judul "Terjadi kesalahan",
+      tombol "Muat ulang" dan "Kembali ke beranda".
+    - Deteksi pesan `Failed to fetch dynamically imported module` /
+      `Importing a module script failed`. Simpan penanda di sessionStorage
+      dan lakukan reload otomatis maksimal sekali untuk menghindari loop.
+    - Bungkus <AppRoutes /> di src/App.tsx tanpa mengubah daftar route.
+    - Perbarui catatan README bahwa error boundary sudah tersedia.
+    Acceptance: komponen anak yang melempar error menampilkan fallback,
+    bukan layar putih; fallback dapat dioperasikan keyboard; simulasi chunk
+    gagal memicu satu kali reload; build dan test lulus.
+
+[ ] 19. Hitungan waktu nyata dan auto-sweep booking kedaluwarsa
+    Masalah: isExpiredBooking hanya dihitung saat render. Halaman yang sudah
+    terbuka tidak berubah status sampai user menekan "Perbarui status" atau
+    reload. Ini bertentangan dengan pengalaman "auto-release" yang dijanjikan
+    task 2.
+    Bukti: lib/booking.ts:38-60 hanya membaca Date.now() saat dipanggil;
+    TenantBookings.tsx:415 memakai nilai tersebut sekali per render.
+    Rencana:
+    - Tambah helper di lib/booking.ts: getRemainingMs(expiresAt) dan
+      formatRemaining(ms) -> "23:59:12" / "Kedaluwarsa".
+    - Buat hook src/hooks/useBookingClock.ts yang memperbarui `now` tiap
+      detik hanya bila ada booking pending, dan berhenti saat komponen
+      dilepas atau tidak ada pending.
+    - TenantBookings menampilkan hitungan waktu di dekat "Batas pembayaran".
+      Saat hitungan mencapai 0, panggil sweepExpiredBookings() sekali
+      (debounce per booking/deadline), lalu reload daftar.
+    - AdminBookings ikut memakai clock agar badge Kedaluwarsa muncul tanpa
+      reload.
+    - Pusatkan durasi di types/booking.ts: BOOKING_HOLD_HOURS = 24 dan pakai
+      di CheckoutModal.tsx:191/295 agar copy tidak lagi hardcode.
+    Acceptance: dengan fake timers, status berubah menjadi Kedaluwarsa
+    dalam <1 detik setelah deadline tanpa reload; RPC sweep tidak dipanggil
+    berulang-ulang setelah deadline yang sama; semua unit test lulus.
+
+[ ] 20. Indikator koneksi realtime yang terlihat + fallback manual
+    Masalah: hanya AdminBookings yang menampilkan status Live. TenantBookings
+    dan TenantEventView menyembunyikan kegagalan channel di console, sehingga
+    user mengira data masih realtime padahal tidak.
+    Bukti: TenantBookings.tsx:146-150 dan TenantEventView.tsx:233-237 hanya
+    console.warn; AdminBookings.tsx:131-136 memakai isLive.
+    Rencana:
+    - Buat src/components/ui/SyncStatusBadge.tsx dengan tiga status:
+      "Sinkron real-time" (pine), "Menghubungkan…" (netral),
+      "Koneksi terputus" (clay) + tombol "Muat ulang data".
+    - Pakai status dari hook realtime task 17 atau state lokal bila hook
+      belum dipakai.
+    - Selama terputus, sediakan refresh manual (memanggil handler yang sudah
+      ada) dan tampilkan waktu pembaruan terakhir; tidak perlu polling
+      otomatis agar tidak menambah beban.
+    Acceptance: simulasi CHANNEL_ERROR mengubah badge dan menampilkan aksi
+    manual; setelah SUBSCRIBED badge kembali normal; tidak ada channel ganda.
+
+[ ] 21. Pipeline verifikasi otomatis (CI) dan script typecheck
+    Masalah: verifikasi masih manual (`npm test`, `npm run build`, E2E).
+    Tidak ada typecheck script, lint, maupun CI, sehingga regresi bisa masuk
+    ke main tanpa ketahuan.
+    Bukti: package.json hanya punya dev/build/preview/test/test:watch/
+    test:coverage/test:e2e; tidak ada folder .github; tidak ada ESLint.
+    Rencana:
+    - Tambah script: "typecheck": "tsc --noEmit",
+      "verify": "npm run typecheck && npm test && npm run build".
+    - Tambah .github/workflows/ci.yml: trigger push & pull_request,
+      Node 22, cache npm, jalankan npm ci, typecheck, test:coverage, build.
+    - Tambah langkah opsional Playwright smoke: install Chromium lalu
+      `npx playwright test e2e/smoke.spec.ts` (tanpa kredensial).
+    - Tambah coverage threshold minimal di vite.config.ts untuk
+      src/lib + src/store (mis. lines 60%, functions 60%, branches 50%)
+      setelah mengukur baseline agar tidak langsung merah.
+    Acceptance: workflow hijau di PR; `npm run verify` berjalan lokal;
+    README mencantumkan perintah baru dan arti kegagalannya.
+
+
+===============================================================================
+P2 - KUALITAS, PERFORMA, DAN KEJELASAN KODE
+===============================================================================
+
+[ ] 22. Ekstrak panel Loading/Error/Empty bersama
+    Masalah: markup panel status disalin di banyak halaman dengan detail
+    aksesibilitas yang sedikit berbeda (sebagian tanpa role="status" atau
+    aria-live).
+    Bukti: EventExplorer.tsx:216-240, TenantEventView.tsx:406-446,
+    TenantBookings.tsx:297-326, AdminBookings.tsx:294-323,
+    AdminDashboard.tsx:408, BlueprintList.tsx:580-592,
+    BlueprintEditor.tsx:558, ProtectedRoute.tsx:16-28.
+    Rencana:
+    - Buat src/components/ui/StatePanel.tsx dengan LoadingPanel (role status,
+      aria-live polite, teks spesifik), ErrorPanel (role alert, judul,
+      deskripsi, retry), dan EmptyPanel (judul, deskripsi, aksi opsional).
+    - Panel memakai border tipis + token, tanpa shadow/gradient, dan spinner
+      dengan motion-reduce:animate-none.
+    - Ganti markup berulang tanpa mengubah teks yang sudah disetujui QA.
+    Acceptance: tidak ada duplikasi panel status besar; setiap loading
+    mengumumkan status ke screen reader; audit axe tetap lulus.
+
+[ ] 23. Perluas tes komponen, hook, dan jalur error
+    Masalah: 52 unit test (4 file) hanya mencakup store, canvas, booking,
+    blueprint. Komponen interaktif dan jalur error belum diuji.
+    Rencana tambah tes:
+    - lib/bookingRealtime: INSERT/UPDATE/DELETE/row parsial.
+    - lib/booking: getRemainingMs/formatRemaining + batas waktu tepat.
+    - hooks/useBookingClock: pakai fake timers, berhenti saat unmount.
+    - components/ui/InlineConfirm: fokus awal Batal, Escape, Tab trap,
+      pengembalian fokus.
+    - components/ui/Toast: auto-dismiss 5 detik, role alert untuk error.
+    - components/checkout/CheckoutModal: Escape menutup saat tidak
+      confirming, fokus trap, tombol nonaktif saat booth tidak tersedia.
+    - components/layout/ProtectedRoute: redirect login vs role salah.
+    - Perluas coverage include ke src/components/ui, src/hooks, src/lib,
+      src/store; pertahankan threshold dari task 21.
+    Acceptance: minimal +20 test dan seluruh `npm test` lulus; tidak ada
+    snapshot rapuh; tes tidak memerlukan kredensial Supabase.
+
+[ ] 24. Debounce pencarian dan tombol reset filter
+    Masalah: EventExplorer dan AdminBookings memfilter seluruh data pada
+    setiap ketikan. AdminBookings juga tidak punya tombol reset saat filter
+    aktif, sehingga user bisa bingung melihat daftar kosong.
+    Bukti: EventExplorer.tsx:129-138; AdminBookings.tsx:149-166 dan
+    392-444 (tidak ada reset).
+    Rencana:
+    - Buat src/hooks/useDebouncedValue.ts (250ms) dan pakai untuk kolom
+      pencarian di kedua halaman. Nilai input tetap responsif.
+    - Tambah tombol "Reset filter" di AdminBookings yang muncul hanya bila
+      search/eventFilter/statusFilter aktif; kembalikan ke all/''.
+    - Umumkan jumlah hasil lewat aria-live halus (tanpa mengganggu fokus).
+    Acceptance: mengetik cepat tidak memicu filter per karakter; reset
+    mengembalikan seluruh daftar; fokus input tidak hilang; test lulus.
+
+[ ] 25. Optimasi query baca dan pagination daftar pesanan
+    Masalah: AdminBookings memuat seluruh booking lalu memfilter di klien;
+    EventExplorer memuat seluruh booth dari semua blueprint (termasuk draft
+    bila RLS mengizinkan) hanya untuk menghitung ringkasan.
+    Bukti: AdminBookings.tsx:88-91; EventExplorer.tsx:74-81.
+    Rencana (tanpa mengubah RPC/skema):
+    - EventExplorer: ambil blueprint published lebih dulu, lalu booth dengan
+      `.in('blueprint_id', ids)`. Bila ids kosong, lewati query booth.
+    - AdminBookings: tambahkan pagination klien/server ringan 25 baris
+      (`.range()`) + total count. Filter dan realtime tetap bekerja pada
+      halaman aktif; perubahan realtime di luar halaman cukup memperbarui
+      total.
+    - Sertakan kontrol paginasi yang dapat dioperasikan keyboard dan
+      menampilkan "1-25 dari N".
+    Catatan: kerjakan hanya bila data uji sudah >200 baris atau terbukti
+    lambat; jangan mengubah RPC, index, atau kebijakan RLS.
+    Acceptance: tidak ada booth draft yang ikut dihitung; halaman admin
+    tetap menampilkan total dan filter yang benar; tidak ada query ganda
+    yang tidak perlu.
+
+[ ] 26. Pecah file halaman yang terlalu besar
+    Masalah: beberapa file sulit ditinjau dan rawan konflik merge.
+    Ukuran saat ini: LandingPage.tsx ~49 KB, BlueprintList.tsx ~40 KB,
+    AdminDashboard.tsx ~38 KB, AdminBookings.tsx ~28 KB,
+    BlueprintEditor.tsx ~24 KB.
+    Rencana:
+    - LandingPage: pecah per bagian (hero, preview peta, alur, manfaat, CTA)
+      ke src/pages/landing/sections/.
+    - BlueprintList: pisah kartu denah, form buat, form edit detail, dan
+      dialog hapus ke komponen lokal.
+    - BlueprintEditor: pisah form metadata, toolbar simpan, dan panel
+      pratinjau bila memungkinkan.
+    - Murni pemindahan markup; props dan handler tetap.
+    Acceptance: tidak ada file halaman >400 baris; build chunk stabil;
+    E2E smoke + a11y tetap lulus; tidak ada perubahan perilaku.
+
+[ ] 27. Optimasi bundle vendor
+    Masalah: chunk utama 484,29 kB, hanya ~16 kB di bawah ambang peringatan
+    500 kB. Penambahan fitur kecil bisa memunculkan warning lagi.
+    Rencana:
+    - Tambah manualChunks di vite.config.ts untuk react/react-dom,
+      react-router-dom, @supabase/supabase-js, dan @dnd-kit.
+    - Pastikan urutan eksekusi modul tidak berubah dan tidak ada chunk
+      circular.
+    Acceptance: build tanpa warning chunk >500 kB; ukuran JS awal tidak
+    bertambah; route lazy tetap terpisah; aplikasi berjalan di preview.
+
+[ ] 28. Sinkronkan dokumen status dan panduan kontribusi
+    Masalah: status acuan NEXT_TASKS masih a1afc25, README menyebut 51 unit
+    test padahal aktual 52, dan belum ada panduan singkat untuk task fase 2.
+    Rencana:
+    - Perbarui header NEXT_TASKS dengan commit acuan terbaru dan tandai
+      task 15-28 saat selesai (format STATUS: SELESAI + tanggal + hasil).
+    - README: perbarui jumlah tes, tambah `npm run typecheck`,
+      `npm run verify`, penjelasan CI, dan catatan error boundary.
+    - qa_checklist_test_plan.md: tambah skenario hitungan waktu kedaluwarsa
+      dan indikator koneksi realtime (versi dokumen naik).
+    Acceptance: semua perintah di README dapat dijalankan apa adanya;
+    tidak ada angka tes/route yang usang; status task sesuai kenyataan.
+
+
+===============================================================================
+URUTAN EKSEKUSI FASE 2 YANG DISARANKAN
+===============================================================================
+1. Task 15 (token warna) - dampak visual, cepat, menghapus utang desain
+2. Task 16-17 (deduplikasi booth & booking) - fondasi refactor berikutnya
+3. Task 18 (error boundary) - mencegah layar putih di produksi
+4. Task 19-20 (expiry clock & status realtime) - akurasi data ke pengguna
+5. Task 21 (CI) - mengunci kualitas sebelum iterasi besar
+6. Task 22-24 (panel bersama, tes, debounce) - kualitas harian
+7. Task 25-27 (query, pecah file, bundle) - performa dan maintainability
+8. Task 28 (dokumentasi) - penutup setiap rilis
+
+
+===============================================================================
+FASE 3 - ITERASI LANJUTAN
+===============================================================================
+Status acuan: d5029c5 (task 15 selesai; task 16-28 masih terbuka).
+Fokus: menghilangkan sisa duplikasi kecil, melengkapi aksesibilitas, mengunci
+kualitas dengan tooling, dan memperluas cakupan E2E.
+Catatan: tetap jangan mengubah routing, RPC/skema Supabase, logika Zustand,
+atau DnD yang sudah berjalan. Setiap task wajib lulus `tsc --noEmit`,
+`npm test`, dan `npm run build`.
+
+
+===============================================================================
+P1 - DUPLIKASI KECIL DAN KETAHANAN INTERAKSI
+===============================================================================
+
+[ ] 29. Satukan markup spinner
+    Masalah: markup spinner yang sama disalin 15 kali dengan ukuran dan warna
+    berbeda, sehingga rawan tidak konsisten ketika tema berubah.
+    Bukti:
+    - src/components/admin/BlueprintImageUploader.tsx:154
+    - src/pages/Login.tsx:188, src/pages/Register.tsx:271
+    - src/pages/tenant/EventExplorer.tsx:221,
+      TenantBookings.tsx:302, TenantEventView.tsx:411
+    - src/components/checkout/CheckoutModal.tsx:345
+    - src/pages/admin/BlueprintList.tsx:552,580,
+      BlueprintEditor.tsx:431,558, AdminBookings.tsx:299,
+      AdminDashboard.tsx:408
+    - src/components/layout/ProtectedRoute.tsx:22
+    - src/components/map/TenantSidebar.tsx:187
+    Rencana:
+    - Buat src/components/ui/Spinner.tsx dengan props size ('sm'|'md'|'lg')
+      dan tone ('pine'|'white'); aria-hidden="true"; animate-spin yang sudah
+      dihormati prefers-reduced-motion.
+    - Ganti seluruh markup spinner inline; jangan ubah teks status, layout
+      tombol, atau aria-hidden.
+    Acceptance: pencarian animate-spin hanya tersisa di Spinner.tsx; ukuran
+    dan posisi visual sama; tsc/test/build lulus.
+
+[ ] 30. Pakai InlineConfirm di panel hapus booth
+    Masalah: BoothSidebar membuat alertdialog sendiri tanpa focus trap dan
+    tanpa pengembalian fokus, berbeda dari InlineConfirm yang sudah dipakai
+    AdminBookings, TenantBookings, dan BlueprintList.
+    Bukti: BoothSidebar.tsx:295-336 memakai role="alertdialog" manual,
+    autoFocus pada Batal, dan Escape lokal; InlineConfirm.tsx sudah menangani
+    Tab trap, Escape, serta restore fokus ke pemicu.
+    Rencana:
+    - Ganti blok manual dengan <InlineConfirm> (id, title, description,
+      confirmLabel "Ya, hapus", onConfirm removeBooth + tutup panel, onCancel,
+      className yang menjaga jarak visual).
+    - Pertahankan teks dan perilaku: booth dihapus dari kanvas draf dan baru
+      diterapkan saat denah disimpan.
+    Acceptance: hanya ada satu implementasi alertdialog untuk hapus booth;
+    Tab/Escape/fokus kembali berfungsi; test dan build lulus.
+
+[ ] 31. Perkuat Toast: error persisten, timer dibersihkan, batasi tumpukan
+    Masalah: showToast memakai window.setTimeout tanpa menyimpan id
+    (Toast.tsx:71) sehingga timer tidak dibatalkan saat toast ditutup atau
+    provider unmount. Semua varian hilang dalam 5 detik, termasuk error yang
+    memakai role="alert".
+    Rencana:
+    - Simpan timer per toast (useRef<Map<number, number>>), clearTimeout saat
+      removeToast dan saat provider unmount.
+    - Error tidak auto-dismiss (atau minimal 10 detik) dan tetap bisa ditutup
+      manual; success/info tetap 5 detik.
+    - Batasi maksimal 3 toast tampil; toast tertua dilepas agar tidak menutupi
+      konten di layar kecil.
+    - Jangan ubah aria-live, role, atau struktur markup yang sudah lulus axe.
+    Acceptance: unit test fake timer membuktikan timer dibersihkan, error
+    tidak hilang otomatis, dan maksimal 3 toast tampil; tsc/test/build lulus.
+
+
+===============================================================================
+P2 - KEBERSIHAN UI, AKSESIBILITAS, DAN TOOLING
+===============================================================================
+
+[ ] 32. Satukan style input form autentikasi
+    Masalah: Login dan Register menyalin baseInputClass/inputClass persis,
+    termasuk state error, sehingga perubahan warna harus dilakukan dua kali.
+    Bukti: Login.tsx:10-19 dan Register.tsx:11-20 identik.
+    Rencana:
+    - Pindahkan helper ke src/lib/formStyles.ts (baseInputClass, inputClass)
+      atau komponen src/components/ui/FormField.tsx bila markup ikut disatukan.
+    - Gunakan di Login/Register tanpa mengubah id, name, autoComplete,
+      aria-invalid, aria-describedby, atau urutan field.
+    Acceptance: tidak ada salinan class string input di dua halaman; visual
+    dan atribut aksesibilitas identik; build lulus.
+
+[ ] 33. Judul halaman dinamis per route
+    Masalah: <title> hanya ada di index.html sehingga semua route tampil
+    dengan judul yang sama; riwayat tab dan screen reader sulit dibedakan.
+    Bukti: index.html:13 satu-satunya title; tidak ada document.title di src/.
+    Rencana:
+    - Buat hook src/hooks/useDocumentTitle.ts (set title dan restore saat
+      unmount) dengan format "Halaman · sewa-yuk".
+    - Pasang di 10 halaman: Landing, Login, Register, EventExplorer,
+      TenantEventView, TenantBookings, AdminDashboard, AdminBookings,
+      BlueprintList, dan BlueprintEditor; judul event/denah boleh memakai nama
+      data bila sudah tersedia.
+    - Jangan ubah routing atau metadata lain di luar title.
+    Acceptance: setiap route punya title berbeda dan kembali ke default saat
+    pindah; unit test hook lulus.
+
+[ ] 34. Tambah skip link dan landmark main yang konsisten
+    Masalah: pengguna keyboard harus melewati seluruh navigasi di setiap
+    halaman; baru Landing yang memiliki <main id="main">.
+    Bukti: AppHeader.tsx tidak punya link "Lewati ke konten";
+    LandingPage.tsx:737 sudah id="main", sedangkan EventExplorer.tsx:144,
+    TenantBookings.tsx:263, TenantEventView.tsx:333, BlueprintList.tsx:385,
+    BlueprintEditor.tsx:333, AdminBookings.tsx:262, AdminDashboard.tsx:358,
+    dan AuthLayout.tsx:117 belum.
+    Rencana:
+    - Tambah link sr-only focusable "Lewati ke konten utama" di AppHeader dan
+      AuthLayout menuju #main.
+    - Tambah id="main" dan tabIndex={-1} pada setiap <main>.
+    - Jangan ubah struktur visual; link hanya muncul saat fokus.
+    Acceptance: Tab pertama memunculkan skip link; Enter memindahkan fokus ke
+    main; axe Landing dan /event tetap lulus.
+
+[ ] 35. Satukan ekstraksi pesan error lintas modul
+    Masalah: pola `error instanceof Error ? error.message : ...` disalin di
+    beberapa modul dengan bentuk slightly berbeda, sehingga pesan jaringan
+    atau objek error Supabase bisa tampil mentah.
+    Bukti: lib/auth.ts:29, lib/booking.ts:63, lib/blueprint.ts:32-35,
+    lib/storage.ts:79-82, dan pages/admin/AdminDashboard.tsx:313.
+    Rencana:
+    - Buat src/lib/errors.ts: getErrorMessage(error, fallback) dan
+      isNetworkError(message) untuk pola failed to fetch/network/timeout.
+    - Pakai helper di empat modul; pertahankan pemetaan pesan domain yang
+      sudah ada (auth/booking/gambar) dan teks yang dilihat pengguna.
+    - Tambah unit test untuk Error, string, objek { message }, null, dan
+      error jaringan.
+    Acceptance: hanya satu implementasi ekstraksi pesan generik; pesan domain
+    tetap sama; test lulus.
+
+[ ] 36. Satukan fixture login E2E dan audit axe berautentikasi
+    Masalah: helper login disalin di a11y.spec.ts:49-55 dan sync.spec.ts:44-52;
+    setiap tes login ulang sehingga lambat dan rawan berbeda.
+    Rencana:
+    - Buat e2e/fixtures.ts berisi login(), pembacaan kredensial dari env, dan
+      helper skip yang menyebut variabel .env.e2e yang kurang.
+    - Opsional: simpan storageState per role lewat project/setup dan pakai
+      ulang; jangan commit file state.
+    - Ganti salinan di kedua spec; pertahankan perilaku skip saat kredensial
+      tidak ada.
+    Acceptance: hanya satu implementasi login; tanpa kredensial test:e2e
+    tetap 2 lulus + 4 skip; dengan kredensial A11Y-04..06 berjalan.
+
+[ ] 37. Audit target sentuh dan fokus yang terlihat
+    Masalah: beberapa tombol ikon hanya sekitar 24-32px sehingga rawan salah
+    tekan di layar sentuh; sebagian kontrol kecil di kanvas juga demikian.
+    Bukti: Toast.tsx:97 (ikon 16px + p-1), CheckoutModal.tsx:142,
+    AppHeader.tsx:110, serta tombol kecil di BoothSidebar.tsx:317-341.
+    Rencana:
+    - Naikkan area klik tombol ikon ke minimal 44x44 px dengan padding atau
+      min-h/min-w tanpa memperbesar ikon; pertahankan radius 4-8px.
+    - Pastikan focus-visible:ring tetap terlihat dan tidak terpotong
+      overflow-hidden.
+    - Audit di 360px, 768px, dan 1280px; jangan ubah layout desktop.
+    Acceptance: tombol ikon punya area minimal 44x44 dan tidak ada target di
+    bawah 24x24; axe tetap lulus; tampilan tidak berubah berarti.
+
+[ ] 38. Tambah lint dan format otomatis
+    Masalah: task 21 menambah typecheck dan CI, tetapi belum ada ESLint atau
+    Prettier; kesalahan hooks, import tak terpakai, dan format hanya
+    tertangkap saat review manual.
+    Bukti: package.json tidak punya script lint/format dan tidak ada
+    eslint.config.js maupun .prettierrc.
+    Rencana:
+    - Tambah ESLint flat config (typescript-eslint, react-hooks,
+      react-refresh) dan Prettier.
+    - Tambah script "lint", "lint:fix", "format", dan "format:check"; jalankan
+      lint di CI task 21 bila sudah tersedia.
+    - Perbaiki pelanggaran yang muncul tanpa mengubah perilaku; abaikan dist,
+      coverage, dan playwright-report.
+    Acceptance: `npm run lint` dan `npm run format:check` lulus; tsc/test/build
+    tetap lulus.
+
+
+===============================================================================
+URUTAN EKSEKUSI FASE 3 YANG DISARANKAN
+===============================================================================
+1. Task 29-30 (spinner dan InlineConfirm) - duplikasi kecil, cepat
+2. Task 31 (Toast) - mencegah error hilang sebelum dibaca
+3. Task 32-34 (form auth, title, skip link) - konsistensi dan aksesibilitas
+4. Task 35 (pesan error) - kualitas pesan ke pengguna
+5. Task 36 (fixture E2E) - mempercepat dan menstabilkan tes
+6. Task 37 (target sentuh) - polish perangkat sentuh
+7. Task 38 (lint/format) - penutup tooling sebelum rilis

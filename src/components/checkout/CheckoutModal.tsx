@@ -104,7 +104,7 @@ export default function CheckoutModal({
   return createPortal(
     <div className="fixed inset-0 z-[90] flex items-end justify-center sm:items-center sm:p-4">
       <div
-        className="absolute inset-0 bg-black/50"
+        className="absolute inset-0 bg-overlay"
         onClick={() => {
           if (!confirming) onClose()
         }}

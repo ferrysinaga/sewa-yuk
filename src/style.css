@@ -8,8 +8,8 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  color: #111827;
-  background: #fff;
+  color: var(--color-ink);
+  background: var(--color-canvas);
 
   --color-canvas: #f7f6f2;
   --color-surface: #ffffff;
@@ -26,6 +26,10 @@
   --color-clay-soft: #f6ebe5;
   --color-unavailable: #efede6;
   --color-unavailable-deep: #e4e0d6;
+  --color-danger: #a23b28;
+  --color-danger-dark: #7f2d1f;
+  --color-danger-soft: #f7e7e2;
+  --color-overlay: rgba(34, 41, 35, 0.45);
 }
 
 @media (prefers-reduced-motion: reduce) {

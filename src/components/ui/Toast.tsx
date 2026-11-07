@@ -17,7 +17,7 @@ const ToastContext = createContext<ToastContextValue | null>(null)
 
 const variantStyles: Record<ToastVariant, string> = {
   success: 'border-line border-l-2 border-l-pine bg-surface text-ink',
-  error: 'border-line border-l-2 border-l-red-500 bg-surface text-ink',
+  error: 'border-line border-l-2 border-l-danger bg-surface text-ink',
   info: 'border-line border-l-2 border-l-clay bg-surface text-ink',
 }
 
@@ -34,7 +34,7 @@ const variantIcon: Record<ToastVariant, ReactNode> = {
     </span>
   ),
   error: (
-    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[6px] bg-red-50 text-red-600">
+    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[6px] bg-danger-soft text-danger">
       <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true" className="h-4 w-4">
         <path
           fillRule="evenodd"

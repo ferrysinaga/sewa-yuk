@@ -305,7 +305,7 @@ export default function AdminBookings() {
 
         {!loading && error && (
           <div className="mt-8 rounded-[10px] border border-line bg-surface p-8 text-center ">
-            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-[10px] bg-red-50 text-red-600">
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-[10px] bg-danger-soft text-danger">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-6 w-6">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m0 3.75h.008v.008H12v-.008ZM10.34 3.94 2.7 17.54A1.5 1.5 0 0 0 4 19.75h16a1.5 1.5 0 0 0 1.3-2.21L13.66 3.94a1.5 1.5 0 0 0-2.62 0Z" />
               </svg>
@@ -563,7 +563,7 @@ export default function AdminBookings() {
                                     disabled={isUpdating}
                                     aria-expanded={confirmingCancel}
                                     aria-controls={`cancel-booking-${booking.id}`}
-                                    className="rounded-[8px] px-2 py-1.5 text-[11px] font-semibold text-muted transition-colors hover:bg-red-50 hover:text-red-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+                                    className="rounded-[8px] px-2 py-1.5 text-[11px] font-semibold text-muted transition-colors hover:bg-danger-soft hover:text-danger-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-danger focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
                                   >
                                     Batalkan
                                   </button>

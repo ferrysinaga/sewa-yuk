@@ -14,7 +14,7 @@ const baseInputClass =
 function inputClass(hasError: boolean) {
   return `${baseInputClass} ${
     hasError
-      ? 'border-red-300 focus:border-red-400 focus:ring-red-100'
+      ? 'border-danger focus:border-danger focus:ring-danger-soft'
       : 'border-line focus:border-pine focus:ring-pine-soft'
   }`
 }
@@ -186,7 +186,7 @@ export default function Register() {
               className={`mt-1.5 ${inputClass(Boolean(visibleEmailError))}`}
             />
             {visibleEmailError && (
-              <p id="email-error" className="mt-1.5 text-xs text-red-600">
+              <p id="email-error" className="mt-1.5 text-xs text-danger-dark">
                 {emailError}
               </p>
             )}
@@ -229,7 +229,7 @@ export default function Register() {
               </button>
             </div>
             {visiblePasswordError && (
-              <p id="password-error" className="mt-1.5 text-xs text-red-600">
+              <p id="password-error" className="mt-1.5 text-xs text-danger-dark">
                 {passwordError}
               </p>
             )}
@@ -253,7 +253,7 @@ export default function Register() {
               className={`mt-1.5 ${inputClass(Boolean(visibleConfirmError))}`}
             />
             {visibleConfirmError && (
-              <p id="confirm-password-error" className="mt-1.5 text-xs text-red-600">
+              <p id="confirm-password-error" className="mt-1.5 text-xs text-danger-dark">
                 {confirmPasswordError}
               </p>
             )}

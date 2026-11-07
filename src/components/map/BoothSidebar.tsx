@@ -302,14 +302,14 @@ export default function BoothSidebar() {
                       setConfirmingDelete(false)
                     }
                   }}
-                  className="mt-2 rounded-[6px] border border-red-200 bg-red-50 p-3"
+                  className="mt-2 rounded-[6px] border border-danger bg-danger-soft p-3"
                 >
-                  <p id="delete-booth-title" className="text-xs font-semibold text-red-800">
+                  <p id="delete-booth-title" className="text-xs font-semibold text-danger-dark">
                     Hapus booth ini?
                   </p>
                   <p
                     id="delete-booth-description"
-                    className="mt-1 text-[11px] leading-relaxed text-red-700"
+                    className="mt-1 text-[11px] leading-relaxed text-danger-dark"
                   >
                     Booth dihapus dari kanvas draf. Simpan denah untuk menerapkan perubahan.
                   </p>
@@ -320,7 +320,7 @@ export default function BoothSidebar() {
                         removeBooth(activeBooth.id)
                         setConfirmingDelete(false)
                       }}
-                      className="inline-flex items-center justify-center rounded-[4px] bg-red-600 px-3 py-1.5 text-[11px] font-semibold text-white transition-colors hover:bg-red-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600 focus-visible:ring-offset-2 motion-reduce:transition-none"
+                      className="inline-flex items-center justify-center rounded-[4px] bg-danger px-3 py-1.5 text-[11px] font-semibold text-white transition-colors hover:bg-danger-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-danger focus-visible:ring-offset-2 motion-reduce:transition-none"
                     >
                       Ya, hapus
                     </button>
@@ -338,7 +338,7 @@ export default function BoothSidebar() {
                 <button
                   type="button"
                   onClick={() => setConfirmingDelete(true)}
-                  className="mt-2 inline-flex w-full items-center justify-center gap-2 rounded-[6px] border border-red-200 bg-surface px-4 py-2 text-sm font-semibold text-red-700 transition-colors hover:bg-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600 focus-visible:ring-offset-2 focus-visible:ring-offset-surface motion-reduce:transition-none"
+                  className="mt-2 inline-flex w-full items-center justify-center gap-2 rounded-[6px] border border-danger bg-surface px-4 py-2 text-sm font-semibold text-danger-dark transition-colors hover:bg-danger-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-danger focus-visible:ring-offset-2 focus-visible:ring-offset-surface motion-reduce:transition-none"
                 >
                   <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true" className="h-4 w-4">
                     <path

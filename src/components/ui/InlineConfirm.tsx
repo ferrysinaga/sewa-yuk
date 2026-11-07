@@ -76,19 +76,19 @@ export default function InlineConfirm({
       aria-labelledby={`${id}-title`}
       aria-describedby={`${id}-description`}
       onKeyDown={handleKeyDown}
-      className={className ?? 'rounded-[6px] border border-red-200 bg-red-50 p-3'}
+      className={className ?? 'rounded-[6px] border border-danger bg-danger-soft p-3'}
     >
-      <p id={`${id}-title`} className="text-xs font-semibold text-red-800">
+      <p id={`${id}-title`} className="text-xs font-semibold text-danger-dark">
         {title}
       </p>
-      <p id={`${id}-description`} className="mt-1 text-[11px] leading-relaxed text-red-700">
+      <p id={`${id}-description`} className="mt-1 text-[11px] leading-relaxed text-danger-dark">
         {description}
       </p>
       <div className="mt-3 flex flex-wrap gap-2">
         <button
           type="button"
           onClick={onConfirm}
-          className="inline-flex items-center justify-center rounded-[4px] bg-red-600 px-3 py-1.5 text-[11px] font-semibold text-white transition-colors hover:bg-red-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600 focus-visible:ring-offset-2 motion-reduce:transition-none"
+          className="inline-flex items-center justify-center rounded-[4px] bg-danger px-3 py-1.5 text-[11px] font-semibold text-white transition-colors hover:bg-danger-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-danger focus-visible:ring-offset-2 motion-reduce:transition-none"
         >
           {confirmLabel}
         </button>

@@ -565,20 +565,20 @@ export default function BlueprintEditor() {
         {!loading && loadError && (
           <div
             role="alert"
-            className="mt-6 flex flex-col gap-3 rounded-[10px] border border-red-200 bg-red-50 px-4 py-4 text-sm text-red-800 sm:flex-row sm:items-center sm:justify-between"
+            className="mt-6 flex flex-col gap-3 rounded-[10px] border border-danger bg-danger-soft px-4 py-4 text-sm text-danger-dark sm:flex-row sm:items-center sm:justify-between"
           >
             <p className="leading-relaxed">Gagal memuat denah: {loadError}</p>
             <div className="flex flex-col gap-2 sm:flex-row">
               <button
                 type="button"
                 onClick={() => setReloadToken((token) => token + 1)}
-                className="inline-flex shrink-0 items-center justify-center rounded-[6px] border border-red-200 bg-surface px-4 py-2 text-sm font-semibold text-red-700 transition-colors hover:bg-red-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2"
+                className="inline-flex shrink-0 items-center justify-center rounded-[6px] border border-danger bg-surface px-4 py-2 text-sm font-semibold text-danger-dark transition-colors hover:bg-danger-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-danger focus-visible:ring-offset-2"
               >
                 Coba lagi
               </button>
               <Link
                 to="/admin/blueprint"
-                className="inline-flex shrink-0 items-center justify-center rounded-[6px] border border-red-200 bg-surface px-4 py-2 text-sm font-semibold text-red-700 transition-colors hover:bg-red-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2"
+                className="inline-flex shrink-0 items-center justify-center rounded-[6px] border border-danger bg-surface px-4 py-2 text-sm font-semibold text-danger-dark transition-colors hover:bg-danger-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-danger focus-visible:ring-offset-2"
               >
                 Daftar denah
               </Link>
