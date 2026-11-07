@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import AppHeader from '../../components/layout/AppHeader'
 import InlineConfirm from '../../components/ui/InlineConfirm'
+import SyncStatusBadge from '../../components/ui/SyncStatusBadge'
 import { useToast } from '../../components/ui/Toast'
 import { useBookingClock } from '../../hooks/useBookingClock'
 import { useBookingFeed } from '../../hooks/useBookingFeed'
@@ -48,6 +49,7 @@ export default function TenantBookings() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [reloadToken, setReloadToken] = useState(0)
+  const [lastLoadedAt, setLastLoadedAt] = useState<number | null>(null)
   const [statusFilter, setStatusFilter] = useState<BookingStatus | 'all'>('all')
   const [updatingId, setUpdatingId] = useState<string | null>(null)
   const [confirmingCancelId, setConfirmingCancelId] = useState<string | null>(null)
@@ -56,7 +58,8 @@ export default function TenantBookings() {
   const hasPendingBooking = bookings.some((booking) => booking.status === 'pending')
   const now = useBookingClock(hasPendingBooking)
 
-  useBookingFeed({ userId: user?.id ?? null, setBookings, enabled: Boolean(user) })
+  const feed = useBookingFeed({ userId: user?.id ?? null, setBookings, enabled: Boolean(user) })
+  const lastUpdatedAt = Math.max(feed.lastEventAt ?? 0, lastLoadedAt ?? 0) || null
 
   useEffect(() => {
     if (!isSupabaseConfigured) {
@@ -104,6 +107,7 @@ export default function TenantBookings() {
 
       setBookings((bookingResult.data ?? []) as BookingRow[])
       setBlueprints((blueprintResult.data ?? []) as BlueprintSummaryRow[])
+      setLastLoadedAt(Date.now())
       setLoading(false)
     }
 
@@ -251,6 +255,14 @@ export default function TenantBookings() {
             <p className="mt-2 text-sm text-muted">
               Pantau status pemesanan booth dan selesaikan pembayaran sebelum batas waktu.
             </p>
+            <div className="mt-3">
+              <SyncStatusBadge
+                status={feed.status}
+                lastUpdatedAt={lastUpdatedAt}
+                onRefresh={() => void handleRefresh()}
+                refreshing={refreshing}
+              />
+            </div>
           </div>
           <div className="flex flex-col gap-2 sm:flex-row">
             <button

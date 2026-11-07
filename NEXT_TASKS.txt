@@ -507,7 +507,28 @@ P1 - RISIKO VISUAL, REGRESI, DAN OPERASIONAL
     dalam <1 detik setelah deadline tanpa reload; RPC sweep tidak dipanggil
     berulang-ulang setelah deadline yang sama; semua unit test lulus.
 
-[ ] 20. Indikator koneksi realtime yang terlihat + fallback manual
+[x] 20. Indikator koneksi realtime yang terlihat + fallback manual
+    STATUS: SELESAI (7 November 2026)
+    File: src/components/ui/SyncStatusBadge.tsx (baru),
+          src/components/ui/SyncStatusBadge.test.tsx (baru),
+          src/lib/realtimeStatus.ts (baru),
+          src/lib/realtimeStatus.test.ts (baru),
+          src/hooks/useBookingFeed.ts,
+          src/pages/admin/AdminBookings.tsx,
+          src/pages/tenant/TenantBookings.tsx,
+          src/pages/tenant/TenantEventView.tsx
+    Hasil: SyncStatusBadge menampilkan tiga keadaan: "Sinkron real-time"
+    (pine), "Menghubungkan…" (netral), dan "Koneksi terputus" (clay).
+    Saat terputus, badge menampilkan waktu pembaruan terakhir dan tombol
+    "Muat ulang data" yang memanggil handler refresh yang sudah ada.
+    useBookingFeed kini mengembalikan { status, lastEventAt }: CHANNEL_ERROR,
+    TIMED_OUT, dan CLOSED menjadi terputus, SUBSCRIBED kembali live, dan
+    setiap payload memperbarui waktu. Nama channel tetap `admin-bookings` /
+    `tenant-bookings-<id>` dan hook tetap dipakai sekali per halaman sehingga
+    tidak ada channel ganda. TenantEventView mengganti badge statis dengan
+    status channel booth yang sebenarnya. Verifikasi: tsc --noEmit lulus,
+    83 unit test lulus (7 test baru), build lulus, dan E2E publik 3 lulus
+    (4 axe berautentikasi skip).
     Masalah: hanya AdminBookings yang menampilkan status Live. TenantBookings
     dan TenantEventView menyembunyikan kegagalan channel di console, sehingga
     user mengira data masih realtime padahal tidak.

@@ -4,12 +4,15 @@ import CheckoutModal from '../../components/checkout/CheckoutModal'
 import AppHeader from '../../components/layout/AppHeader'
 import InteractiveMap from '../../components/map/InteractiveMap'
 import TenantSidebar from '../../components/map/TenantSidebar'
+import SyncStatusBadge from '../../components/ui/SyncStatusBadge'
 import { useToast } from '../../components/ui/Toast'
 import { getBookingErrorMessage } from '../../lib/booking'
 import { sweepExpiredBookings } from '../../lib/bookingExpiry'
 import { isCompleteBoothRow, mapRowToBooth } from '../../lib/boothRow'
 import type { BoothRow } from '../../lib/boothRow'
 import { createChannelName } from '../../lib/id'
+import { resolveRealtimeStatus } from '../../lib/realtimeStatus'
+import type { RealtimeStatus } from '../../lib/realtimeStatus'
 import { isSupabaseConfigured, supabase } from '../../lib/supabase'
 import { useAuthStore } from '../../store/useAuthStore'
 import { useBoothStore } from '../../store/useBoothStore'
@@ -70,6 +73,8 @@ export default function TenantEventView() {
   const [reservedBoothId, setReservedBoothId] = useState<string | null>(null)
   const [reservedBooking, setReservedBooking] = useState<BookingRow | null>(null)
   const [checkoutOpen, setCheckoutOpen] = useState(false)
+  const [syncStatus, setSyncStatus] = useState<RealtimeStatus>('connecting')
+  const [lastSyncedAt, setLastSyncedAt] = useState<number | null>(null)
   const locallyReservedRef = useRef<Set<string>>(new Set())
 
   useEffect(() => {
@@ -135,6 +140,7 @@ export default function TenantEventView() {
         ((boothsResult.data ?? []) as BoothRow[]).map(mapRowToBooth),
         blueprintRow.image_url,
       )
+      setLastSyncedAt(Date.now())
       setLoading(false)
     }
 
@@ -146,7 +152,13 @@ export default function TenantEventView() {
   }, [eventId, reloadToken, setBooths])
 
   useEffect(() => {
-    if (!eventId || !isSupabaseConfigured) return
+    if (!eventId || !isSupabaseConfigured) {
+      setSyncStatus('disconnected')
+      return
+    }
+
+    setSyncStatus('connecting')
+    setLastSyncedAt(null)
 
     const channel = supabase
       .channel(createChannelName(`tenant-booths-${eventId}`))
@@ -193,12 +205,19 @@ export default function TenantEventView() {
         },
       )
       .subscribe((status) => {
+        setSyncStatus(resolveRealtimeStatus(status))
+
+        if (status === 'SUBSCRIBED') {
+          setLastSyncedAt(Date.now())
+        }
+
         if (status === 'CHANNEL_ERROR') {
           console.warn('Koneksi realtime booth gagal. Perubahan status mungkin tertunda.')
         }
       })
 
     return () => {
+      setSyncStatus('disconnected')
       void supabase.removeChannel(channel)
     }
   }, [eventId, showToast])
@@ -326,10 +345,12 @@ export default function TenantEventView() {
                   {role === 'organizer' ? 'Pratinjau organizer' : BLUEPRINT_STATUS_LABEL[blueprint.status]}
                 </span>
               )}
-              <span className="inline-flex items-center gap-1.5 rounded-[4px] border border-line bg-surface px-2 py-0.5 text-[11px] font-medium text-pine">
-                <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-pine" />
-                Sinkron real-time
-              </span>
+              <SyncStatusBadge
+                status={syncStatus}
+                lastUpdatedAt={lastSyncedAt}
+                onRefresh={() => setReloadToken((token) => token + 1)}
+                refreshing={loading}
+              />
             </div>
 
             {blueprint ? (
