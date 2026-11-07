@@ -1,0 +1,290 @@
+DAFTAR TASK SELANJUTNYA - sewa-yuk
+Disusun dari gap analysis qa_checklist_test_plan.md vs kode aktual
+Status acuan commit: a1afc25
+Legenda prioritas: [P0] blocker QA / risiko data, [P1] penting, [P2] nice to have
+Centang [x] jika sudah selesai.
+
+CATATAN: Jangan mengubah routing, logika Supabase, logika Zustand, atau DnD
+yang sudah berjalan. Ikuti frontend.md (token warna, radius 6-10px, border tipis,
+tanpa gradient/blur/shadow tebal/emoji).
+
+
+===============================================================================
+P0 - HARUS BERES SEBELUM QA DIJALANKAN
+===============================================================================
+
+[x] 1. Sinkronkan qa_checklist_test_plan.md dengan aplikasi
+    STATUS: SELESAI (4 November 2026)
+    File: qa_checklist_test_plan.md
+    Perbaikan yang diperlukan:
+    - AUTH-01: tujuan setelah login admin adalah /admin (bukan /admin/dashboard)
+    - AUTH-04: logout ada di menu profil pada AppHeader (bukan sidebar admin)
+    - LAND-01: CTA hero menuju /event (bukan /events)
+    - DASH-01: buka /admin (bukan /admin/dashboard)
+    - MAP-02: status menggunakan warna + label teks; Reserved netral/dashed,
+      Booked abu-abu; bukan Reserved kuning
+    - MAP-03: sorotan booth memakai warna pine (isi + garis, bukan biru)
+    - MAP-02/03: booth tidak tersedia tetap bisa dipilih untuk inspeksi,
+      hanya tombol booking yang dinonaktifkan
+    - RESP-01: panel detail tampil di bawah peta (bukan bottom sheet),
+      atau putuskan untuk benar-benar membuat bottom sheet
+    - AUTH-03: tambahkan negative test tenant membuka /admin
+    Acceptance: seluruh route, warna, dan lokasi kontrol di dokumen cocok
+    dengan kode; tidak ada ekspektasi yang mustahil dipenuhi.
+    Hasil: dokumen naik ke versi 1.1.0. Route, label, dan warna sudah
+    disinkronkan; ditambah bagian 2.1 Konvensi Status Booth dan skenario
+    AUTH-05 (tenant membuka rute organizer). Contoh bug template juga
+    disesuaikan agar tidak lagi menyebut warna lama.
+
+[x] 2. Booking expiry / auto-release booth
+    STATUS: SELESAI (5 November 2026)
+    File: supabase/migrations/ (migrasi baru), src/pages/tenant/TenantBookings.tsx,
+          src/pages/admin/AdminBookings.tsx
+    Masalah: expires_at hanya ditampilkan, tidak pernah ditegakkan. Booking
+    pending menahan booth Reserved selamanya.
+    Rencana:
+    - Tambah RPC release_expired_bookings() yang:
+        * cari bookings status pending dengan expires_at < now()
+        * ubah status booking menjadi cancelled (alasan expired)
+        * ubah booth terkait dari Reserved menjadi Available
+        * gunakan FOR UPDATE agar aman dari race condition
+    - Jadwalkan via pg_cron (setiap 1-5 menit) atau panggil dari client
+      saat halaman bookings/event dibuka
+    - Tampilkan label "Kedaluwarsa" + tombol refresh status
+    - Pastikan realtime mengirim perubahan booth ke tenant lain
+    Acceptance: booking pending yang lewat batas otomatis cancelled dan
+    booth kembali Available tanpa intervensi manual.
+    Hasil: migrasi baru 20261105000000_booking_expiry.sql menambah kolom
+    cancelled_reason, index parsial expires_at, dan RPC
+    release_expired_bookings() (FOR UPDATE SKIP LOCKED). RPC dijadwalkan
+    pg_cron tiap 2 menit bila ekstensi tersedia; bila tidak, halaman
+    /event, /event/:id, /bookings, dan /admin/bookings memanggilnya saat
+    dibuka.
+    mark_booking_paid menolak pembayaran setelah expires_at dan
+    confirm_booking menolak konfirmasi booking pending yang kedaluwarsa.
+    Tombol "Perbarui status" menjalankan sweep + reload. Badge "Kedaluwarsa"
+    (clay) tampil untuk cancelled_reason='expired' dan pending yang lewat
+    batas, dengan aksi bayar dinonaktifkan. Realtime booths/bookings
+    dipastikan aktif agar booth Available langsung terlihat di tab tenant
+    lain. Verifikasi: tsc --noEmit dan vite build lulus.
+
+[x] 3. Redesign halaman yang belum mengikuti frontend.md
+    STATUS: SELESAI (5 November 2026)
+    File:
+    - src/pages/admin/BlueprintList.tsx
+    - src/pages/admin/AdminBookings.tsx
+    - src/pages/tenant/TenantBookings.tsx
+    - src/pages/admin/BlueprintEditor.tsx (bagian form metadata & tombol preview)
+    Ganti:
+    - bg-gray-50/60, bg-white, text-gray-*, border-gray-* -> token canvas,
+      surface, ink, muted, line
+    - blue-600/700, emerald, amber -> pine, pine-soft, clay, pine-dark
+    - rounded-xl / rounded-2xl -> rounded-[6px] / rounded-[8px] / rounded-[10px]
+    - shadow-sm / shadow-md / hover:shadow-md -> border tipis, tanpa shadow
+    - focus ring biru -> focus-visible:ring-pine
+    - skeleton animate-pulse -> placeholder statis (hormati reduced motion)
+    Acceptance: tidak ada lagi kelas blue-*/gray-*/rounded-2xl/shadow-* di
+    keempat file; tampilan konsisten dengan LandingPage & AdminDashboard.
+    Hasil: seluruh kelas lama pada 4 file sudah diganti token warm (canvas,
+    surface, ink, muted, line, pine, clay, unavailable), radius 6-10px, dan
+    border tipis. Loading skeleton diganti panel statis + spinner pine.
+    BlueprintImageUploader (bagian form metadata) dan konstanta badge/dot di
+    types/blueprint.ts & types/booking.ts ikut diselaraskan agar badge status
+    tidak lagi memakai amber/blue/emerald. Sisa pemakaian lama di AdminDashboard
+    dan TenantEventView juga dibersihkan. Verifikasi: tidak ada blue-*/gray-*/
+    emerald-*/amber-*/rounded-xl/rounded-2xl/shadow-*/animate-pulse di keempat
+    file target; `tsc --noEmit` dan `vite build` lulus (warning chunk >500 kB
+    tetap ada, dijadwalkan pada task 11).
+
+[x] 4. Infrastruktur tes otomatis
+    STATUS: SELESAI (5 November 2026)
+    File: package.json, vite.config.ts, playwright.config.ts,
+          src/lib/canvas.ts, src/test/setup.ts, src/**/*.test.ts,
+          e2e/smoke.spec.ts, e2e/sync.spec.ts, .env.e2e.example
+    Rencana:
+    - Tambah Vitest + @testing-library/react + jsdom
+    - Script: "test", "test:watch", "test:coverage"
+    - Tambah Playwright + script "test:e2e"
+    - Tes unit awal:
+        * useBoothStore: snap-to-grid, clamp batas kanvas, add/remove booth,
+          updateBoothDetails, updateBoothStatus
+        * lib/booking: formatCurrency, formatDateTime, getBookingErrorMessage
+        * lib/blueprint: isValidBlueprintId, slugifyBlueprintName
+    - Tes E2E awal (2 browser context): SYNC-01, SYNC-02, SYNC-03
+    Acceptance: "npm test" dan "npm run test:e2e" berjalan lokal; minimal
+    skenario kritis di atas lulus.
+    Hasil: Vitest 5 + jsdom + Testing Library terpasang. Helper clamp,
+    snapToGrid, dan konstanta kanvas diekstrak ke src/lib/canvas.ts agar
+    dapat diuji tanpa mengubah perilaku drag-and-drop. 47 unit test lulus
+    (4 file): useBoothStore, canvas, lib/booking, lib/blueprint. Script
+    test, test:watch, test:coverage, dan test:e2e tersedia. Playwright
+    memakai Chromium, menjalankan dev server otomatis, dan memuat
+    .env.e2e. E2E smoke halaman login lulus; SYNC-01/02/03 memakai dua
+    browser context dan selector data-booth-id/data-booth-status, serta
+    otomatis dilewati dengan pesan jelas bila kredensial dua tenant,
+    event, dan booth belum diisi di .env.e2e. Verifikasi: npm test,
+    npm run test:coverage, npm run build, dan npm run test:e2e (1 lulus,
+    3 dilewati tanpa kredensial) berjalan. Catatan: SYNC perlu dijalankan
+    dengan akun uji nyata untuk membuktikan Realtime dan race condition.
+
+
+===============================================================================
+P1 - PENTING
+===============================================================================
+
+[x] 5. Ganti window.confirm dengan konfirmasi inline yang accessible
+    STATUS: SELESAI (6 November 2026)
+    File: src/components/ui/InlineConfirm.tsx (baru),
+          src/pages/admin/AdminBookings.tsx,
+          src/pages/tenant/TenantBookings.tsx, e2e/sync.spec.ts
+    Komponen InlineConfirm memakai role="alertdialog", aria-labelledby/
+    aria-describedby, autoFocus pada tombol Batal, Escape untuk batal, focus
+    trap Tab/Shift+Tab, dan mengembalikan fokus ke pemicu saat ditutup.
+    AdminBookings menampilkan baris konfirmasi di bawah baris pesanan;
+    TenantBookings menampilkan panel di footer kartu. Keduanya memakai
+    aria-expanded/aria-controls dengan id unik. Tidak ada lagi
+    window.confirm di src/. E2E SYNC menutup konfirmasi lewat
+    getByRole('alertdialog').
+
+[x] 6. Realtime booth INSERT/DELETE di kanvas tenant
+    STATUS: SELESAI (6 November 2026)
+    File: src/pages/tenant/TenantEventView.tsx, src/store/useBoothStore.ts
+    Langganan diubah dari event UPDATE menjadi '*'. Payload INSERT/UPDATE
+    yang lengkap dipetakan lewat mapRowToBooth dan dimasukkan dengan
+    upsertRealtimeBooth; DELETE memanggil removeRealtimeBooth. Baris parsial
+    tetap fallback ke updateBoothStatus. Kedua aksi realtime tidak menandai
+    isDirty, tidak menambah deletedBoothIds, dan tidak mengubah pilihan aktif.
+    Toast "booth dikunci penyewa lain" dipertahankan khusus UPDATE dari
+    Available ke status terisi. Unit test baru mencakup kedua aksi.
+    Catatan: verifikasi 2 tab dengan Supabase nyata menunggu kredensial
+    .env.e2e; skenario SYNC-01/02/03 sudah tersedia dan otomatis dilewati
+    tanpa kredensial.
+
+[x] 7. Edit status booth di panel properti (EDIT-04 lanjutan)
+    STATUS: SELESAI (6 November 2026)
+    File: src/components/map/BoothSidebar.tsx,
+          src/pages/admin/BlueprintEditor.tsx, src/store/useBoothStore.ts
+    Panel properti menambah select status Available/Reserved/Booked dengan
+    label teks Indonesia + hint, memakai updateBoothStatus lalu markDirty agar
+    kanvas langsung berubah dan denah ditandai belum disimpan. Kelas lama
+    gray/blue/rounded-xl/shadow dibersihkan. Saat menyimpan, payload upsert
+    utama sengaja tetap tanpa status; status hanya dikirim terpisah untuk
+    booth yang benar-benar diubah organizer, sehingga status Reserved/Booked
+    dari penyewa tidak tertimpa. Baseline status disimpan di store
+    (boothStatusBaseline) dan diperbarui saat load/save, sehingga tetap benar
+    walau editor ditutup-buka dengan perubahan belum disimpan.
+
+[x] 8. Optimasi render kanvas (PERF-01)
+    STATUS: SELESAI (6 November 2026)
+    File: src/components/map/InteractiveMap.tsx,
+          src/components/map/BlueprintCanvas.tsx
+    Booth tenant diekstrak menjadi TenantBooth yang dibungkus React.memo,
+    memilih seleksi lewat selector Zustand per booth, dan memakai useCallback
+    untuk handler pilih/Enter/Space/Escape. BoothRect di editor sudah memo dan
+    kini punya handler keyboard stabil yang tetap meneruskan event ke sensor
+    keyboard dnd-kit. Handler tidak lagi dibuat ulang di dalam map.
+
+[x] 9. Audit aksesibilitas
+    STATUS: SELESAI (6 November 2026)
+    File: e2e/a11y.spec.ts (baru), src/components/map/*, src/pages/landing/*,
+          src/components/layout/AppHeader.tsx, package.json,
+          .env.e2e.example
+    Setiap booth di Landing, kanvas tenant, dan editor dapat dipilih dengan
+    Tab + Enter/Space dan dilepas dengan Escape. aria-label memuat kategori,
+    status, harga (dan ukuran di editor). axe-core dijalankan lewat
+    @axe-core/playwright dengan tag WCAG 2.0/2.1 A/AA untuk Landing, /event,
+    /event/:id, /admin, /admin/bookings, dan /bookings. Pelanggaran
+    label-content-name-mismatch diperbaiki dengan memisahkan text node SVG
+    dan menyelaraskan urutan aria-label; kontras diperiksa oleh rule axe.
+    A11Y-01 (Landing) dan A11Y-02 (/event) lulus. A11Y-03 s.d. A11Y-06 dan
+    audit route terautentikasi otomatis dilewati dengan pesan jelas sampai
+    E2E_EVENT_ID serta kredensial organizer/tenant diisi di .env.e2e.
+    .env.e2e.example sudah memuat E2E_ORGANIZER_EMAIL/PASSWORD.
+
+[x] 10. Dokumentasi setup untuk tester
+    STATUS: SELESAI (6 November 2026)
+    File: README.md (baru), supabase/seed.sql (baru),
+          .env.e2e.example
+    README memuat prasyarat Node, instalasi, env Supabase, urutan 7 migrasi,
+    aktivasi Realtime/Storage/pg_cron, pembuatan akun organizer + 2 tenant
+    beserta perbaikan role di user_metadata, seed booth hall-a, perintah tes
+    unit/coverage/build/E2E/axe, variabel .env.e2e, tabel route aktual,
+    alur QA singkat, dan troubleshooting. seed.sql menambah 6 booth contoh
+    idempoten pada hall-a dengan UUID tetap yang bisa dipakai sebagai
+    E2E_BOOTH_ID.
+    Verifikasi P1: tsc --noEmit lulus, 51 unit test lulus, test:coverage
+    lulus tanpa threshold, build lulus (warning chunk >500 kB tetap ada,
+    dijadwalkan task 11), dan test:e2e lulus (3 lulus, 7 dilewati tanpa
+    kredensial).
+
+
+===============================================================================
+P2 - KEBERSIHAN & CAKUPAN
+===============================================================================
+
+[x] 11. Lazy-load route
+    STATUS: SELESAI (6 November 2026)
+    File: src/App.tsx
+    Seluruh halaman (Landing, Login, Register, admin, tenant) dimuat dengan
+    React.lazy dan dibungkus satu Suspense. Fallback RouteFallback berupa
+    panel statis role="status" aria-live="polite" tanpa animate-pulse.
+    Hasil build: warning chunk >500 kB hilang; chunk utama turun menjadi
+    484,29 kB dan halaman terpecah 0,35-82,49 kB (BlueprintEditor terbesar).
+
+[x] 12. Perluas cakupan QA
+    STATUS: SELESAI (6 November 2026)
+    File: qa_checklist_test_plan.md, src/pages/tenant/EventExplorer.tsx
+    Dokumen naik ke versi 1.2.0 dan menambah suite:
+    - TS-08 BLP-01..08: publish/unpublish, draft tersembunyi, publish tanpa
+      booth ditolak, edit detail, hapus dengan konfirmasi, blokir booking
+      aktif, dan penghapusan dengan riwayat.
+    - TS-09 EXPL-01..05: filter kategori dan pencarian EventExplorer.
+      Kolom pencarian (nama/venue/deskripsi/kategori) ditambahkan agar suite
+      sesuai dengan fitur aktual, termasuk empty state + reset.
+    - TS-10 BOOK-01..06: buat booking, tandai bayar, batalkan (pending dan
+      awaiting_confirmation), larangan batal confirmed, instruksi bayar.
+    - TS-11 ADM-01..05: verifikasi, tolak/batalkan, larangan batal confirmed,
+      filter/pencarian, dan metrik.
+    - TS-12 IMG-01..05: upload/ganti/hapus gambar denah, validasi file, dan
+      kegagalan jaringan.
+    - TS-13 RLS-01..06: tenant /admin, tenant baca draft, anon update/insert
+      booth, tenant ubah booking orang lain, anon baca bookings.
+    - TS-14 EXP-01..05: sweep expiry, badge kedaluwarsa, penolakan bayar/
+      verifikasi setelah expiry, dan sweep bersamaan.
+    Catatan: suite baru adalah checklist manual dengan data Supabase nyata;
+    tes otomatis yang ada tetap berjalan tanpa kredensial.
+
+[x] 13. Kelola denah: hapus / ganti nama
+    STATUS: SELESAI (6 November 2026)
+    File: src/pages/admin/BlueprintList.tsx
+    Daftar denah kini memuat ringkasan booking per blueprint. Setiap kartu
+    punya tombol Edit Detail (inline form nama, venue, tanggal) dan Hapus.
+    Hapus memakai InlineConfirm role="alertdialog" yang menyebut jumlah booth
+    dan booking terkait, dengan Batal/Escape dan pengembalian fokus. Denah
+    dengan booking aktif (pending/awaiting_confirmation/confirmed) ditolak
+    dengan pesan jelas. Bila aman, booth dihapus lebih dulu lalu blueprint;
+    booking selesai/dibatalkan tetap tersimpan sebagai riwayat dan booth_id
+    menjadi null lewat ON DELETE SET NULL. ID denah tidak diubah agar URL
+    event tetap stabil.
+
+[x] 14. Bersihkan sisa kelas desain lama
+    STATUS: SELESAI (6 November 2026)
+    File: src/components/ui/Toast.tsx,
+          src/components/map/BlueprintWorkspace.tsx,
+          src/components/checkout/CheckoutModal.tsx
+    Sisa shadow-md (toast), shadow-lg (drag overlay palette), dan shadow-xl
+    (modal checkout) dihapus; panel tetap memakai border tipis dan radius
+    6-10px. Pencarian ulang untuk blue-*/gray-*/emerald-*/amber-*/
+    rounded-xl/rounded-2xl/rounded-3xl/shadow-*/animate-pulse/gradient/blur
+    di src/ tidak menemukan sisa pemakaian.
+
+
+===============================================================================
+URUTAN EKSEKUSI YANG DISARANKAN
+===============================================================================
+1. Task 1 (QA doc) - cepat, mencegah bug palsu
+2. Task 3 (redesign 3 halaman) - dampak visual terbesar
+3. Task 2 (booking expiry) - risiko data
+4. Task 4 (infrastruktur tes)
+5. Task 5-10 (P1)
+6. Task 11-14 (P2)

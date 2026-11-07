@@ -6,6 +6,7 @@ import InteractiveMap from '../../components/map/InteractiveMap'
 import TenantSidebar from '../../components/map/TenantSidebar'
 import { useToast } from '../../components/ui/Toast'
 import { getBookingErrorMessage } from '../../lib/booking'
+import { sweepExpiredBookings } from '../../lib/bookingExpiry'
 import { createChannelName } from '../../lib/id'
 import { isSupabaseConfigured, supabase } from '../../lib/supabase'
 import { useAuthStore } from '../../store/useAuthStore'
@@ -50,6 +51,20 @@ function mapRowToBooth(row: BoothRow): Booth {
     price: row.price,
     status: row.status,
   }
+}
+
+function isCompleteBoothRow(row: Partial<BoothRow>): row is BoothRow {
+  return (
+    typeof row.id === 'string' &&
+    typeof row.blueprint_id === 'string' &&
+    (row.category === 'Tech' || row.category === 'F&B' || row.category === 'Apparel') &&
+    typeof row.position_x === 'number' &&
+    typeof row.position_y === 'number' &&
+    typeof row.width === 'number' &&
+    typeof row.height === 'number' &&
+    typeof row.price === 'number' &&
+    (row.status === 'Available' || row.status === 'Reserved' || row.status === 'Booked')
+  )
 }
 
 function getLoadErrorMessage(error: { message?: string } | null): string {
@@ -120,6 +135,12 @@ export default function TenantEventView() {
     setBooths([])
 
     const loadEvent = async () => {
+      // Lepas reservasi kedaluwarsa sebelum membaca booth agar booth yang
+      // sudah bebas langsung tampil Available.
+      await sweepExpiredBookings()
+
+      if (cancelled) return
+
       const [blueprintResult, boothsResult] = await Promise.all([
         supabase.from('blueprints').select('*').eq('id', eventId).maybeSingle(),
         supabase.from('booths').select('*').eq('blueprint_id', eventId),
@@ -170,23 +191,33 @@ export default function TenantEventView() {
       .on(
         'postgres_changes',
         {
-          event: 'UPDATE',
+          event: '*',
           schema: 'public',
           table: 'booths',
           filter: `blueprint_id=eq.${eventId}`,
         },
         (payload) => {
+          const boothState = useBoothStore.getState()
+
+          if (payload.eventType === 'DELETE') {
+            const deleted = payload.old as Partial<BoothRow>
+            if (deleted?.id) boothState.removeRealtimeBooth(deleted.id)
+            return
+          }
+
           const row = payload.new as Partial<BoothRow>
           if (!row?.id) return
 
-          const boothState = useBoothStore.getState()
           const previous = boothState.booths.find((booth) => booth.id === row.id)
 
-          if (row.status) {
+          if (isCompleteBoothRow(row)) {
+            boothState.upsertRealtimeBooth(mapRowToBooth(row))
+          } else if (row.status) {
             boothState.updateBoothStatus(row.id, row.status)
           }
 
           if (
+            payload.eventType === 'UPDATE' &&
             row.status &&
             row.status !== 'Available' &&
             previous?.status === 'Available' &&
@@ -327,7 +358,7 @@ export default function TenantEventView() {
                 >
                   <span
                     className={`h-1.5 w-1.5 rounded-full ${
-                      blueprint.status === 'draft' ? 'bg-amber-500' : 'bg-gray-400'
+                      blueprint.status === 'draft' ? 'bg-clay' : 'bg-muted'
                     }`}
                   />
                   {role === 'organizer' ? 'Pratinjau organizer' : BLUEPRINT_STATUS_LABEL[blueprint.status]}

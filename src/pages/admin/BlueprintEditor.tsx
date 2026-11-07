@@ -244,6 +244,28 @@ export default function BlueprintEditor() {
         if (boothError) throw boothError
       }
 
+      // Status booth disimpan terpisah dan hanya untuk booth yang statusnya
+      // benar-benar diubah organizer. Dengan begitu, status Reserved/Booked
+      // dari penyewa tidak ikut tertimpa saat denah disimpan.
+      const statusUpdates = new Map<BoothStatus, string[]>()
+
+      for (const booth of store.booths) {
+        if (store.boothStatusBaseline[booth.id] === booth.status) continue
+
+        const ids = statusUpdates.get(booth.status) ?? []
+        ids.push(booth.id)
+        statusUpdates.set(booth.status, ids)
+      }
+
+      for (const [status, ids] of statusUpdates) {
+        const { error: statusError } = await supabase
+          .from('booths')
+          .update({ status, updated_at: now })
+          .in('id', ids)
+
+        if (statusError) throw statusError
+      }
+
       if (store.deletedBoothIds.length > 0) {
         const { error: deleteError } = await supabase
           .from('booths')
@@ -345,10 +367,10 @@ export default function BlueprintEditor() {
                   <span
                     className={`h-1.5 w-1.5 rounded-full ${
                       draft.status === 'published'
-                        ? 'bg-emerald-500'
+                        ? 'bg-pine'
                         : draft.status === 'draft'
-                          ? 'bg-amber-500'
-                          : 'bg-gray-400'
+                          ? 'bg-clay'
+                          : 'bg-muted'
                     }`}
                   />
                   {statusLabel}
@@ -374,7 +396,7 @@ export default function BlueprintEditor() {
               {[draft?.venue, draft?.eventDate].filter(Boolean).join(' · ') ||
                 (loading ? 'Memuat informasi event...' : 'Lengkapi informasi denah di bawah.')}
             </p>
-            <p className="mt-1 font-mono text-[11px] text-gray-400">/event/{blueprintId}</p>
+            <p className="mt-1 font-mono text-[11px] text-muted">/event/{blueprintId}</p>
           </div>
 
           <div className="flex flex-col gap-2 sm:flex-row">
@@ -383,7 +405,7 @@ export default function BlueprintEditor() {
                 to={`/event/${blueprintId}`}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-5 py-2.5 text-sm font-semibold text-gray-900 shadow-sm transition-colors hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2"
+                className="inline-flex items-center justify-center gap-2 rounded-[6px] border border-line bg-surface px-5 py-2.5 text-sm font-semibold text-ink transition-colors hover:bg-canvas focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 focus-visible:ring-offset-canvas motion-reduce:transition-none"
               >
                 <svg viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4">
                   <path d="M10 12.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z" />
@@ -423,11 +445,11 @@ export default function BlueprintEditor() {
         </div>
 
         {!loading && !loadError && draft && (
-          <section className="mt-6 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm sm:p-6">
+          <section className="mt-6 rounded-[10px] border border-line bg-surface p-5 sm:p-6">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
-                <h2 className="text-base font-semibold text-gray-900">Informasi denah</h2>
-                <p className="mt-1 text-xs text-gray-500">
+                <h2 className="text-base font-semibold text-ink">Informasi denah</h2>
+                <p className="mt-1 text-xs text-muted">
                   Metadata ini tampil di halaman event tenant.
                 </p>
               </div>
@@ -435,7 +457,7 @@ export default function BlueprintEditor() {
                 value={draft.status}
                 onChange={(event) => updateDraft({ status: event.target.value as BlueprintStatus })}
                 aria-label="Status publikasi denah"
-                className="rounded-xl border border-gray-200 bg-white px-3 py-2 text-xs font-semibold text-gray-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100"
+                className="rounded-[6px] border border-line bg-surface px-3 py-2 text-xs font-semibold text-ink focus:border-pine focus:outline-none focus:ring-2 focus:ring-pine-soft"
               >
                 {BLUEPRINT_STATUS_OPTIONS.map((status) => (
                   <option key={status} value={status}>
@@ -447,7 +469,7 @@ export default function BlueprintEditor() {
 
             <div className="mt-4 grid gap-4 sm:grid-cols-2">
               <div className="sm:col-span-2">
-                <label htmlFor="editor-blueprint-name" className="text-xs font-medium text-gray-700">
+                <label htmlFor="editor-blueprint-name" className="text-xs font-medium text-ink">
                   Nama denah / event
                 </label>
                 <input
@@ -455,12 +477,12 @@ export default function BlueprintEditor() {
                   type="text"
                   value={draft.name}
                   onChange={(event) => updateDraft({ name: event.target.value })}
-                  className="mt-1.5 w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100"
+                  className="mt-1.5 w-full rounded-[8px] border border-line bg-surface px-3 py-2 text-sm text-ink focus:border-pine focus:outline-none focus:ring-2 focus:ring-pine-soft"
                 />
               </div>
 
               <div>
-                <label htmlFor="editor-blueprint-venue" className="text-xs font-medium text-gray-700">
+                <label htmlFor="editor-blueprint-venue" className="text-xs font-medium text-ink">
                   Venue
                 </label>
                 <input
@@ -469,12 +491,12 @@ export default function BlueprintEditor() {
                   value={draft.venue}
                   onChange={(event) => updateDraft({ venue: event.target.value })}
                   placeholder="Nama venue dan hall"
-                  className="mt-1.5 w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 shadow-sm placeholder:text-gray-500 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100"
+                  className="mt-1.5 w-full rounded-[8px] border border-line bg-surface px-3 py-2 text-sm text-ink placeholder:text-muted focus:border-pine focus:outline-none focus:ring-2 focus:ring-pine-soft"
                 />
               </div>
 
               <div>
-                <label htmlFor="editor-blueprint-date" className="text-xs font-medium text-gray-700">
+                <label htmlFor="editor-blueprint-date" className="text-xs font-medium text-ink">
                   Tanggal event
                 </label>
                 <input
@@ -483,12 +505,12 @@ export default function BlueprintEditor() {
                   value={draft.eventDate}
                   onChange={(event) => updateDraft({ eventDate: event.target.value })}
                   placeholder="12 - 15 Maret 2026"
-                  className="mt-1.5 w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 shadow-sm placeholder:text-gray-500 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100"
+                  className="mt-1.5 w-full rounded-[8px] border border-line bg-surface px-3 py-2 text-sm text-ink placeholder:text-muted focus:border-pine focus:outline-none focus:ring-2 focus:ring-pine-soft"
                 />
               </div>
 
               <div className="sm:col-span-2">
-                <label htmlFor="editor-blueprint-description" className="text-xs font-medium text-gray-700">
+                <label htmlFor="editor-blueprint-description" className="text-xs font-medium text-ink">
                   Deskripsi
                 </label>
                 <textarea
@@ -497,11 +519,11 @@ export default function BlueprintEditor() {
                   onChange={(event) => updateDraft({ description: event.target.value })}
                   rows={3}
                   placeholder="Deskripsi singkat event untuk tenant."
-                  className="mt-1.5 w-full resize-y rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 shadow-sm placeholder:text-gray-500 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100"
+                  className="mt-1.5 w-full resize-y rounded-[8px] border border-line bg-surface px-3 py-2 text-sm text-ink placeholder:text-muted focus:border-pine focus:outline-none focus:ring-2 focus:ring-pine-soft"
                 />
               </div>
 
-              <div className="border-t border-gray-100 pt-4 sm:col-span-2">
+              <div className="border-t border-line pt-4 sm:col-span-2">
                 <BlueprintImageUploader
                   blueprintId={blueprintId}
                   imageUrl={draft.imageUrl}
@@ -518,7 +540,7 @@ export default function BlueprintEditor() {
               </div>
             </div>
 
-            <p className="mt-3 text-[11px] leading-relaxed text-gray-500">
+            <p className="mt-3 text-[11px] leading-relaxed text-muted">
               {draft.status === 'published'
                 ? 'Denah berstatus Dipublikasikan dan dapat dilihat tenant setelah perubahan disimpan.'
                 : draft.status === 'archived'
@@ -529,13 +551,13 @@ export default function BlueprintEditor() {
         )}
 
         {loading && (
-          <div className="mt-6 flex min-h-[360px] items-center justify-center rounded-2xl border border-gray-200 bg-white shadow-sm">
+          <div className="mt-6 flex min-h-[360px] items-center justify-center rounded-[10px] border border-line bg-surface">
             <div className="flex flex-col items-center gap-3">
               <span
                 aria-hidden="true"
-                className="h-8 w-8 animate-spin rounded-full border-2 border-gray-200 border-t-blue-600"
+                className="h-8 w-8 animate-spin rounded-full border-2 border-line border-t-pine"
               />
-              <p className="text-sm text-gray-500">Memuat denah dari Supabase...</p>
+              <p className="text-sm text-muted">Memuat denah dari Supabase...</p>
             </div>
           </div>
         )}
@@ -543,20 +565,20 @@ export default function BlueprintEditor() {
         {!loading && loadError && (
           <div
             role="alert"
-            className="mt-6 flex flex-col gap-3 rounded-2xl border border-red-200 bg-red-50 px-4 py-4 text-sm text-red-800 sm:flex-row sm:items-center sm:justify-between"
+            className="mt-6 flex flex-col gap-3 rounded-[10px] border border-red-200 bg-red-50 px-4 py-4 text-sm text-red-800 sm:flex-row sm:items-center sm:justify-between"
           >
             <p className="leading-relaxed">Gagal memuat denah: {loadError}</p>
             <div className="flex flex-col gap-2 sm:flex-row">
               <button
                 type="button"
                 onClick={() => setReloadToken((token) => token + 1)}
-                className="inline-flex shrink-0 items-center justify-center rounded-xl border border-red-200 bg-white px-4 py-2 text-sm font-semibold text-red-700 shadow-sm transition-colors hover:bg-red-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2"
+                className="inline-flex shrink-0 items-center justify-center rounded-[6px] border border-red-200 bg-surface px-4 py-2 text-sm font-semibold text-red-700 transition-colors hover:bg-red-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2"
               >
                 Coba lagi
               </button>
               <Link
                 to="/admin/blueprint"
-                className="inline-flex shrink-0 items-center justify-center rounded-xl border border-red-200 bg-white px-4 py-2 text-sm font-semibold text-red-700 shadow-sm transition-colors hover:bg-red-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2"
+                className="inline-flex shrink-0 items-center justify-center rounded-[6px] border border-red-200 bg-surface px-4 py-2 text-sm font-semibold text-red-700 transition-colors hover:bg-red-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2"
               >
                 Daftar denah
               </Link>

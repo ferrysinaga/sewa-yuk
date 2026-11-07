@@ -349,7 +349,7 @@ function BoothMap() {
             type="button"
             onClick={() => setZoom(MIN_ZOOM)}
             disabled={!isZoomed}
-            aria-label="Reset zoom denah"
+            aria-label="Reset zoom denah ke 1×"
             className="flex h-8 w-8 items-center justify-center rounded-[5px] text-[10px] font-bold text-muted transition-colors hover:bg-pine-soft hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine disabled:cursor-not-allowed disabled:opacity-40 motion-reduce:transition-none"
           >
             1×
@@ -450,9 +450,9 @@ function BoothMap() {
                   role="button"
                   tabIndex={0}
                   aria-pressed={isSelected}
-                  aria-label={`${booth.label}, ${categoryLabel[booth.category]}, ${booth.size}, ${booth.note}, ${formatPrice(
+                  aria-label={`${booth.label} ${categoryLabel[booth.category]} · ${statusLabel[booth.status]} ${formatPrice(
                     booth.price,
-                  )}, ${statusLabel[booth.status]}`}
+                  )} ${booth.size} ${booth.note}`}
                   onClick={() => selectBooth(booth.id)}
                   onKeyDown={(event) => {
                     if (event.key === 'Enter' || event.key === ' ') {
@@ -500,6 +500,7 @@ function BoothMap() {
                   >
                     {booth.id}
                   </text>
+                  {' '}
                   <text
                     x={booth.x + 12}
                     y={booth.y + 40}
@@ -507,6 +508,7 @@ function BoothMap() {
                   >
                     {categoryLabel[booth.category]} · {statusLabel[booth.status]}
                   </text>
+                  {' '}
                   <text
                     x={booth.x + 12}
                     y={booth.y + booth.height - 12}
@@ -691,7 +693,6 @@ export default function LandingPage() {
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
           <Link
             to="/"
-            aria-label="sewa-yuk, kembali ke beranda"
             className="flex items-center gap-2.5 rounded-[6px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 focus-visible:ring-offset-canvas"
           >
             <BrandMark />

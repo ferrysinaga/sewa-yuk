@@ -1,11 +1,16 @@
-import { useEffect, useMemo, useState } from 'react'
+import { Fragment, useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import AppHeader from '../../components/layout/AppHeader'
+import InlineConfirm from '../../components/ui/InlineConfirm'
 import { useToast } from '../../components/ui/Toast'
-import { formatCurrency, formatDateTime, getBookingErrorMessage } from '../../lib/booking'
+import { formatCurrency, formatDateTime, getBookingErrorMessage, isExpiredBooking } from '../../lib/booking'
+import { sweepExpiredBookings } from '../../lib/bookingExpiry'
 import { createChannelName } from '../../lib/id'
 import { isSupabaseConfigured, supabase } from '../../lib/supabase'
 import {
+  BOOKING_EXPIRED_BADGE,
+  BOOKING_EXPIRED_DOT,
+  BOOKING_EXPIRED_LABEL,
   BOOKING_STATUS_BADGE,
   BOOKING_STATUS_DOT,
   BOOKING_STATUS_LABEL,
@@ -58,6 +63,8 @@ export default function AdminBookings() {
   const [eventFilter, setEventFilter] = useState('all')
   const [search, setSearch] = useState('')
   const [updatingId, setUpdatingId] = useState<string | null>(null)
+  const [confirmingCancelId, setConfirmingCancelId] = useState<string | null>(null)
+  const [refreshing, setRefreshing] = useState(false)
 
   useEffect(() => {
     let cancelled = false
@@ -72,6 +79,12 @@ export default function AdminBookings() {
     setError(null)
 
     const loadBookings = async () => {
+      // Lepas booking kedaluwarsa lebih dulu agar daftar dan status booth
+      // konsisten meskipun pg_cron belum aktif.
+      await sweepExpiredBookings()
+
+      if (cancelled) return
+
       const [bookingResult, blueprintResult] = await Promise.all([
         supabase.from('bookings').select('*').order('created_at', { ascending: false }),
         supabase.from('blueprints').select('id, name, venue, event_date, status'),
@@ -156,7 +169,9 @@ export default function AdminBookings() {
     const awaiting = bookings.filter(
       (booking) => booking.status === 'awaiting_confirmation',
     ).length
-    const pending = bookings.filter((booking) => booking.status === 'pending').length
+    const pending = bookings.filter(
+      (booking) => booking.status === 'pending' && !isExpiredBooking(booking),
+    ).length
     const confirmed = bookings.filter((booking) => booking.status === 'confirmed')
     const revenue = confirmed.reduce((sum, booking) => sum + booking.price, 0)
 
@@ -194,12 +209,7 @@ export default function AdminBookings() {
   const handleCancel = async (booking: BookingRow) => {
     if (updatingId) return
 
-    const confirmed = window.confirm(
-      `Batalkan pesanan ${booking.booking_code}? Booth akan tersedia kembali.`,
-    )
-
-    if (!confirmed) return
-
+    setConfirmingCancelId(null)
     setUpdatingId(booking.id)
 
     try {
@@ -225,31 +235,56 @@ export default function AdminBookings() {
     }
   }
 
+  const handleRefresh = async () => {
+    if (refreshing) return
+
+    setRefreshing(true)
+
+    try {
+      const released = await sweepExpiredBookings()
+
+      if (released) {
+        showToast(
+          `${released} pesanan kedaluwarsa dibatalkan dan booth kembali tersedia.`,
+          'info',
+        )
+      }
+    } finally {
+      setRefreshing(false)
+      setReloadToken((token) => token + 1)
+    }
+  }
+
   return (
-    <div className="min-h-screen bg-gray-50/60">
+    <div className="min-h-screen bg-canvas">
       <AppHeader />
 
       <main className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
         <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
           <div>
-            <p className="text-sm font-medium text-gray-500">Dashboard Penyelenggara</p>
-            <h1 className="mt-1 text-2xl font-semibold tracking-tight text-gray-900 sm:text-3xl">
+            <div className="flex items-center gap-2.5">
+              <span aria-hidden="true" className="h-px w-6 bg-clay" />
+              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted">
+                Dashboard penyelenggara
+              </p>
+            </div>
+            <h1 className="mt-3 text-3xl font-semibold leading-tight tracking-[-0.02em] text-ink sm:text-4xl">
               Pemesanan Booth
             </h1>
-            <p className="mt-2 text-sm text-gray-500">
+            <p className="mt-2 text-sm text-muted">
               Verifikasi pembayaran penyewa dan pantau seluruh pesanan booth.
             </p>
           </div>
           <div className="flex flex-col gap-2 sm:flex-row">
             <Link
               to="/admin"
-              className="inline-flex items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-5 py-2.5 text-sm font-semibold text-gray-900 shadow-sm transition-colors hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2"
+              className="inline-flex items-center justify-center gap-2 rounded-[8px] border border-line bg-surface px-5 py-2.5 text-sm font-semibold text-ink transition-colors hover:bg-canvas focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2"
             >
               Dashboard
             </Link>
             <Link
               to="/admin/blueprint"
-              className="inline-flex items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-5 py-2.5 text-sm font-semibold text-gray-900 shadow-sm transition-colors hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2"
+              className="inline-flex items-center justify-center gap-2 rounded-[8px] border border-line bg-surface px-5 py-2.5 text-sm font-semibold text-ink transition-colors hover:bg-canvas focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2"
             >
               Kelola Denah
             </Link>
@@ -257,30 +292,30 @@ export default function AdminBookings() {
         </div>
 
         {loading && (
-          <div className="mt-8 flex min-h-[320px] items-center justify-center rounded-2xl border border-gray-200 bg-white shadow-sm">
+          <div className="mt-8 flex min-h-[320px] items-center justify-center rounded-[10px] border border-line bg-surface ">
             <div className="flex flex-col items-center gap-3">
               <span
                 aria-hidden="true"
-                className="h-8 w-8 animate-spin rounded-full border-2 border-gray-200 border-t-blue-600"
+                className="h-8 w-8 animate-spin rounded-full border-2 border-line border-t-pine"
               />
-              <p className="text-sm text-gray-500">Memuat pemesanan…</p>
+              <p className="text-sm text-muted">Memuat pemesanan…</p>
             </div>
           </div>
         )}
 
         {!loading && error && (
-          <div className="mt-8 rounded-2xl border border-gray-200 bg-white p-8 text-center shadow-sm">
-            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-red-50 text-red-600">
+          <div className="mt-8 rounded-[10px] border border-line bg-surface p-8 text-center ">
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-[10px] bg-red-50 text-red-600">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-6 w-6">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m0 3.75h.008v.008H12v-.008ZM10.34 3.94 2.7 17.54A1.5 1.5 0 0 0 4 19.75h16a1.5 1.5 0 0 0 1.3-2.21L13.66 3.94a1.5 1.5 0 0 0-2.62 0Z" />
               </svg>
             </div>
-            <h2 className="mt-4 text-lg font-semibold text-gray-900">Gagal memuat pemesanan</h2>
-            <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-gray-500">{error}</p>
+            <h2 className="mt-4 text-lg font-semibold text-ink">Gagal memuat pemesanan</h2>
+            <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-muted">{error}</p>
             <button
               type="button"
               onClick={() => setReloadToken((token) => token + 1)}
-              className="mt-5 inline-flex items-center justify-center rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2"
+              className="mt-5 inline-flex items-center justify-center rounded-[8px] bg-pine px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-pine-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2"
             >
               Coba lagi
             </button>
@@ -290,70 +325,71 @@ export default function AdminBookings() {
         {!loading && !error && (
           <>
             <div className="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-              <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-                <p className="text-xs font-medium text-gray-500">Total pesanan</p>
-                <p className="mt-2 text-2xl font-semibold tracking-tight text-gray-900">
+              <div className="rounded-[10px] border border-line bg-surface p-5 ">
+                <p className="text-xs font-medium text-muted">Total pesanan</p>
+                <p className="mt-2 text-2xl font-semibold tracking-tight text-ink">
                   {bookings.length}
                 </p>
-                <p className="mt-1 text-xs text-gray-500">{metrics.pending} menunggu pembayaran</p>
+                <p className="mt-1 text-xs text-muted">{metrics.pending} menunggu pembayaran</p>
               </div>
-              <div className="rounded-2xl border border-blue-200 bg-blue-50/50 p-5 shadow-sm">
-                <p className="text-xs font-medium text-blue-700">Perlu verifikasi</p>
-                <p className="mt-2 text-2xl font-semibold tracking-tight text-blue-900">
+              <div className="rounded-[10px] border border-line bg-clay-soft p-5 ">
+                <p className="text-xs font-medium text-clay-dark">Perlu verifikasi</p>
+                <p className="mt-2 text-2xl font-semibold tracking-tight text-clay-dark">
                   {metrics.awaiting}
                 </p>
-                <p className="mt-1 text-xs text-blue-700/80">Penyewa sudah menandai sudah bayar</p>
+                <p className="mt-1 text-xs text-clay-dark">Penyewa sudah menandai sudah bayar</p>
               </div>
-              <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-                <p className="text-xs font-medium text-gray-500">Terkonfirmasi</p>
-                <p className="mt-2 text-2xl font-semibold tracking-tight text-gray-900">
+              <div className="rounded-[10px] border border-line bg-surface p-5 ">
+                <p className="text-xs font-medium text-muted">Terkonfirmasi</p>
+                <p className="mt-2 text-2xl font-semibold tracking-tight text-ink">
                   {metrics.confirmed}
                 </p>
-                <p className="mt-1 text-xs text-gray-500">Booth sudah menjadi Booked</p>
+                <p className="mt-1 text-xs text-muted">Booth sudah menjadi Booked</p>
               </div>
-              <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-                <p className="text-xs font-medium text-gray-500">Pendapatan terkonfirmasi</p>
-                <p className="mt-2 text-2xl font-semibold tracking-tight text-gray-900">
+              <div className="rounded-[10px] border border-line bg-surface p-5 ">
+                <p className="text-xs font-medium text-muted">Pendapatan terkonfirmasi</p>
+                <p className="mt-2 text-2xl font-semibold tracking-tight text-ink">
                   {formatCurrency(metrics.revenue)}
                 </p>
-                <p className="mt-1 text-xs text-gray-500">Dari pesanan terkonfirmasi</p>
+                <p className="mt-1 text-xs text-muted">Dari pesanan terkonfirmasi</p>
               </div>
             </div>
 
-            <section className="mt-6 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
-              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-gray-200 px-5 py-4">
+            <section className="mt-6 overflow-hidden rounded-[10px] border border-line bg-surface ">
+              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line px-5 py-4">
                 <div>
                   <div className="flex flex-wrap items-center gap-2.5">
-                    <h2 className="text-base font-semibold text-gray-900">Daftar pemesanan</h2>
+                    <h2 className="text-base font-semibold text-ink">Daftar pemesanan</h2>
                     <span
                       className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-medium ring-1 ring-inset ${
                         isLive
-                          ? 'bg-blue-50 text-blue-700 ring-blue-100'
-                          : 'bg-gray-100 text-gray-600 ring-gray-200'
+                          ? 'bg-pine-soft text-pine-dark ring-line'
+                          : 'bg-unavailable text-muted ring-line'
                       }`}
                     >
                       <span
                         className={`h-1.5 w-1.5 rounded-full ${
-                          isLive ? 'animate-pulse bg-blue-600' : 'bg-gray-400'
+                          isLive ? ' bg-pine' : 'bg-muted'
                         }`}
                       />
                       {isLive ? 'Live' : 'Menghubungkan…'}
                     </span>
                   </div>
-                  <p className="mt-1 text-xs text-gray-500">
+                  <p className="mt-1 text-xs text-muted">
                     {filteredBookings.length} dari {bookings.length} pesanan ditampilkan
                   </p>
                 </div>
                 <button
                   type="button"
-                  onClick={() => setReloadToken((token) => token + 1)}
-                  className="inline-flex items-center gap-1.5 rounded-xl border border-gray-200 bg-white px-3 py-2 text-xs font-semibold text-gray-700 shadow-sm transition-colors hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2"
+                  onClick={() => void handleRefresh()}
+                  disabled={refreshing}
+                  className="inline-flex items-center gap-1.5 rounded-[8px] border border-line bg-surface px-3 py-2 text-xs font-semibold text-ink transition-colors hover:bg-canvas focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  Muat ulang
+                  {refreshing ? 'Memperbarui…' : 'Perbarui status'}
                 </button>
               </div>
 
-              <div className="grid gap-2 border-b border-gray-200 px-5 py-3 sm:grid-cols-3">
+              <div className="grid gap-2 border-b border-line px-5 py-3 sm:grid-cols-3">
                 <div>
                   <label htmlFor="booking-search" className="sr-only">
                     Cari pemesanan
@@ -364,7 +400,7 @@ export default function AdminBookings() {
                     value={search}
                     onChange={(event) => setSearch(event.target.value)}
                     placeholder="Cari kode, tenant, event…"
-                    className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 shadow-sm placeholder:text-gray-500 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100"
+                    className="w-full rounded-[8px] border border-line bg-surface px-3 py-2 text-sm text-ink placeholder:text-muted focus:border-pine focus:outline-none focus:ring-2 focus:ring-pine-soft"
                   />
                 </div>
                 <div>
@@ -375,7 +411,7 @@ export default function AdminBookings() {
                     id="booking-event-filter"
                     value={eventFilter}
                     onChange={(event) => setEventFilter(event.target.value)}
-                    className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100"
+                    className="w-full rounded-[8px] border border-line bg-surface px-3 py-2 text-sm text-ink focus:border-pine focus:outline-none focus:ring-2 focus:ring-pine-soft"
                   >
                     <option value="all">Semua event</option>
                     {blueprints.map((blueprint) => (
@@ -395,7 +431,7 @@ export default function AdminBookings() {
                     onChange={(event) =>
                       setStatusFilter(event.target.value as BookingStatus | 'all')
                     }
-                    className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100"
+                    className="w-full rounded-[8px] border border-line bg-surface px-3 py-2 text-sm text-ink focus:border-pine focus:outline-none focus:ring-2 focus:ring-pine-soft"
                   >
                     <option value="all">Semua status</option>
                     {BOOKING_STATUS_OPTIONS.map((status) => (
@@ -408,8 +444,8 @@ export default function AdminBookings() {
               </div>
 
               <div className="overflow-x-auto">
-                <table className="min-w-[980px] w-full divide-y divide-gray-200 text-left text-sm">
-                  <thead className="bg-gray-50/80 text-[11px] font-semibold uppercase tracking-wide text-gray-500">
+                <table className="min-w-[980px] w-full divide-y divide-line text-left text-sm">
+                  <thead className="bg-canvas text-[11px] font-semibold uppercase tracking-wide text-muted">
                     <tr>
                       <th scope="col" className="px-5 py-3">
                         Kode
@@ -437,90 +473,123 @@ export default function AdminBookings() {
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-100">
+                  <tbody className="divide-y divide-line">
                     {filteredBookings.map((booking) => {
                       const event = blueprintById.get(booking.blueprint_id)
                       const isUpdating = updatingId === booking.id
-                      const canProcess =
-                        booking.status === 'pending' || booking.status === 'awaiting_confirmation'
+                      const expired = isExpiredBooking(booking)
+                      const canCancel =
+                        booking.status === 'pending' ||
+                        booking.status === 'awaiting_confirmation'
+                      const canConfirm = canCancel && !expired
+                      const statusLabel = expired
+                        ? BOOKING_EXPIRED_LABEL
+                        : BOOKING_STATUS_LABEL[booking.status]
+                      const statusBadge = expired
+                        ? BOOKING_EXPIRED_BADGE
+                        : BOOKING_STATUS_BADGE[booking.status]
+                      const statusDot = expired
+                        ? BOOKING_EXPIRED_DOT
+                        : BOOKING_STATUS_DOT[booking.status]
+
+                      const confirmingCancel = confirmingCancelId === booking.id
 
                       return (
-                        <tr key={booking.id} className="transition-colors hover:bg-gray-50/70">
-                          <td className="whitespace-nowrap px-5 py-3.5">
-                            <p className="font-mono text-xs font-semibold text-gray-900">
+                        <Fragment key={booking.id}>
+                          <tr className="transition-colors hover:bg-canvas">
+                            <td className="whitespace-nowrap px-5 py-3.5">
+                            <p className="font-mono text-xs font-semibold text-ink">
                               {booking.booking_code}
                             </p>
-                            <p className="mt-0.5 text-[11px] text-gray-500">
+                            <p className="mt-0.5 text-[11px] text-muted">
                               {PAYMENT_METHOD_LABEL[booking.payment_method]}
                             </p>
                           </td>
                           <td className="px-5 py-3.5">
-                            <p className="max-w-[180px] truncate text-xs font-medium text-gray-900">
+                            <p className="max-w-[180px] truncate text-xs font-medium text-ink">
                               {booking.tenant_name || 'Tanpa nama'}
                             </p>
-                            <p className="max-w-[180px] truncate text-[11px] text-gray-500">
+                            <p className="max-w-[180px] truncate text-[11px] text-muted">
                               {booking.tenant_email || '—'}
                             </p>
                           </td>
                           <td className="px-5 py-3.5">
-                            <p className="max-w-[200px] truncate text-xs font-medium text-gray-900">
+                            <p className="max-w-[200px] truncate text-xs font-medium text-ink">
                               {event?.name ?? booking.blueprint_id}
                             </p>
-                            <p className="max-w-[200px] truncate text-[11px] text-gray-500">
+                            <p className="max-w-[200px] truncate text-[11px] text-muted">
                               {event?.venue ?? '—'}
                             </p>
                           </td>
                           <td className="whitespace-nowrap px-5 py-3.5">
-                            <span className="inline-flex rounded-full bg-gray-100 px-2.5 py-1 text-[11px] font-medium text-gray-700 ring-1 ring-inset ring-gray-200">
+                            <span className="inline-flex rounded-full bg-unavailable px-2.5 py-1 text-[11px] font-medium text-ink ring-1 ring-inset ring-line">
                               {booking.booth_category}
                             </span>
-                            <p className="mt-1 font-mono text-[11px] text-gray-500">
+                            <p className="mt-1 font-mono text-[11px] text-muted">
                               {booking.booth_id ? booking.booth_id.slice(0, 8) : 'booth dihapus'}
                             </p>
                           </td>
-                          <td className="whitespace-nowrap px-5 py-3.5 text-right text-xs font-medium text-gray-900">
+                          <td className="whitespace-nowrap px-5 py-3.5 text-right text-xs font-medium text-ink">
                             {formatCurrency(booking.price)}
                           </td>
                           <td className="whitespace-nowrap px-5 py-3.5">
                             <span
-                              className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold ring-1 ring-inset ${BOOKING_STATUS_BADGE[booking.status]}`}
+                              className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold ring-1 ring-inset ${statusBadge}`}
                             >
-                              <span
-                                className={`h-1.5 w-1.5 rounded-full ${BOOKING_STATUS_DOT[booking.status]}`}
-                              />
-                              {BOOKING_STATUS_LABEL[booking.status]}
+                              <span className={`h-1.5 w-1.5 rounded-full ${statusDot}`} />
+                              {statusLabel}
                             </span>
                           </td>
-                          <td className="whitespace-nowrap px-5 py-3.5 text-[11px] text-gray-500">
+                          <td className="whitespace-nowrap px-5 py-3.5 text-[11px] text-muted">
                             {formatDateTime(booking.created_at)}
                           </td>
                           <td className="whitespace-nowrap px-5 py-3.5">
                             <div className="flex items-center justify-end gap-2">
-                              {canProcess ? (
+                              {canCancel ? (
                                 <>
+                                  {canConfirm && (
+                                    <button
+                                      type="button"
+                                      onClick={() => void handleConfirm(booking)}
+                                      disabled={isUpdating}
+                                      className="rounded-[8px] bg-pine px-3 py-1.5 text-[11px] font-semibold text-white transition-colors hover:bg-pine-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+                                    >
+                                      {isUpdating ? 'Memproses…' : 'Konfirmasi'}
+                                    </button>
+                                  )}
                                   <button
                                     type="button"
-                                    onClick={() => void handleConfirm(booking)}
+                                    onClick={() => setConfirmingCancelId(booking.id)}
                                     disabled={isUpdating}
-                                    className="rounded-xl bg-blue-600 px-3 py-1.5 text-[11px] font-semibold text-white shadow-sm transition-colors hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
-                                  >
-                                    {isUpdating ? 'Memproses…' : 'Konfirmasi'}
-                                  </button>
-                                  <button
-                                    type="button"
-                                    onClick={() => void handleCancel(booking)}
-                                    disabled={isUpdating}
-                                    className="rounded-xl px-2 py-1.5 text-[11px] font-semibold text-gray-500 transition-colors hover:bg-red-50 hover:text-red-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+                                    aria-expanded={confirmingCancel}
+                                    aria-controls={`cancel-booking-${booking.id}`}
+                                    className="rounded-[8px] px-2 py-1.5 text-[11px] font-semibold text-muted transition-colors hover:bg-red-50 hover:text-red-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
                                   >
                                     Batalkan
                                   </button>
                                 </>
                               ) : (
-                                <span className="text-[11px] text-gray-400">—</span>
+                                <span className="text-[11px] text-muted">—</span>
                               )}
                             </div>
                           </td>
-                        </tr>
+                          </tr>
+
+                          {confirmingCancel && (
+                            <tr className="bg-canvas">
+                              <td colSpan={8} className="px-5 py-3">
+                                <InlineConfirm
+                                  id={`cancel-booking-${booking.id}`}
+                                  title={`Batalkan pesanan ${booking.booking_code}?`}
+                                  description="Booth akan tersedia kembali untuk penyewa lain. Tindakan ini tidak dapat dibatalkan."
+                                  confirmLabel="Ya, batalkan pesanan"
+                                  onConfirm={() => void handleCancel(booking)}
+                                  onCancel={() => setConfirmingCancelId(null)}
+                                />
+                              </td>
+                            </tr>
+                          )}
+                        </Fragment>
                       )
                     })}
                   </tbody>
@@ -528,11 +597,11 @@ export default function AdminBookings() {
               </div>
 
               {filteredBookings.length === 0 && (
-                <div className="border-t border-gray-200 px-6 py-10 text-center">
-                  <p className="text-sm font-semibold text-gray-900">
+                <div className="border-t border-line px-6 py-10 text-center">
+                  <p className="text-sm font-semibold text-ink">
                     {bookings.length === 0 ? 'Belum ada pemesanan' : 'Tidak ada pesanan yang cocok'}
                   </p>
-                  <p className="mx-auto mt-1 max-w-sm text-xs leading-relaxed text-gray-500">
+                  <p className="mx-auto mt-1 max-w-sm text-xs leading-relaxed text-muted">
                     {bookings.length === 0
                       ? 'Pemesanan dari tenant akan muncul di sini setelah mereka memilih booth.'
                       : 'Coba ubah kata kunci atau filter event dan status.'}
@@ -541,7 +610,7 @@ export default function AdminBookings() {
               )}
             </section>
 
-            <p className="mt-6 text-center text-[11px] text-gray-500">
+            <p className="mt-6 text-center text-[11px] text-muted">
               Verifikasi pembayaran akan mengubah status booth menjadi Booked secara otomatis.
             </p>
           </>

@@ -63,7 +63,6 @@ export default function AppHeader() {
         <div className="flex items-center gap-6">
           <Link
             to="/"
-            aria-label="sewa-yuk, kembali ke beranda"
             className="flex items-center gap-2.5 rounded-[6px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 focus-visible:ring-offset-canvas"
           >
             <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[7px] bg-pine text-white">

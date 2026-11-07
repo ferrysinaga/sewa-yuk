@@ -86,7 +86,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
           <div
             key={toast.id}
             role={toast.variant === 'error' ? 'alert' : 'status'}
-            className={`pointer-events-auto flex items-start gap-3 rounded-[8px] border p-3.5 shadow-md ${variantStyles[toast.variant]}`}
+            className={`pointer-events-auto flex items-start gap-3 rounded-[8px] border p-3.5 ${variantStyles[toast.variant]}`}
           >
             {variantIcon[toast.variant]}
             <p className="flex-1 pt-1 text-sm leading-snug text-ink">{toast.message}</p>

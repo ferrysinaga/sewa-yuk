@@ -98,31 +98,31 @@ export default function BlueprintImageUploader({
     <div>
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div>
-          <p className="text-xs font-medium text-gray-700">Gambar denah</p>
-          <p className="mt-0.5 text-[11px] text-gray-500">
+          <p className="text-xs font-medium text-ink">Gambar denah</p>
+          <p className="mt-0.5 text-[11px] text-muted">
             Opsional. Tampil sebagai latar kanvas dan cover event tenant.
           </p>
         </div>
-        <span className="rounded-full bg-gray-100 px-2.5 py-1 text-[10px] font-semibold text-gray-600 ring-1 ring-inset ring-gray-200">
+        <span className="rounded-full bg-unavailable px-2.5 py-1 text-[10px] font-semibold text-muted ring-1 ring-inset ring-line">
           Maks {Math.round(BLUEPRINT_IMAGE_MAX_BYTES / (1024 * 1024))} MB
         </span>
       </div>
 
-      <div className="mt-2 overflow-hidden rounded-xl border border-gray-200 bg-gray-50">
+      <div className="mt-2 overflow-hidden rounded-[6px] border border-line bg-canvas">
         {imageUrl ? (
           <div className="relative">
             <img
               src={imageUrl}
               alt="Pratinjau gambar denah"
-              className="aspect-[1000/640] w-full bg-gray-100 object-contain"
+              className="aspect-[1000/640] w-full bg-unavailable object-contain"
             />
-            <span className="absolute left-2 top-2 rounded-full bg-gray-900/75 px-2.5 py-1 text-[10px] font-semibold text-white">
+            <span className="absolute left-2 top-2 rounded-full bg-pine-dark px-2.5 py-1 text-[10px] font-semibold text-white">
               Latar kanvas &amp; cover
             </span>
           </div>
         ) : (
           <div className="flex aspect-[1000/640] flex-col items-center justify-center gap-2 p-6 text-center">
-            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-white text-gray-400 shadow-sm">
+            <span className="flex h-10 w-10 items-center justify-center rounded-[6px] bg-surface text-muted ">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5">
                 <path
                   strokeLinecap="round"
@@ -131,8 +131,8 @@ export default function BlueprintImageUploader({
                 />
               </svg>
             </span>
-            <p className="text-xs font-semibold text-gray-900">Belum ada gambar denah</p>
-            <p className="max-w-xs text-[11px] leading-relaxed text-gray-500">
+            <p className="text-xs font-semibold text-ink">Belum ada gambar denah</p>
+            <p className="max-w-xs text-[11px] leading-relaxed text-muted">
               Unggah denah venue agar tenant mendapat gambaran tata letak. Booth tetap dapat
               dipilih langsung dari kanvas interaktif.
             </p>
@@ -145,13 +145,13 @@ export default function BlueprintImageUploader({
           type="button"
           onClick={openFilePicker}
           disabled={disabled || uploading}
-          className="inline-flex items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-3.5 py-2 text-xs font-semibold text-gray-900 shadow-sm transition-colors hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+          className="inline-flex items-center justify-center gap-2 rounded-[6px] border border-line bg-surface px-3.5 py-2 text-xs font-semibold text-ink transition-colors hover:bg-canvas focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
         >
           {uploading ? (
             <>
               <span
                 aria-hidden="true"
-                className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-gray-300 border-t-blue-600"
+                className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-line border-t-pine"
               />
               Mengunggah...
             </>
@@ -171,7 +171,7 @@ export default function BlueprintImageUploader({
             type="button"
             onClick={handleRemove}
             disabled={disabled || uploading}
-            className="inline-flex items-center justify-center rounded-xl border border-gray-200 bg-white px-3.5 py-2 text-xs font-semibold text-red-700 shadow-sm transition-colors hover:border-red-200 hover:bg-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+            className="inline-flex items-center justify-center rounded-[6px] border border-line bg-surface px-3.5 py-2 text-xs font-semibold text-red-700 transition-colors hover:border-red-200 hover:bg-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
           >
             Hapus gambar
           </button>
@@ -188,12 +188,12 @@ export default function BlueprintImageUploader({
         aria-hidden="true"
       />
 
-      <p className="mt-2 text-[11px] text-gray-500">
+      <p className="mt-2 text-[11px] text-muted">
         Gunakan JPG, PNG, atau WEBP. Rasio ideal 1000 × 640 agar sejajar dengan kanvas booth.
       </p>
 
       {error && (
-        <p role="alert" className="mt-2 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-[11px] text-red-700">
+        <p role="alert" className="mt-2 rounded-[6px] border border-red-200 bg-red-50 px-3 py-2 text-[11px] text-red-700">
           {error}
         </p>
       )}

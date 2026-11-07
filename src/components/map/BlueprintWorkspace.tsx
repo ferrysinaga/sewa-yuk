@@ -11,13 +11,10 @@ import {
 import type { DragEndEvent, DragMoveEvent, DragStartEvent } from '@dnd-kit/core'
 import BlueprintCanvas from './BlueprintCanvas'
 import BoothSidebar from './BoothSidebar'
+import { CANVAS_HEIGHT, CANVAS_WIDTH, clamp, snapToGrid } from '../../lib/canvas'
 import { createId } from '../../lib/id'
 import { useBoothStore } from '../../store/useBoothStore'
 import type { BoothTemplate } from '../../types/booth'
-
-const CANVAS_WIDTH = 1000
-const CANVAS_HEIGHT = 640
-const GRID_SIZE = 20
 
 interface PaletteDragData {
   type: 'palette'
@@ -30,14 +27,6 @@ interface BoothDragData {
 }
 
 type DragData = PaletteDragData | BoothDragData
-
-function clamp(value: number, min: number, max: number) {
-  return Math.min(Math.max(value, min), max)
-}
-
-function snapToGrid(value: number) {
-  return Math.round(value / GRID_SIZE) * GRID_SIZE
-}
 
 function getActivatorPoint(activatorEvent: Event): { x: number; y: number } | null {
   const pointerLike = activatorEvent as PointerEvent
@@ -209,7 +198,7 @@ export default function BlueprintWorkspace() {
 
       <DragOverlay dropAnimation={null}>
         {activePalette ? (
-          <div className="pointer-events-none w-44 rounded-[8px] border border-pine-dark bg-pine px-3 py-2.5 text-white shadow-lg">
+          <div className="pointer-events-none w-44 rounded-[8px] border border-pine-dark bg-pine px-3 py-2.5 text-white">
             <p className="text-sm font-semibold">{activePalette.template.category}</p>
             <p className="text-[11px] text-pine-soft">
               {activePalette.template.width} × {activePalette.template.height} px

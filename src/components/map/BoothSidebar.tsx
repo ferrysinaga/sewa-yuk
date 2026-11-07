@@ -54,9 +54,14 @@ const formatPrice = (price: number) =>
   }).format(price)
 
 const categoryOptions: BoothCategory[] = ['Tech', 'F&B', 'Apparel']
+const statusOptions: BoothStatus[] = ['Available', 'Reserved', 'Booked']
+const fieldClass =
+  'mt-1.5 w-full rounded-[8px] border border-line bg-surface px-3 py-2 text-sm text-ink placeholder:text-muted focus:border-pine focus:outline-none focus:ring-2 focus:ring-pine-soft'
 
 function BoothProperties({ booth }: { booth: Booth }) {
   const updateBoothDetails = useBoothStore((state) => state.updateBoothDetails)
+  const updateBoothStatus = useBoothStore((state) => state.updateBoothStatus)
+  const markDirty = useBoothStore((state) => state.markDirty)
   const [priceDraft, setPriceDraft] = useState(String(booth.price))
 
   useEffect(() => {
@@ -86,7 +91,7 @@ function BoothProperties({ booth }: { booth: Booth }) {
       <div>
         <label
           htmlFor={`booth-category-${booth.id}`}
-          className="text-xs font-medium text-gray-700"
+          className="text-xs font-medium text-ink"
         >
           Kategori
         </label>
@@ -98,7 +103,7 @@ function BoothProperties({ booth }: { booth: Booth }) {
               category: event.target.value as BoothCategory,
             })
           }
-          className="mt-1.5 w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100"
+          className={fieldClass}
         >
           {categoryOptions.map((category) => (
             <option key={category} value={category}>
@@ -110,8 +115,36 @@ function BoothProperties({ booth }: { booth: Booth }) {
 
       <div>
         <label
+          htmlFor={`booth-status-${booth.id}`}
+          className="text-xs font-medium text-ink"
+        >
+          Status booth
+        </label>
+        <select
+          id={`booth-status-${booth.id}`}
+          value={booth.status}
+          onChange={(event) => {
+            updateBoothStatus(booth.id, event.target.value as BoothStatus)
+            markDirty()
+          }}
+          aria-describedby={`booth-status-hint-${booth.id}`}
+          className={fieldClass}
+        >
+          {statusOptions.map((status) => (
+            <option key={status} value={status}>
+              {statusLabel[status]}
+            </option>
+          ))}
+        </select>
+        <p id={`booth-status-hint-${booth.id}`} className="mt-1 text-[11px] text-muted">
+          Status langsung tampil di kanvas dan disimpan bersama denah.
+        </p>
+      </div>
+
+      <div>
+        <label
           htmlFor={`booth-price-${booth.id}`}
-          className="text-xs font-medium text-gray-700"
+          className="text-xs font-medium text-ink"
         >
           Harga sewa (IDR)
         </label>
@@ -124,9 +157,9 @@ function BoothProperties({ booth }: { booth: Booth }) {
           onChange={(event) => handlePriceChange(event.target.value)}
           onBlur={handlePriceBlur}
           placeholder="Contoh: 4500000"
-          className="mt-1.5 w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 shadow-sm placeholder:text-gray-500 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100"
+          className={fieldClass}
         />
-        <p className="mt-1 text-[11px] text-gray-500">
+        <p className="mt-1 text-[11px] text-muted">
           Terbaca sebagai {formatPrice(booth.price)}
         </p>
       </div>
@@ -249,8 +282,8 @@ export default function BoothSidebar() {
             </dl>
 
             <p className="mt-3 text-[11px] leading-relaxed text-muted">
-              Perubahan kategori dan harga langsung diterapkan ke state. Klik “Simpan Perubahan
-              Denah” untuk menyimpannya permanen.
+              Perubahan kategori, status, dan harga langsung diterapkan ke state. Klik “Simpan
+              Perubahan Denah” untuk menyimpannya permanen.
             </p>
 
             <div className="mt-4 border-t border-line pt-4">
