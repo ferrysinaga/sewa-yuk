@@ -881,7 +881,16 @@ P1 - DUPLIKASI KECIL DAN KETAHANAN INTERAKSI
     Acceptance: pencarian animate-spin hanya tersisa di Spinner.tsx; ukuran
     dan posisi visual sama; tsc/test/build lulus.
 
-[ ] 30. Pakai InlineConfirm di panel hapus booth
+[x] 30. Pakai InlineConfirm di panel hapus booth
+    STATUS: SELESAI (8 November 2026)
+    File: src/components/map/BoothSidebar.tsx
+    Hasil: panel hapus booth kini memakai <InlineConfirm id="delete-booth">
+    dengan judul, deskripsi, label "Ya, hapus", dan className mt-2 yang sama
+    seperti markup lama. Fokus awal tetap di Batal, Escape membatalkan, Tab
+    terperangkap di dua tombol, dan fokus dikembalikan ke pemicu saat panel
+    ditutup. removeBooth tetap hanya mengubah kanvas draf sampai denah
+    disimpan. Verifikasi: `npm run typecheck`, 115 unit test, dan
+    `npm run build` lulus.
     Masalah: BoothSidebar membuat alertdialog sendiri tanpa focus trap dan
     tanpa pengembalian fokus, berbeda dari InlineConfirm yang sudah dipakai
     AdminBookings, TenantBookings, dan BlueprintList.
