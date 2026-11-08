@@ -506,7 +506,7 @@ export default function InteractiveMap({ activeCategory }: InteractiveMapProps) 
             onClick={() => zoomBy(1.25)}
             disabled={!canZoomIn}
             aria-label="Perbesar peta"
-            className="flex h-9 w-9 items-center justify-center rounded-[4px] text-ink transition-colors hover:bg-pine-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine disabled:cursor-not-allowed disabled:opacity-40 sm:h-8 sm:w-8 motion-reduce:transition-none"
+            className="flex h-11 w-11 items-center justify-center rounded-[4px] text-ink transition-colors hover:bg-pine-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine disabled:cursor-not-allowed disabled:opacity-40 motion-reduce:transition-none"
           >
             <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true" className="h-4 w-4">
               <path d="M10.75 4.75a.75.75 0 0 0-1.5 0v4.5h-4.5a.75.75 0 0 0 0 1.5h4.5v4.5a.75.75 0 0 0 1.5 0v-4.5h4.5a.75.75 0 0 0 0-1.5h-4.5v-4.5Z" />
@@ -520,7 +520,7 @@ export default function InteractiveMap({ activeCategory }: InteractiveMapProps) 
             onClick={() => zoomBy(0.8)}
             disabled={!isZoomed}
             aria-label="Perkecil peta"
-            className="flex h-9 w-9 items-center justify-center rounded-[4px] text-ink transition-colors hover:bg-pine-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine disabled:cursor-not-allowed disabled:opacity-40 sm:h-8 sm:w-8 motion-reduce:transition-none"
+            className="flex h-11 w-11 items-center justify-center rounded-[4px] text-ink transition-colors hover:bg-pine-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine disabled:cursor-not-allowed disabled:opacity-40 motion-reduce:transition-none"
           >
             <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true" className="h-4 w-4">
               <path d="M4 10a.75.75 0 0 1 .75-.75h10.5a.75.75 0 0 1 0 1.5H4.75A.75.75 0 0 1 4 10Z" />
@@ -531,7 +531,7 @@ export default function InteractiveMap({ activeCategory }: InteractiveMapProps) 
             onClick={resetView}
             disabled={!isZoomed}
             aria-label="Reset zoom peta ke 1×"
-            className="flex h-9 w-9 items-center justify-center rounded-[4px] text-[10px] font-bold text-muted transition-colors hover:bg-pine-soft hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine disabled:cursor-not-allowed disabled:opacity-40 sm:h-8 sm:w-8 motion-reduce:transition-none"
+            className="flex h-11 w-11 items-center justify-center rounded-[4px] text-[10px] font-bold text-muted transition-colors hover:bg-pine-soft hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine disabled:cursor-not-allowed disabled:opacity-40 motion-reduce:transition-none"
           >
             1×
           </button>
