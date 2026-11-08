@@ -2,6 +2,14 @@ import AxeBuilder from '@axe-core/playwright'
 import { expect, test } from '@playwright/test'
 import type { Page } from '@playwright/test'
 import type { AxeResults } from 'axe-core'
+import {
+  eventId,
+  login,
+  missingEnv,
+  organizer,
+  skipMessage,
+  tenantA,
+} from './fixtures'
 
 /**
  * Audit aksesibilitas WCAG A/AA dengan axe-core.
@@ -12,18 +20,6 @@ import type { AxeResults } from 'axe-core'
  */
 
 const WCAG_TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']
-
-const organizer = {
-  email: process.env.E2E_ORGANIZER_EMAIL ?? '',
-  password: process.env.E2E_ORGANIZER_PASSWORD ?? '',
-}
-
-const tenant = {
-  email: process.env.E2E_TENANT_A_EMAIL ?? '',
-  password: process.env.E2E_TENANT_A_PASSWORD ?? '',
-}
-
-const eventId = process.env.E2E_EVENT_ID ?? ''
 
 function formatViolations(violations: AxeResults['violations']): string {
   return violations
@@ -44,14 +40,6 @@ async function expectNoViolations(page: Page, label: string) {
     results.violations,
     `${label} memiliki pelanggaran aksesibilitas:\n${formatViolations(results.violations)}`,
   ).toEqual([])
-}
-
-async function login(page: Page, email: string, password: string) {
-  await page.goto('/login')
-  await page.locator('#email').fill(email)
-  await page.locator('#password').fill(password)
-  await page.getByRole('button', { name: 'Masuk', exact: true }).click()
-  await page.waitForURL(/\/(event|admin)(\/|$|\?)/, { timeout: 45_000 })
 }
 
 async function waitForPage(page: Page, heading?: string) {
@@ -75,7 +63,7 @@ test('A11Y-02: Event explorer tidak memiliki pelanggaran WCAG AA', async ({ page
 test('A11Y-03: Detail event tidak memiliki pelanggaran WCAG AA', async ({ page }) => {
   test.skip(
     !eventId,
-    'Dilewati: isi E2E_EVENT_ID pada .env.e2e untuk mengaudit /event/:id.',
+    skipMessage('A11Y-03', missingEnv([['E2E_EVENT_ID', eventId]])),
   )
 
   await page.goto(`/event/${eventId}`)
@@ -86,12 +74,13 @@ test('A11Y-03: Detail event tidak memiliki pelanggaran WCAG AA', async ({ page }
 test('A11Y-04: Dashboard organizer tidak memiliki pelanggaran WCAG AA', async ({
   page,
 }) => {
-  test.skip(
-    !organizer.email || !organizer.password,
-    'Dilewati: isi E2E_ORGANIZER_EMAIL dan E2E_ORGANIZER_PASSWORD pada .env.e2e.',
-  )
+  const missing = missingEnv([
+    ['E2E_ORGANIZER_EMAIL', organizer.email],
+    ['E2E_ORGANIZER_PASSWORD', organizer.password],
+  ])
+  test.skip(missing.length > 0, skipMessage('A11Y-04', missing))
 
-  await login(page, organizer.email, organizer.password)
+  await login(page, organizer)
   await page.goto('/admin')
   await waitForPage(page)
   await expectNoViolations(page, 'Dashboard organizer')
@@ -100,24 +89,26 @@ test('A11Y-04: Dashboard organizer tidak memiliki pelanggaran WCAG AA', async ({
 test('A11Y-05: Pemesanan organizer tidak memiliki pelanggaran WCAG AA', async ({
   page,
 }) => {
-  test.skip(
-    !organizer.email || !organizer.password,
-    'Dilewati: isi E2E_ORGANIZER_EMAIL dan E2E_ORGANIZER_PASSWORD pada .env.e2e.',
-  )
+  const missing = missingEnv([
+    ['E2E_ORGANIZER_EMAIL', organizer.email],
+    ['E2E_ORGANIZER_PASSWORD', organizer.password],
+  ])
+  test.skip(missing.length > 0, skipMessage('A11Y-05', missing))
 
-  await login(page, organizer.email, organizer.password)
+  await login(page, organizer)
   await page.goto('/admin/bookings')
   await waitForPage(page, 'Pemesanan Booth')
   await expectNoViolations(page, 'Pemesanan organizer')
 })
 
 test('A11Y-06: Pesanan tenant tidak memiliki pelanggaran WCAG AA', async ({ page }) => {
-  test.skip(
-    !tenant.email || !tenant.password,
-    'Dilewati: isi E2E_TENANT_A_EMAIL dan E2E_TENANT_A_PASSWORD pada .env.e2e.',
-  )
+  const missing = missingEnv([
+    ['E2E_TENANT_A_EMAIL', tenantA.email],
+    ['E2E_TENANT_A_PASSWORD', tenantA.password],
+  ])
+  test.skip(missing.length > 0, skipMessage('A11Y-06', missing))
 
-  await login(page, tenant.email, tenant.password)
+  await login(page, tenantA)
   await page.goto('/bookings')
   await waitForPage(page, 'Pesanan Saya')
   await expect(page).toHaveURL(/\/bookings(\/|$|\?)/)
