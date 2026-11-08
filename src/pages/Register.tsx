@@ -5,20 +5,10 @@ import AuthLayout from '../components/layout/AuthLayout'
 import Spinner from '../components/ui/Spinner'
 import { useToast } from '../components/ui/Toast'
 import { getAuthErrorMessage, getDefaultRouteForRole, validateEmail, validatePassword } from '../lib/auth'
+import { inputClass } from '../lib/formStyles'
 import { isSupabaseConfigured, supabase } from '../lib/supabase'
 import { useAuthStore } from '../store/useAuthStore'
 import type { UserRole } from '../types/auth'
-
-const baseInputClass =
-  'w-full rounded-[6px] border bg-surface px-3.5 py-2.5 text-sm text-ink outline-none transition-colors placeholder:text-muted focus:ring-2 disabled:cursor-not-allowed disabled:bg-canvas'
-
-function inputClass(hasError: boolean) {
-  return `${baseInputClass} ${
-    hasError
-      ? 'border-danger focus:border-danger focus:ring-danger-soft'
-      : 'border-line focus:border-pine focus:ring-pine-soft'
-  }`
-}
 
 const roleOptions: { value: UserRole; title: string; description: string }[] = [
   { value: 'tenant', title: 'Penyewa', description: 'Cari dan sewa booth event' },

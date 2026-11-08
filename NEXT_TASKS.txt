@@ -939,7 +939,16 @@ P1 - DUPLIKASI KECIL DAN KETAHANAN INTERAKSI
 P2 - KEBERSIHAN UI, AKSESIBILITAS, DAN TOOLING
 ===============================================================================
 
-[ ] 32. Satukan style input form autentikasi
+[x] 32. Satukan style input form autentikasi
+    STATUS: SELESAI (8 November 2026)
+    File: src/lib/formStyles.ts (baru), src/pages/Login.tsx,
+          src/pages/Register.tsx
+    Hasil: baseInputClass dan inputClass dipindahkan tanpa perubahan string
+    ke src/lib/formStyles.ts dan diimpor oleh Login serta Register. Pencarian
+    string kelas input dasar kini hanya menemukan satu sumber. id, name,
+    autoComplete, aria-invalid, aria-describedby, urutan field, dan visual
+    tidak berubah. Verifikasi: `npm run typecheck`, 119 unit test, dan
+    `npm run build` lulus.
     Masalah: Login dan Register menyalin baseInputClass/inputClass persis,
     termasuk state error, sehingga perubahan warna harus dilakukan dua kali.
     Bukti: Login.tsx:10-19 dan Register.tsx:11-20 identik.
