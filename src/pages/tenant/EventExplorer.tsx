@@ -154,7 +154,7 @@ export default function EventExplorer() {
     <div className="min-h-screen bg-canvas text-ink">
       <AppHeader />
 
-      <main className="mx-auto max-w-7xl px-4 py-10 sm:px-6 sm:py-12 lg:px-8">
+      <main id="main" tabIndex={-1} className="mx-auto max-w-7xl px-4 py-10 focus:outline-none sm:px-6 sm:py-12 lg:px-8">
         <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
           <div className="max-w-2xl">
             <div className="flex items-center gap-2.5">

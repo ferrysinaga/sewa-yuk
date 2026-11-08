@@ -14,7 +14,7 @@ export default function BlueprintList() {
     <div className="min-h-screen bg-canvas">
       <AppHeader />
 
-      <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      <main id="main" tabIndex={-1} className="mx-auto max-w-7xl px-4 py-8 focus:outline-none sm:px-6 lg:px-8">
         <BlueprintListHeader
           showCreate={list.showCreate}
           onToggleCreate={list.toggleCreate}

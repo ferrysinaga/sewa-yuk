@@ -37,6 +37,13 @@ const benefits = [
 export default function AuthLayout({ children }: { children: ReactNode }) {
   return (
     <div className="min-h-screen bg-canvas text-ink lg:grid lg:grid-cols-[1.05fr_1fr]">
+      <a
+        href="#main"
+        className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-[6px] focus:bg-ink focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-white"
+      >
+        Lewati ke konten utama
+      </a>
+
       <aside className="relative hidden border-r border-line bg-canvas p-10 lg:flex lg:flex-col lg:justify-between xl:p-14">
         <Link
           to="/"
@@ -114,7 +121,7 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
         </div>
       </aside>
 
-      <main className="flex min-h-screen flex-col bg-surface">
+      <main id="main" tabIndex={-1} className="flex min-h-screen flex-col bg-surface focus:outline-none">
         <div className="flex items-center justify-between border-b border-line px-4 py-4 sm:px-6 lg:hidden">
           <Link
             to="/"
