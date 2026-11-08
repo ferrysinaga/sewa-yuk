@@ -688,7 +688,25 @@ P2 - KUALITAS, PERFORMA, DAN KEJELASAN KODE
     Acceptance: mengetik cepat tidak memicu filter per karakter; reset
     mengembalikan seluruh daftar; fokus input tidak hilang; test lulus.
 
-[ ] 25. Optimasi query baca dan pagination daftar pesanan
+[x] 25. Optimasi query baca dan pagination daftar pesanan
+    STATUS: SELESAI (8 November 2026)
+    File: src/pages/tenant/EventExplorer.tsx,
+          src/pages/admin/AdminBookings.tsx,
+          src/hooks/useBookingFeed.ts
+    Hasil: EventExplorer mengambil blueprint published lebih dulu, lalu
+    booth dengan `.in('blueprint_id', ids)`; bila tidak ada published,
+    query booth dilewati sehingga booth draft tidak pernah dihitung.
+    AdminBookings memakai server-side pagination 25 baris (`.range()` +
+    count exact), filter status/event/pencarian dijalankan di server, dan
+    kontrol "Sebelumnya/Berikutnya" native yang dapat dioperasikan keyboard
+    menampilkan rentang "1-25 dari N". Query metrik ringan
+    (id, status, price, expires_at, cancelled_reason) menjaga kartu total,
+    menunggu pembayaran, terverifikasi, dan pendapatan tetap akurat.
+    useBookingFeed menerima `transform`/`onPayload`; callback disimpan di
+    ref agar perubahan filter/halaman tidak memutus channel realtime.
+    UPDATE/INSERT pada halaman aktif diterapkan langsung, perubahan di luar
+    halaman hanya menyesuaikan total/metrik, dan DELETE atau perubahan
+    status saat filter aktif memicu reload daftar agar hitungan akurat.
     Masalah: AdminBookings memuat seluruh booking lalu memfilter di klien;
     EventExplorer memuat seluruh booth dari semua blueprint (termasuk draft
     bila RLS mengizinkan) hanya untuk menghitung ringkasan.

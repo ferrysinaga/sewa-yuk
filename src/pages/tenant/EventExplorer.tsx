@@ -68,14 +68,11 @@ export default function EventExplorer() {
 
         if (cancelled) return
 
-        const [blueprintResult, boothResult] = await Promise.all([
-          supabase
-            .from('blueprints')
-            .select('id, name, venue, event_date, description, status, image_url, image_path')
-            .eq('status', 'published')
-            .order('created_at', { ascending: false }),
-          supabase.from('booths').select('blueprint_id, category, status'),
-        ])
+        const blueprintResult = await supabase
+          .from('blueprints')
+          .select('id, name, venue, event_date, description, status, image_url, image_path')
+          .eq('status', 'published')
+          .order('created_at', { ascending: false })
 
         if (cancelled) return
 
@@ -85,14 +82,30 @@ export default function EventExplorer() {
           return
         }
 
-        if (boothResult.error) {
-          setError(getBlueprintErrorMessage(boothResult.error))
-          setLoading(false)
-          return
+        const publishedBlueprints = (blueprintResult.data ?? []) as BlueprintRow[]
+        const publishedIds = publishedBlueprints.map((blueprint) => blueprint.id)
+
+        let boothRows: BoothSummaryRow[] = []
+
+        if (publishedIds.length > 0) {
+          const boothResult = await supabase
+            .from('booths')
+            .select('blueprint_id, category, status')
+            .in('blueprint_id', publishedIds)
+
+          if (cancelled) return
+
+          if (boothResult.error) {
+            setError(getBlueprintErrorMessage(boothResult.error))
+            setLoading(false)
+            return
+          }
+
+          boothRows = (boothResult.data ?? []) as BoothSummaryRow[]
         }
 
-        setBlueprints((blueprintResult.data ?? []) as BlueprintRow[])
-        setBooths((boothResult.data ?? []) as BoothSummaryRow[])
+        setBlueprints(publishedBlueprints)
+        setBooths(boothRows)
         setLoading(false)
       } catch (loadError) {
         if (cancelled) return

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { Dispatch, SetStateAction } from 'react'
 import { applyBookingChange } from '../lib/bookingRealtime'
 import type { BookingRealtimePayload } from '../lib/bookingRealtime'
@@ -13,6 +13,10 @@ interface UseBookingFeedOptions {
   userId: string | null
   setBookings: Dispatch<SetStateAction<BookingRow[]>>
   enabled?: boolean
+  /** Ganti reducer bawaan, misalnya untuk halaman yang hanya memuat 25 baris. */
+  transform?: (current: BookingRow[], payload: BookingRealtimePayload) => BookingRow[]
+  /** Dipanggil untuk setiap payload, misalnya untuk memperbarui total count. */
+  onPayload?: (payload: BookingRealtimePayload) => void
 }
 
 interface BookingFeedState {
@@ -29,9 +33,18 @@ export function useBookingFeed({
   userId,
   setBookings,
   enabled = true,
+  transform,
+  onPayload,
 }: UseBookingFeedOptions): BookingFeedState {
   const [status, setStatus] = useState<RealtimeStatus>('connecting')
   const [lastEventAt, setLastEventAt] = useState<number | null>(null)
+
+  // Simpan callback terbaru di ref agar perubahan filter atau halaman tidak
+  // memutus dan membuat ulang channel realtime.
+  const transformRef = useRef(transform)
+  transformRef.current = transform
+  const onPayloadRef = useRef(onPayload)
+  onPayloadRef.current = onPayload
 
   useEffect(() => {
     if (!enabled || !isSupabaseConfigured) {
@@ -54,9 +67,13 @@ export function useBookingFeed({
           ...(isTenantFeed ? { filter: `user_id=eq.${userId}` } : {}),
         },
         (payload) => {
+          const change = payload as BookingRealtimePayload
+          const transformCurrent = transformRef.current
+
           setBookings((current) =>
-            applyBookingChange(current, payload as BookingRealtimePayload),
+            transformCurrent ? transformCurrent(current, change) : applyBookingChange(current, change),
           )
+          onPayloadRef.current?.(change)
           setLastEventAt(Date.now())
         },
       )
