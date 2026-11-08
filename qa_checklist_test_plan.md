@@ -1,8 +1,8 @@
 # Dokumen Pengujian Kualitas (QA Checklist & Test Plan)
 **Proyek:** sewa-yuk — Platform Booking Booth Event Interaktif 2D
-**Versi:** 1.2.0
+**Versi:** 1.3.0
 **Stack Utama:** Vite, React, TypeScript, Tailwind CSS, Zustand, Supabase (Auth, DB, Realtime), `@dnd-kit/core`
-**Revisi terakhir:** 6 November 2026 — ditambah suite P2 (publikasi denah, filter/pencarian event, siklus booking, RLS negatif, expiry, gambar denah, dan pengelolaan denah).
+**Revisi terakhir:** 8 November 2026 — ditambah skenario hitungan waktu kedaluwarsa berjalan dan indikator koneksi realtime (TS-15), serta penyelarasan status dokumen dengan Fase 2.
 
 ---
 
@@ -175,6 +175,18 @@ diklik untuk diperiksa; hanya tombol pemesanan yang dinonaktifkan.
 | **EXP-03** | Bayar setelah kedaluwarsa ditolak | Panggil `mark_booking_paid` pada booking `pending` yang sudah lewat `expires_at`. | RPC menolak dengan pesan jelas; status booking tidak berubah menjadi `awaiting_confirmation`. | [ ] |
 | **EXP-04** | Verifikasi setelah kedaluwarsa ditolak | Panggil `confirm_booking` pada booking `pending` yang sudah lewat `expires_at`. | RPC menolak dan booth tidak berubah menjadi `Booked`. | [ ] |
 | **EXP-05** | Sweep bersamaan aman | Jalankan `release_expired_bookings()` dua kali bersamaan pada data yang sama. | Tidak ada error race condition/duplikasi; hanya satu proses yang mengubah booking dan melepas booth. | [ ] |
+| **EXP-06** | Hitungan waktu berjalan tanpa reload | Buat booking `pending` dengan `expires_at` sekitar 2 menit ke depan, lalu buka `/bookings` dan amati teks **Sisa HH:MM:SS** tanpa menyentuh halaman. | Hitungan berkurang tiap detik. Saat mencapai nol, badge berubah menjadi **Kedaluwarsa**, sweep otomatis berjalan sekali, booking menjadi `cancelled` dengan `cancelled_reason='expired'`, dan booth kembali `Available` tanpa reload manual. | [ ] |
+| **EXP-07** | Hitungan berhenti setelah tandai bayar | Tandai booking `pending` sebagai **Sudah Bayar**, lalu amati batas pembayaran dan tunggu hingga `expires_at` terlewat. | Baris batas pembayaran tetap menampilkan tanggal, tetapi teks **Sisa** tidak lagi muncul. Booking tetap `awaiting_confirmation` dan tidak ikut dibatalkan oleh sweep karena menunggu verifikasi organizer. | [ ] |
+
+---
+
+### TS-15: Indikator Koneksi Realtime
+| ID Skenario | Deskripsi Pengujian | Langkah Pengujian | Hasil yang Diharapkan | Status |
+| :--- | :--- | :--- | :--- | :---: |
+| **CONN-01** | Status awal menghubungkan lalu live | Buka `/event/:eventId`, `/bookings`, atau `/admin/bookings` dengan koneksi normal. | Badge sempat menampilkan **Menghubungkan…**, lalu berubah menjadi **Sinkron real-time** tanpa reload. Badge memakai `role="status"` dan `aria-live="polite"`. | [ ] |
+| **CONN-02** | Koneksi terputus | Saat halaman terbuka, putuskan jaringan lewat DevTools (Offline) atau matikan Wi-Fi hingga channel realtime gagal. | Badge berubah menjadi **Koneksi terputus** disertai teks **Terakhir diperbarui HH:MM** (atau **Belum ada pembaruan** bila belum pernah ada data) dan tombol **Muat ulang data**. Perubahan realtime berhenti masuk, tetapi data yang sudah tampil tetap terbaca. | [ ] |
+| **CONN-03** | Muat ulang data manual | Pada kondisi **Koneksi terputus**, klik tombol **Muat ulang data** menggunakan mouse dan keyboard. | Tombol menampilkan **Memuat…** dan nonaktif selama proses, lalu data dimuat ulang dan tombol aktif kembali. Fokus keyboard terlihat dan tidak berpindah ke elemen tak terduga. | [ ] |
+| **CONN-04** | Pulih setelah koneksi kembali | Sambungkan kembali jaringan dan tunggu beberapa detik tanpa reload halaman. | Badge kembali menjadi **Sinkron real-time**, perubahan booth/booking dari tab lain kembali terlihat, dan tombol muat ulang hilang. Indikator tidak mengandalkan warna saja karena label teksnya selalu tampil. | [ ] |
 
 ---
 

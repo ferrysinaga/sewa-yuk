@@ -1,6 +1,6 @@
 DAFTAR TASK SELANJUTNYA - sewa-yuk
 Disusun dari gap analysis qa_checklist_test_plan.md vs kode aktual
-Status acuan commit: a1afc25
+Status acuan commit: aac48c0 (ujung rangkaian branch Fase 2)
 Legenda prioritas: [P0] blocker QA / risiko data, [P1] penting, [P2] nice to have
 Centang [x] jika sudah selesai.
 
@@ -445,6 +445,9 @@ P1 - RISIKO VISUAL, REGRESI, DAN OPERASIONAL
     menerima perubahan realtime tanpa reload.
 
 [ ] 18. Error boundary global + pemulihan chunk lazy
+    CATATAN: implementasi sudah ada di branch fix/error-boundary-chunk-recovery
+    (commit b7ea2ec), tetapi belum tergabung dalam rangkaian branch Fase 2.
+    Task tetap terbuka sampai branch tersebut di-merge dan diverifikasi ulang.
     Masalah: README bagian 12 mencatat belum ada error boundary global.
     Render error atau kegagalan memuat chunk setelah deploy baru akan
     menghasilkan layar putih tanpa jalan pulih. Route sudah lazy-load
@@ -779,7 +782,23 @@ P2 - KUALITAS, PERFORMA, DAN KEJELASAN KODE
     Acceptance: build tanpa warning chunk >500 kB; ukuran JS awal tidak
     bertambah; route lazy tetap terpisah; aplikasi berjalan di preview.
 
-[ ] 28. Sinkronkan dokumen status dan panduan kontribusi
+[x] 28. Sinkronkan dokumen status dan panduan kontribusi
+    STATUS: SELESAI (8 November 2026)
+    File: NEXT_TASKS.txt, README.md, qa_checklist_test_plan.md
+    Hasil: header NEXT_TASKS memakai acuan aac48c0; task 15-17 dan 19-28
+    ditandai selesai, sedangkan task 18 tetap terbuka dengan catatan bahwa
+    implementasinya ada di branch fix/error-boundary-chunk-recovery (b7ea2ec)
+    dan belum di-merge. README kini menyebut 115 unit test di 16 file,
+    menjelaskan `npm run typecheck` dan `npm run verify`, langkah CI yang
+    sebenarnya (typecheck, test:coverage, build, smoke Playwright), pemisahan
+    vendor via `codeSplitting`, serta status error boundary yang akurat.
+    Bagian "Alur kontribusi" ditambahkan berisi konvensi branch per task,
+    gerbang verifikasi, dan kewajiban memperbarui dokumen status.
+    qa_checklist_test_plan.md naik ke versi 1.3.0 dengan skenario EXP-06
+    (hitungan waktu berjalan tanpa reload), EXP-07 (hitungan berhenti setelah
+    tandai bayar), dan suite TS-15 CONN-01..04 untuk indikator koneksi
+    realtime. Verifikasi: `npm run typecheck`, 115 unit test, dan
+    `npm run build` lulus.
     Masalah: status acuan NEXT_TASKS masih a1afc25, README menyebut 51 unit
     test padahal aktual 52, dan belum ada panduan singkat untuk task fase 2.
     Rencana:
@@ -809,7 +828,8 @@ URUTAN EKSEKUSI FASE 2 YANG DISARANKAN
 ===============================================================================
 FASE 3 - ITERASI LANJUTAN
 ===============================================================================
-Status acuan: d5029c5 (task 15 selesai; task 16-28 masih terbuka).
+Status acuan: aac48c0 (task 15-17 dan 19-28 selesai; task 18 menunggu
+integrasi branch fix/error-boundary-chunk-recovery).
 Fokus: menghilangkan sisa duplikasi kecil, melengkapi aksesibilitas, mengunci
 kualitas dengan tooling, dan memperluas cakupan E2E.
 Catatan: tetap jangan mengubah routing, RPC/skema Supabase, logika Zustand,
