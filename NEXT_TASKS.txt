@@ -788,7 +788,7 @@ P2 - KUALITAS, PERFORMA, DAN KEJELASAN KODE
     Hasil: header NEXT_TASKS memakai acuan aac48c0; task 15-17 dan 19-28
     ditandai selesai, sedangkan task 18 tetap terbuka dengan catatan bahwa
     implementasinya ada di branch fix/error-boundary-chunk-recovery (b7ea2ec)
-    dan belum di-merge. README kini menyebut 115 unit test di 16 file,
+    dan belum di-merge. README kini menyebut jumlah unit test aktual,
     menjelaskan `npm run typecheck` dan `npm run verify`, langkah CI yang
     sebenarnya (typecheck, test:coverage, build, smoke Playwright), pemisahan
     vendor via `codeSplitting`, serta status error boundary yang akurat.
@@ -906,7 +906,19 @@ P1 - DUPLIKASI KECIL DAN KETAHANAN INTERAKSI
     Acceptance: hanya ada satu implementasi alertdialog untuk hapus booth;
     Tab/Escape/fokus kembali berfungsi; test dan build lulus.
 
-[ ] 31. Perkuat Toast: error persisten, timer dibersihkan, batasi tumpukan
+[x] 31. Perkuat Toast: error persisten, timer dibersihkan, batasi tumpukan
+    STATUS: SELESAI (8 November 2026)
+    File: src/components/ui/Toast.tsx,
+          src/components/ui/Toast.test.tsx, README.md
+    Hasil: timer auto-dismiss disimpan per toast di Map ref dan dibersihkan
+    saat toast ditutup manual, saat provider unmount, dan saat toast tertua
+    dibuang karena batas tumpukan. Varian error tidak dijadwalkan hilang
+    (persisten sampai ditutup), sedangkan success/info tetap 5 detik.
+    Maksimal 3 toast tampil; toast keempat melepas yang tertua beserta
+    timernya. aria-live, role, dan markup tidak berubah. Empat unit test baru
+    (total 119 test di 16 file) membuktikan error persisten, timer bersih
+    saat tutup/unmount, dan batas 3 toast. Verifikasi: `npm run typecheck`,
+    119 unit test, dan `npm run build` lulus.
     Masalah: showToast memakai window.setTimeout tanpa menyimpan id
     (Toast.tsx:71) sehingga timer tidak dibatalkan saat toast ditutup atau
     provider unmount. Semua varian hilang dalam 5 detik, termasuk error yang

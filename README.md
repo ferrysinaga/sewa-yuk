@@ -217,7 +217,7 @@ npm run test:watch
 npm run test:coverage
 ```
 
-Cakupan unit test saat ini: **115 test di 16 file** yang mencakup store booth
+Cakupan unit test saat ini: **119 test di 16 file** yang mencakup store booth
 (termasuk aksi realtime), panel status, dialog konfirmasi inline, toast,
 modal checkout, route terproteksi, hook booking (realtime, hitungan
 kedaluwarsa, sweep, debounce), helper kanvas, util booking, util blueprint,
