@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import AppHeader from '../../components/layout/AppHeader'
 import { EmptyPanel, ErrorPanel, LoadingPanel } from '../../components/ui/StatePanel'
+import { useDebouncedValue } from '../../hooks/useDebouncedValue'
 import { getBoothCategoryLabel } from '../../lib/boothDisplay'
 import { getBlueprintErrorMessage } from '../../lib/blueprint'
 import { sweepExpiredBookings } from '../../lib/bookingExpiry'
@@ -42,6 +43,7 @@ export default function EventExplorer() {
   const [booths, setBooths] = useState<BoothSummaryRow[]>([])
   const [activeCategory, setActiveCategory] = useState<BoothCategory | 'all'>('all')
   const [search, setSearch] = useState('')
+  const debouncedSearch = useDebouncedValue(search, 250)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [reloadToken, setReloadToken] = useState(0)
@@ -121,7 +123,7 @@ export default function EventExplorer() {
     [blueprints, booths],
   )
 
-  const searchTerm = search.trim().toLowerCase()
+  const searchTerm = debouncedSearch.trim().toLowerCase()
 
   const visibleEvents = events.filter((event) => {
     if (activeCategory !== 'all' && !event.categories.includes(activeCategory)) return false
@@ -203,7 +205,7 @@ export default function EventExplorer() {
               )
             })}
           </div>
-          <p className="ml-auto text-xs tabular-nums text-muted">
+          <p className="ml-auto text-xs tabular-nums text-muted" aria-live="polite">
             {loading ? 'Memuat acara…' : `${visibleEvents.length} dari ${events.length} acara`}
           </p>
         </div>
@@ -238,7 +240,7 @@ export default function EventExplorer() {
             titleAs="p"
             title={
               searchTerm
-                ? `Tidak ada event yang cocok dengan "${search.trim()}"`
+                ? `Tidak ada event yang cocok dengan "${debouncedSearch.trim()}"`
                 : `Tidak ada event dengan kategori ${getBoothCategoryLabel(activeCategory)}`
             }
             description={

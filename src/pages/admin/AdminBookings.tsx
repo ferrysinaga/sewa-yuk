@@ -7,6 +7,7 @@ import { ErrorPanel, LoadingPanel } from '../../components/ui/StatePanel'
 import { useToast } from '../../components/ui/Toast'
 import { useBookingClock } from '../../hooks/useBookingClock'
 import { useBookingFeed } from '../../hooks/useBookingFeed'
+import { useDebouncedValue } from '../../hooks/useDebouncedValue'
 import { formatCurrency, formatDateTime, getBookingErrorMessage, isExpiredBooking } from '../../lib/booking'
 import { sweepExpiredBookings } from '../../lib/bookingExpiry'
 import { isSupabaseConfigured, supabase } from '../../lib/supabase'
@@ -44,9 +45,19 @@ export default function AdminBookings() {
   const [statusFilter, setStatusFilter] = useState<BookingStatus | 'all'>('all')
   const [eventFilter, setEventFilter] = useState('all')
   const [search, setSearch] = useState('')
+  const debouncedSearch = useDebouncedValue(search, 250)
   const [updatingId, setUpdatingId] = useState<string | null>(null)
   const [confirmingCancelId, setConfirmingCancelId] = useState<string | null>(null)
   const [refreshing, setRefreshing] = useState(false)
+
+  const filtersActive =
+    search.trim().length > 0 || eventFilter !== 'all' || statusFilter !== 'all'
+
+  const handleResetFilters = () => {
+    setSearch('')
+    setEventFilter('all')
+    setStatusFilter('all')
+  }
 
   const hasPendingBooking = bookings.some((booking) => booking.status === 'pending')
   const now = useBookingClock(hasPendingBooking)
@@ -111,7 +122,7 @@ export default function AdminBookings() {
   )
 
   const filteredBookings = useMemo(() => {
-    const term = search.trim().toLowerCase()
+    const term = debouncedSearch.trim().toLowerCase()
 
     return bookings.filter((booking) => {
       if (statusFilter !== 'all' && booking.status !== statusFilter) return false
@@ -127,7 +138,7 @@ export default function AdminBookings() {
 
       return true
     })
-  }, [blueprintById, bookings, eventFilter, search, statusFilter])
+  }, [blueprintById, bookings, debouncedSearch, eventFilter, statusFilter])
 
   const metrics = useMemo(() => {
     const awaiting = bookings.filter(
@@ -318,18 +329,29 @@ export default function AdminBookings() {
                       refreshing={refreshing}
                     />
                   </div>
-                  <p className="mt-1 text-xs text-muted">
+                  <p className="mt-1 text-xs text-muted" aria-live="polite">
                     {filteredBookings.length} dari {bookings.length} pesanan ditampilkan
                   </p>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => void handleRefresh()}
-                  disabled={refreshing}
-                  className="inline-flex items-center gap-1.5 rounded-[8px] border border-line bg-surface px-3 py-2 text-xs font-semibold text-ink transition-colors hover:bg-canvas focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
-                >
-                  {refreshing ? 'Memperbarui…' : 'Perbarui status'}
-                </button>
+                <div className="flex flex-wrap items-center gap-2">
+                  {filtersActive && (
+                    <button
+                      type="button"
+                      onClick={handleResetFilters}
+                      className="inline-flex items-center gap-1.5 rounded-[8px] border border-line bg-surface px-3 py-2 text-xs font-semibold text-ink transition-colors hover:bg-canvas focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2"
+                    >
+                      Reset filter
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => void handleRefresh()}
+                    disabled={refreshing}
+                    className="inline-flex items-center gap-1.5 rounded-[8px] border border-line bg-surface px-3 py-2 text-xs font-semibold text-ink transition-colors hover:bg-canvas focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    {refreshing ? 'Memperbarui…' : 'Perbarui status'}
+                  </button>
+                </div>
               </div>
 
               <div className="grid gap-2 border-b border-line px-5 py-3 sm:grid-cols-3">
