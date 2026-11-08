@@ -1,3 +1,5 @@
+import Spinner from '../../../components/ui/Spinner'
+
 interface CreateBlueprintFormProps {
   name: string
   blueprintId: string
@@ -142,10 +144,7 @@ export default function CreateBlueprintForm({
           className="inline-flex items-center justify-center gap-2 rounded-[8px] bg-pine px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-pine-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
         >
           {creating && (
-            <span
-              aria-hidden="true"
-              className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white"
-            />
+            <Spinner size="md" tone="white" />
           )}
           {creating ? 'Membuat...' : 'Buat & Atur Booth'}
         </button>

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import type { FormEvent } from 'react'
 import { Link, Navigate, useNavigate } from 'react-router-dom'
 import AuthLayout from '../components/layout/AuthLayout'
+import Spinner from '../components/ui/Spinner'
 import { useToast } from '../components/ui/Toast'
 import { getAuthErrorMessage, getDefaultRouteForRole, validateEmail, validatePassword } from '../lib/auth'
 import { isSupabaseConfigured, supabase } from '../lib/supabase'
@@ -266,10 +267,7 @@ export default function Register() {
           >
             {submitting ? (
               <>
-                <span
-                  aria-hidden="true"
-                  className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white"
-                />
+                <Spinner size="md" tone="white" />
                 Memproses…
               </>
             ) : (

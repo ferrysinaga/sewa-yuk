@@ -6,6 +6,7 @@ import {
 } from '../../lib/boothDisplay'
 import { useBoothStore } from '../../store/useBoothStore'
 import type { BoothCategory, BoothStatus } from '../../types/booth'
+import Spinner from '../ui/Spinner'
 
 const categoryFilters: { value: BoothCategory | 'all'; label: string }[] = [
   { value: 'all', label: 'Semua' },
@@ -170,10 +171,7 @@ export default function TenantSidebar({
             >
               {reserving ? (
                 <>
-                  <span
-                    aria-hidden="true"
-                    className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white"
-                  />
+                  <Spinner size="md" tone="white" />
                   Memproses…
                 </>
               ) : isReservedByUser ? (

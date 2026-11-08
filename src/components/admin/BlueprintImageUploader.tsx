@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react'
 import type { ChangeEvent } from 'react'
+import Spinner from '../ui/Spinner'
 import { useToast } from '../ui/Toast'
 import {
   BLUEPRINT_IMAGE_ACCEPT,
@@ -149,10 +150,7 @@ export default function BlueprintImageUploader({
         >
           {uploading ? (
             <>
-              <span
-                aria-hidden="true"
-                className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-line border-t-pine"
-              />
+              <Spinner size="sm" tone="pine" />
               Mengunggah...
             </>
           ) : (
