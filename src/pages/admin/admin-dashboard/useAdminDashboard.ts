@@ -5,6 +5,7 @@ import {
   BOOTH_STATUS_META as statusMeta,
   formatPrice,
 } from '../../../lib/boothDisplay'
+import { getErrorMessage } from '../../../lib/errors'
 import { createChannelName } from '../../../lib/id'
 import type { BoothRow } from '../../../lib/boothRow'
 import { isSupabaseConfigured, supabase } from '../../../lib/supabase'
@@ -262,7 +263,7 @@ export function useAdminDashboard() {
         'success',
       )
     } catch (updateError) {
-      const message = updateError instanceof Error ? updateError.message : String(updateError)
+      const message = getErrorMessage(updateError, 'Terjadi kesalahan.')
       showToast(`Gagal mengubah status booth: ${message}`, 'error')
     } finally {
       setUpdatingIds((current) => current.filter((id) => id !== booth.id))

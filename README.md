@@ -217,12 +217,12 @@ npm run test:watch
 npm run test:coverage
 ```
 
-Cakupan unit test saat ini: **122 test di 17 file** yang mencakup store booth
+Cakupan unit test saat ini: **128 test di 18 file** yang mencakup store booth
 (termasuk aksi realtime), panel status, dialog konfirmasi inline, toast,
 modal checkout, route terproteksi, hook booking (realtime, hitungan
-kedaluwarsa, sweep, debounce), judul dokumen per halaman, helper kanvas,
-util booking, util blueprint, mapper row booth, dan indikator status
-realtime. Tes tidak memerlukan kredensial Supabase.
+kedaluwarsa, sweep, debounce), judul dokumen per halaman, ekstraksi pesan
+error, helper kanvas, util booking, util blueprint, mapper row booth, dan
+indikator status realtime. Tes tidak memerlukan kredensial Supabase.
 
 ### CI GitHub Actions
 

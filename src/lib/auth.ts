@@ -1,6 +1,7 @@
 import type { User } from '@supabase/supabase-js'
 import { isUserRole } from '../types/auth'
 import type { UserRole } from '../types/auth'
+import { getErrorMessage, isNetworkError } from './errors'
 
 export function getUserRole(user: User | null | undefined): UserRole | null {
   if (!user) return null
@@ -26,7 +27,7 @@ export function validatePassword(value: string): string {
 }
 
 export function getAuthErrorMessage(error: unknown): string {
-  const message = error instanceof Error ? error.message : String(error)
+  const message = getErrorMessage(error, '')
 
   if (/invalid login credentials/i.test(message)) {
     return 'Email atau kata sandi salah.'
@@ -43,7 +44,7 @@ export function getAuthErrorMessage(error: unknown): string {
   if (/jwt|token/i.test(message)) {
     return 'Sesi gagal dibuat. Silakan coba lagi.'
   }
-  if (/failed to fetch|network/i.test(message)) {
+  if (isNetworkError(message)) {
     return 'Tidak dapat terhubung ke server. Periksa koneksi Anda.'
   }
 

@@ -1027,7 +1027,21 @@ P2 - KEBERSIHAN UI, AKSESIBILITAS, DAN TOOLING
     Acceptance: Tab pertama memunculkan skip link; Enter memindahkan fokus ke
     main; axe Landing dan /event tetap lulus.
 
-[ ] 35. Satukan ekstraksi pesan error lintas modul
+[x] 35. Satukan ekstraksi pesan error lintas modul
+    STATUS: SELESAI (8 November 2026)
+    File: src/lib/errors.ts (baru), src/lib/errors.test.ts (baru),
+          src/lib/auth.ts, src/lib/booking.ts, src/lib/blueprint.ts,
+          src/lib/storage.ts,
+          src/pages/admin/admin-dashboard/useAdminDashboard.ts, README.md
+    Hasil: getErrorMessage(error, fallback) menangani Error, string, objek
+    { message }, serta nilai kosong/null tanpa menampilkan teks mentah;
+    isNetworkError mendeteksi failed to fetch/network/timeout/load failed.
+    Kelima pemakaian lama diganti; pesan domain auth, booking, denah, dan
+    gambar tetap sama, dan booking kini juga memetakan error jaringan.
+    Pencarian `instanceof Error` untuk ekstraksi pesan hanya tersisa di
+    errors.ts. Enam unit test baru (total 128 test di 18 file) mencakup
+    Error, string, objek, null, pesan kosong, dan pola jaringan. Verifikasi:
+    `npm run typecheck`, 128 unit test, dan `npm run build` lulus.
     Masalah: pola `error instanceof Error ? error.message : ...` disalin di
     beberapa modul dengan bentuk slightly berbeda, sehingga pesan jaringan
     atau objek error Supabase bisa tampil mentah.

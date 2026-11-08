@@ -1,6 +1,7 @@
 import type { BookingRow, PaymentMethod } from '../types/booking'
 import { PAYMENT_METHOD_LABEL } from '../types/booking'
 import { formatCurrency } from './currency'
+import { getErrorMessage, isNetworkError } from './errors'
 
 export { formatCurrency }
 
@@ -87,7 +88,7 @@ export function isExpiredBooking(
 }
 
 export function getBookingErrorMessage(error: unknown): string {
-  const message = error instanceof Error ? error.message : String(error ?? '')
+  const message = getErrorMessage(error, '')
 
   if (/could not find the table|relation .* does not exist|schema cache/i.test(message)) {
     return 'Tabel pemesanan belum tersedia. Jalankan migrasi pemesanan terlebih dahulu.'
@@ -99,6 +100,10 @@ export function getBookingErrorMessage(error: unknown): string {
 
   if (/violates row-level security|permission denied/i.test(message)) {
     return 'Anda tidak memiliki akses untuk tindakan ini.'
+  }
+
+  if (isNetworkError(message)) {
+    return 'Tidak dapat terhubung ke Supabase. Periksa koneksi internet Anda lalu coba lagi.'
   }
 
   return message || 'Terjadi kesalahan saat memproses pemesanan.'
