@@ -1,5 +1,6 @@
 import AppHeader from '../../components/layout/AppHeader'
 import { ErrorPanel, LoadingPanel } from '../../components/ui/StatePanel'
+import { useDocumentTitle } from '../../hooks/useDocumentTitle'
 import BookingEmptyState from './tenant-bookings/BookingEmptyState'
 import BookingMetrics from './tenant-bookings/BookingMetrics'
 import BookingStatusFilters from './tenant-bookings/BookingStatusFilters'
@@ -9,6 +10,7 @@ import { useTenantBookings } from './tenant-bookings/useTenantBookings'
 
 export default function TenantBookings() {
   const state = useTenantBookings()
+  useDocumentTitle('Pesanan Saya')
 
   return (
     <div className="min-h-screen bg-canvas">

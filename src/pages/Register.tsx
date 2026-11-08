@@ -4,6 +4,7 @@ import { Link, Navigate, useNavigate } from 'react-router-dom'
 import AuthLayout from '../components/layout/AuthLayout'
 import Spinner from '../components/ui/Spinner'
 import { useToast } from '../components/ui/Toast'
+import { useDocumentTitle } from '../hooks/useDocumentTitle'
 import { getAuthErrorMessage, getDefaultRouteForRole, validateEmail, validatePassword } from '../lib/auth'
 import { inputClass } from '../lib/formStyles'
 import { isSupabaseConfigured, supabase } from '../lib/supabase'
@@ -16,6 +17,8 @@ const roleOptions: { value: UserRole; title: string; description: string }[] = [
 ]
 
 export default function Register() {
+  useDocumentTitle('Daftar Akun')
+
   const session = useAuthStore((state) => state.session)
   const activeRole = useAuthStore((state) => state.role)
   const initialized = useAuthStore((state) => state.initialized)

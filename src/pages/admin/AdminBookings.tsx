@@ -1,5 +1,6 @@
 import AppHeader from '../../components/layout/AppHeader'
 import { ErrorPanel, LoadingPanel } from '../../components/ui/StatePanel'
+import { useDocumentTitle } from '../../hooks/useDocumentTitle'
 import AdminBookingsHeader from './admin-bookings/AdminBookingsHeader'
 import BookingFilters from './admin-bookings/BookingFilters'
 import BookingListToolbar from './admin-bookings/BookingListToolbar'
@@ -10,6 +11,7 @@ import { useAdminBookings } from './admin-bookings/useAdminBookings'
 
 export default function AdminBookings() {
   const state = useAdminBookings()
+  useDocumentTitle('Pemesanan Masuk')
 
   return (
     <div className="min-h-screen bg-canvas">

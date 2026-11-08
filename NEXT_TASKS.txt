@@ -960,7 +960,26 @@ P2 - KEBERSIHAN UI, AKSESIBILITAS, DAN TOOLING
     Acceptance: tidak ada salinan class string input di dua halaman; visual
     dan atribut aksesibilitas identik; build lulus.
 
-[ ] 33. Judul halaman dinamis per route
+[x] 33. Judul halaman dinamis per route
+    STATUS: SELESAI (8 November 2026)
+    File: src/hooks/useDocumentTitle.ts (baru),
+          src/hooks/useDocumentTitle.test.tsx (baru),
+          src/pages/landing/LandingPage.tsx, src/pages/Login.tsx,
+          src/pages/Register.tsx, src/pages/tenant/EventExplorer.tsx,
+          src/pages/tenant/TenantEventView.tsx,
+          src/pages/tenant/TenantBookings.tsx,
+          src/pages/admin/AdminDashboard.tsx,
+          src/pages/admin/AdminBookings.tsx,
+          src/pages/admin/BlueprintList.tsx,
+          src/pages/admin/BlueprintEditor.tsx, README.md
+    Hasil: hook memakai format "Halaman · sewa-yuk" dan mengembalikan judul
+    bawaan index.html saat unmount. Sepuluh halaman memasang judul sendiri;
+    TenantEventView memakai nama event dan BlueprintEditor memakai nama denah
+    bila data sudah termuat, dengan fallback "Detail Event"/"Editor Denah".
+    Tiga unit test baru (total 122 test di 17 file) mencakup format, perubahan
+    judul, dan pemulihan saat unmount. Routing dan metadata lain tidak
+    berubah. Verifikasi: `npm run typecheck`, 122 unit test, dan
+    `npm run build` lulus.
     Masalah: <title> hanya ada di index.html sehingga semua route tampil
     dengan judul yang sama; riwayat tab dan screen reader sulit dibedakan.
     Bukti: index.html:13 satu-satunya title; tidak ada document.title di src/.

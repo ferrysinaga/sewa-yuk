@@ -4,12 +4,15 @@ import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom'
 import AuthLayout from '../components/layout/AuthLayout'
 import Spinner from '../components/ui/Spinner'
 import { useToast } from '../components/ui/Toast'
+import { useDocumentTitle } from '../hooks/useDocumentTitle'
 import { getAuthErrorMessage, getDefaultRouteForRole, getUserRole, validateEmail, validatePassword } from '../lib/auth'
 import { inputClass } from '../lib/formStyles'
 import { isSupabaseConfigured, supabase } from '../lib/supabase'
 import { useAuthStore } from '../store/useAuthStore'
 
 export default function Login() {
+  useDocumentTitle('Masuk')
+
   const session = useAuthStore((state) => state.session)
   const role = useAuthStore((state) => state.role)
   const initialized = useAuthStore((state) => state.initialized)

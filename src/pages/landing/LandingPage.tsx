@@ -1,3 +1,4 @@
+import { useDocumentTitle } from '../../hooks/useDocumentTitle'
 import CtaSection from './sections/CtaSection'
 import EventsSection from './sections/EventsSection'
 import HeroSection from './sections/HeroSection'
@@ -8,6 +9,8 @@ import StepsSection from './sections/StepsSection'
 import ValuesSection from './sections/ValuesSection'
 
 export default function LandingPage() {
+  useDocumentTitle('Beranda')
+
   return (
     <div className="min-h-screen bg-canvas text-ink">
       <a

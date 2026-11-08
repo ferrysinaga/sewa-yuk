@@ -4,11 +4,13 @@ import AppHeader from '../../components/layout/AppHeader'
 import InteractiveMap from '../../components/map/InteractiveMap'
 import TenantSidebar from '../../components/map/TenantSidebar'
 import { ErrorPanel, LoadingPanel } from '../../components/ui/StatePanel'
+import { useDocumentTitle } from '../../hooks/useDocumentTitle'
 import TenantEventHeader from './tenant-event-view/TenantEventHeader'
 import { useTenantEventView } from './tenant-event-view/useTenantEventView'
 
 export default function TenantEventView() {
   const state = useTenantEventView()
+  useDocumentTitle(state.blueprint?.name ?? 'Detail Event')
 
   return (
     <div className="min-h-screen bg-canvas text-ink">

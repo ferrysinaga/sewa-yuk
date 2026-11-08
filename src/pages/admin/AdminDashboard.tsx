@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import AppHeader from '../../components/layout/AppHeader'
 import { ErrorPanel, LoadingPanel } from '../../components/ui/StatePanel'
+import { useDocumentTitle } from '../../hooks/useDocumentTitle'
 import BoothInventoryTable from './admin-dashboard/BoothInventoryTable'
 import DashboardHeader from './admin-dashboard/DashboardHeader'
 import EventSummaryList from './admin-dashboard/EventSummaryList'
@@ -10,6 +11,7 @@ import { useAdminDashboard } from './admin-dashboard/useAdminDashboard'
 
 export default function AdminDashboard() {
   const dashboard = useAdminDashboard()
+  useDocumentTitle('Dashboard Organizer')
 
   return (
     <div className="min-h-screen bg-canvas text-ink">
