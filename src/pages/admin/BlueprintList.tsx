@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import AppHeader from '../../components/layout/AppHeader'
 import InlineConfirm from '../../components/ui/InlineConfirm'
+import { EmptyPanel, ErrorPanel, LoadingPanel } from '../../components/ui/StatePanel'
 import { useToast } from '../../components/ui/Toast'
 import {
   getBlueprintErrorMessage,
@@ -573,58 +574,36 @@ export default function BlueprintList() {
         )}
 
         {loading && (
-          <div className="mt-6 flex min-h-[280px] items-center justify-center rounded-[10px] border border-line bg-surface px-6">
-            <div className="flex flex-col items-center gap-3 text-center">
-              <span
-                aria-hidden="true"
-                className="h-8 w-8 animate-spin rounded-full border-2 border-line border-t-pine"
-              />
-              <p className="text-sm font-medium text-ink">Memuat denah…</p>
-              <p className="max-w-xs text-xs leading-relaxed text-muted">
-                Mengambil daftar denah dan jumlah booth dari Supabase.
-              </p>
-            </div>
-          </div>
+          <LoadingPanel
+            title="Memuat denah…"
+            description="Mengambil daftar denah dan jumlah booth dari Supabase."
+          />
         )}
 
         {!loading && error && (
-          <div className="mt-6 rounded-[10px] border border-line bg-surface p-8 text-center ">
-            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-[10px] bg-danger-soft text-danger">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-6 w-6">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m0 3.75h.008v.008H12v-.008ZM10.34 3.94 2.7 17.54A1.5 1.5 0 0 0 4 19.75h16a1.5 1.5 0 0 0 1.3-2.21L13.66 3.94a1.5 1.5 0 0 0-2.62 0Z" />
-              </svg>
-            </div>
-            <h2 className="mt-4 text-lg font-semibold text-ink">Gagal memuat denah</h2>
-            <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-muted">{error}</p>
-            <button
-              type="button"
-              onClick={() => setReloadToken((token) => token + 1)}
-              className="mt-5 inline-flex items-center justify-center rounded-[8px] bg-pine px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-pine-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2"
-            >
-              Coba lagi
-            </button>
-          </div>
+          <ErrorPanel
+            title="Gagal memuat denah"
+            description={error}
+            onRetry={() => setReloadToken((token) => token + 1)}
+          />
         )}
 
         {!loading && !error && summaries.length === 0 && (
-          <div className="mt-6 rounded-[10px] border border-dashed border-line bg-surface p-10 text-center ">
-            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-[10px] bg-pine-soft text-pine">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-6 w-6">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25H12" />
-              </svg>
-            </div>
-            <h2 className="mt-4 text-lg font-semibold text-ink">Belum ada denah</h2>
-            <p className="mx-auto mt-2 max-w-sm text-sm leading-relaxed text-muted">
-              Buat denah pertama, tambahkan booth, lalu publikasikan agar tenant dapat melihatnya.
-            </p>
-            <button
-              type="button"
-              onClick={() => setShowCreate(true)}
-              className="mt-5 inline-flex items-center justify-center gap-2 rounded-[8px] bg-pine px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-pine-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2"
-            >
-              Buat Denah Baru
-            </button>
-          </div>
+          <EmptyPanel
+            icon="list"
+            paddingClassName="p-10"
+            title="Belum ada denah"
+            description="Buat denah pertama, tambahkan booth, lalu publikasikan agar tenant dapat melihatnya."
+            action={
+              <button
+                type="button"
+                onClick={() => setShowCreate(true)}
+                className="inline-flex items-center justify-center gap-2 rounded-[8px] bg-pine px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-pine-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2"
+              >
+                Buat Denah Baru
+              </button>
+            }
+          />
         )}
 
         {!loading && !error && summaries.length > 0 && (

@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router-dom'
 import BlueprintImageUploader from '../../components/admin/BlueprintImageUploader'
 import AppHeader from '../../components/layout/AppHeader'
 import BlueprintWorkspace from '../../components/map/BlueprintWorkspace'
+import { ErrorPanel, LoadingPanel } from '../../components/ui/StatePanel'
 import { useToast } from '../../components/ui/Toast'
 import { getBlueprintErrorMessage, mapBlueprintRowToDraft } from '../../lib/blueprint'
 import { mapRowToBooth } from '../../lib/boothRow'
@@ -527,39 +528,28 @@ export default function BlueprintEditor() {
         )}
 
         {loading && (
-          <div className="mt-6 flex min-h-[360px] items-center justify-center rounded-[10px] border border-line bg-surface">
-            <div className="flex flex-col items-center gap-3">
-              <span
-                aria-hidden="true"
-                className="h-8 w-8 animate-spin rounded-full border-2 border-line border-t-pine"
-              />
-              <p className="text-sm text-muted">Memuat denah dari Supabase...</p>
-            </div>
-          </div>
+          <LoadingPanel
+            title="Memuat denah dari Supabase..."
+            titleClassName="text-sm text-muted"
+            minHeightClassName="min-h-[360px]"
+          />
         )}
 
         {!loading && loadError && (
-          <div
-            role="alert"
-            className="mt-6 flex flex-col gap-3 rounded-[10px] border border-danger bg-danger-soft px-4 py-4 text-sm text-danger-dark sm:flex-row sm:items-center sm:justify-between"
-          >
-            <p className="leading-relaxed">Gagal memuat denah: {loadError}</p>
-            <div className="flex flex-col gap-2 sm:flex-row">
-              <button
-                type="button"
-                onClick={() => setReloadToken((token) => token + 1)}
-                className="inline-flex shrink-0 items-center justify-center rounded-[6px] border border-danger bg-surface px-4 py-2 text-sm font-semibold text-danger-dark transition-colors hover:bg-danger-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-danger focus-visible:ring-offset-2"
-              >
-                Coba lagi
-              </button>
+          <ErrorPanel
+            variant="inline"
+            title="Gagal memuat denah"
+            description={loadError}
+            onRetry={() => setReloadToken((token) => token + 1)}
+            secondaryAction={
               <Link
                 to="/admin/blueprint"
                 className="inline-flex shrink-0 items-center justify-center rounded-[6px] border border-danger bg-surface px-4 py-2 text-sm font-semibold text-danger-dark transition-colors hover:bg-danger-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-danger focus-visible:ring-offset-2"
               >
                 Daftar denah
               </Link>
-            </div>
-          </div>
+            }
+          />
         )}
 
         {!loading && !loadError && draft && (

@@ -1,4 +1,5 @@
 import { Navigate, Outlet, useLocation } from 'react-router-dom'
+import { LoadingPanel } from '../ui/StatePanel'
 import { useAuthStore } from '../../store/useAuthStore'
 import { getDefaultRouteForRole } from '../../lib/auth'
 import type { UserRole } from '../../types/auth'
@@ -16,13 +17,12 @@ export default function ProtectedRoute({ allowedRoles }: ProtectedRouteProps) {
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-canvas">
-        <div className="flex flex-col items-center gap-3">
-          <span
-            aria-hidden="true"
-            className="h-8 w-8 animate-spin rounded-full border-2 border-line border-t-pine"
-          />
-          <p className="text-sm text-muted">Memeriksa sesi Anda…</p>
-        </div>
+        <LoadingPanel
+          variant="bare"
+          className=""
+          title="Memeriksa sesi Anda…"
+          titleClassName="text-sm text-muted"
+        />
       </div>
     )
   }
