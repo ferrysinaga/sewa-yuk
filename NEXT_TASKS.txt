@@ -1,6 +1,6 @@
 DAFTAR TASK SELANJUTNYA - sewa-yuk
 Disusun dari gap analysis qa_checklist_test_plan.md vs kode aktual
-Status acuan commit: aac48c0 (ujung rangkaian branch Fase 2)
+Status acuan commit: 334e207 (main sebelum PR dokumentasi ini)
 Legenda prioritas: [P0] blocker QA / risiko data, [P1] penting, [P2] nice to have
 Centang [x] jika sudah selesai.
 
@@ -444,26 +444,24 @@ P1 - RISIKO VISUAL, REGRESI, DAN OPERASIONAL
     INSERT/UPDATE/DELETE/row parsial lulus; halaman tenant dan admin tetap
     menerima perubahan realtime tanpa reload.
 
-[ ] 18. Error boundary global + pemulihan chunk lazy
-    CATATAN: implementasi sudah ada di branch fix/error-boundary-chunk-recovery
-    (commit b7ea2ec), tetapi belum tergabung dalam rangkaian branch Fase 2.
-    Task tetap terbuka sampai branch tersebut di-merge dan diverifikasi ulang.
-    Masalah: README bagian 12 mencatat belum ada error boundary global.
-    Render error atau kegagalan memuat chunk setelah deploy baru akan
-    menghasilkan layar putih tanpa jalan pulih. Route sudah lazy-load
-    (App.tsx), sehingga risiko ini nyata.
-    Rencana:
-    - Buat src/components/layout/AppErrorBoundary.tsx (class component).
-      Fallback memakai token warm, role="alert", judul "Terjadi kesalahan",
-      tombol "Muat ulang" dan "Kembali ke beranda".
-    - Deteksi pesan `Failed to fetch dynamically imported module` /
-      `Importing a module script failed`. Simpan penanda di sessionStorage
-      dan lakukan reload otomatis maksimal sekali untuk menghindari loop.
-    - Bungkus <AppRoutes /> di src/App.tsx tanpa mengubah daftar route.
-    - Perbarui catatan README bahwa error boundary sudah tersedia.
-    Acceptance: komponen anak yang melempar error menampilkan fallback,
-    bukan layar putih; fallback dapat dioperasikan keyboard; simulasi chunk
-    gagal memicu satu kali reload; build dan test lulus.
+[x] 18. Error boundary global + pemulihan chunk lazy
+    STATUS: SELESAI (7 November 2026)
+    File: src/components/layout/AppErrorBoundary.tsx (baru),
+          src/components/layout/AppErrorBoundary.test.tsx (baru),
+          src/lib/chunkRecovery.ts (baru),
+          src/lib/chunkRecovery.test.ts (baru),
+          src/App.tsx, README.md
+    Hasil: class component AppErrorBoundary membungkus <AppRoutes /> di
+    dalam BrowserRouter tanpa mengubah daftar route. Fallback role="alert"
+    memakai token warm dengan judul "Terjadi kesalahan" serta tombol
+    "Muat ulang" dan tautan "Kembali ke beranda" yang dapat dioperasikan
+    keyboard. Deteksi chunk gagal mencakup "Failed to fetch dynamically
+    imported module", "Importing a module script failed", pesan variasi
+    browser lain, dan error bernama ChunkLoadError. Reload otomatis dibatasi
+    sekali per sesi tab lewat penanda sessionStorage; penanda baru dihapus
+    saat halaman benar-benar pulih, bukan saat fallback tampil. Verifikasi:
+    tsc --noEmit lulus, 61 unit test lulus (9 test baru), build lulus, dan
+    E2E publik 3 lulus (4 axe berautentikasi skip).
 
 [x] 19. Hitungan waktu nyata dan auto-sweep booking kedaluwarsa
     STATUS: SELESAI (7 November 2026)
@@ -786,9 +784,9 @@ P2 - KUALITAS, PERFORMA, DAN KEJELASAN KODE
     STATUS: SELESAI (8 November 2026)
     File: NEXT_TASKS.txt, README.md, qa_checklist_test_plan.md
     Hasil: header NEXT_TASKS memakai acuan aac48c0; task 15-17 dan 19-28
-    ditandai selesai, sedangkan task 18 tetap terbuka dengan catatan bahwa
-    implementasinya ada di branch fix/error-boundary-chunk-recovery (b7ea2ec)
-    dan belum di-merge. README kini menyebut 115 unit test di 16 file,
+    ditandai selesai, sedangkan task 18 saat itu masih menunggu integrasi
+    branch fix/error-boundary-chunk-recovery. Task 18 kini selesai dan sudah
+    tergabung melalui PR #19. README kini menyebut 115 unit test di 16 file,
     menjelaskan `npm run typecheck` dan `npm run verify`, langkah CI yang
     sebenarnya (typecheck, test:coverage, build, smoke Playwright), pemisahan
     vendor via `codeSplitting`, serta status error boundary yang akurat.
@@ -828,8 +826,8 @@ URUTAN EKSEKUSI FASE 2 YANG DISARANKAN
 ===============================================================================
 FASE 3 - ITERASI LANJUTAN
 ===============================================================================
-Status acuan: aac48c0 (task 15-17 dan 19-28 selesai; task 18 menunggu
-integrasi branch fix/error-boundary-chunk-recovery).
+Status acuan: 334e207 (task 15-28 selesai dan error boundary sudah
+terintegrasi melalui PR #19).
 Fokus: menghilangkan sisa duplikasi kecil, melengkapi aksesibilitas, mengunci
 kualitas dengan tooling, dan memperluas cakupan E2E.
 Catatan: tetap jangan mengubah routing, RPC/skema Supabase, logika Zustand,

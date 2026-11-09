@@ -217,12 +217,12 @@ npm run test:watch
 npm run test:coverage
 ```
 
-Cakupan unit test saat ini: **115 test di 16 file** yang mencakup store booth
+Cakupan unit test saat ini: **124 test di 18 file** yang mencakup store booth
 (termasuk aksi realtime), panel status, dialog konfirmasi inline, toast,
-modal checkout, route terproteksi, hook booking (realtime, hitungan
-kedaluwarsa, sweep, debounce), helper kanvas, util booking, util blueprint,
-mapper row booth, dan indikator status realtime. Tes tidak memerlukan
-kredensial Supabase.
+modal checkout, route terproteksi, error boundary dan pemulihan chunk, hook
+booking (realtime, hitungan kedaluwarsa, sweep, debounce), helper kanvas, util
+booking, util blueprint, mapper row booth, dan indikator status realtime.
+Tes tidak memerlukan kredensial Supabase.
 
 ### CI GitHub Actions
 
@@ -343,11 +343,12 @@ Audit aksesibilitas mencakup:
   tidak ada chunk yang melewati ambang peringatan 500 kB dan cache vendor
   tetap stabil antar-rilis. Jika menambah dependensi besar, pantau kembali
   ukuran chunk saat build.
-- Error boundary global **belum tergabung** di rangkaian rilis ini.
-  Implementasinya tersedia di branch `fix/error-boundary-chunk-recovery`
-  dan perlu di-merge sebelum rilis. Saat ini kegagalan data ditampilkan
-  sebagai panel error di tiap halaman; error render yang tidak tertangani
-  masih berpotensi menghasilkan layar kosong.
+- Error boundary global tersedia di
+  `src/components/layout/AppErrorBoundary.tsx`. Jika render gagal atau chunk
+  lazy tidak dapat dimuat, fallback "Terjadi kesalahan" tampil dengan tombol
+  "Muat ulang" dan "Kembali ke beranda". Kegagalan chunk memicu reload
+  otomatis satu kali per sesi tab (penanda `sessionStorage`) untuk menghindari
+  loop; penanda dihapus setelah halaman berhasil dimuat.
 
 ## 13. Alur kontribusi
 
