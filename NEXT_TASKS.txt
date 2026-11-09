@@ -1081,7 +1081,25 @@ P2 - KEBERSIHAN UI, AKSESIBILITAS, DAN TOOLING
     Acceptance: hanya satu implementasi login; tanpa kredensial test:e2e
     tetap 2 lulus + 4 skip; dengan kredensial A11Y-04..06 berjalan.
 
-[ ] 37. Audit target sentuh dan fokus yang terlihat
+[x] 37. Audit target sentuh dan fokus yang terlihat
+    STATUS: SELESAI (8 November 2026)
+    File: src/components/ui/Toast.tsx,
+          src/components/checkout/CheckoutModal.tsx,
+          src/components/map/InteractiveMap.tsx,
+          src/pages/landing/BoothMap.tsx, src/pages/Login.tsx,
+          src/pages/Register.tsx
+    Hasil: seluruh tombol ikon kini memakai area 44x44 (`h-11 w-11`) tanpa
+    memperbesar ikon. Tombol tutup Toast memakai `-m-2.5` dan tombol tutup
+    CheckoutModal memakai `-m-1.5`, sehingga posisi visual dan tinggi baris
+    tetap sama. Tombol zoom peta penyewa dan denah landing tidak lagi
+    mengecil ke 32 px di desktop; ukurannya konsisten 44 px di 360, 768, dan
+    1280 px. Tombol tampilkan/sembunyikan kata sandi Login dan Register
+    menjadi 44x44 dengan `right-0` agar pusat ikon tidak bergeser. Radius
+    4-8 px, warna token, dan focus-visible ring dipertahankan; tidak ada
+    overflow-hidden baru yang memotong ring. Sisa kontrol teks terkecil
+    (InlineConfirm 26 px, filter/paginasi 28-32 px) berada di atas ambang
+    24x24. Verifikasi: `npm run typecheck`, 128 unit test, `npm run build`,
+    serta E2E smoke + A11Y-01/A11Y-02 lulus (4 test terautentikasi skip).
     Masalah: beberapa tombol ikon hanya sekitar 24-32px sehingga rawan salah
     tekan di layar sentuh; sebagian kontrol kecil di kanvas juga demikian.
     Bukti: Toast.tsx:97 (ikon 16px + p-1), CheckoutModal.tsx:142,
