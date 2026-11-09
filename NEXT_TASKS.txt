@@ -992,7 +992,24 @@ P2 - KEBERSIHAN UI, AKSESIBILITAS, DAN TOOLING
     Acceptance: setiap route punya title berbeda dan kembali ke default saat
     pindah; unit test hook lulus.
 
-[ ] 34. Tambah skip link dan landmark main yang konsisten
+[x] 34. Tambah skip link dan landmark main yang konsisten
+    STATUS: SELESAI (8 November 2026)
+    File: src/components/layout/AppHeader.tsx,
+          src/components/layout/AuthLayout.tsx,
+          src/pages/admin/AdminBookings.tsx,
+          src/pages/admin/AdminDashboard.tsx,
+          src/pages/admin/BlueprintEditor.tsx,
+          src/pages/admin/BlueprintList.tsx,
+          src/pages/tenant/EventExplorer.tsx,
+          src/pages/tenant/TenantBookings.tsx,
+          src/pages/tenant/TenantEventView.tsx
+    Hasil: AppHeader dan AuthLayout kini membuka dengan link "Lewati ke
+    konten utama" yang hanya terlihat saat fokus dan menuju #main. Semua
+    <main> halaman admin, tenant, dan autentikasi memiliki id="main" serta
+    tabIndex={-1}; LandingPage sudah memenuhi pola yang sama. Struktur visual
+    tidak berubah. Verifikasi: `npm run typecheck`, 122 unit test, dan
+    `npm run build` lulus; E2E smoke + A11Y-01/A11Y-02 lulus (4 test
+    terautentikasi skip tanpa .env.e2e).
     Masalah: pengguna keyboard harus melewati seluruh navigasi di setiap
     halaman; baru Landing yang memiliki <main id="main">.
     Bukti: AppHeader.tsx tidak punya link "Lewati ke konten";

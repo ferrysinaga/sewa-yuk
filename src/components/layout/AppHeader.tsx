@@ -59,6 +59,13 @@ export default function AppHeader() {
 
   return (
     <header className="sticky top-0 z-50 border-b border-line bg-canvas">
+      <a
+        href="#main"
+        className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-[6px] focus:bg-ink focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-white"
+      >
+        Lewati ke konten utama
+      </a>
+
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
         <div className="flex items-center gap-6">
           <Link
