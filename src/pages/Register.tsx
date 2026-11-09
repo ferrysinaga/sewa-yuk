@@ -99,18 +99,9 @@ export default function Register() {
     <AuthLayout>
       <div className="rounded-[10px] border border-line bg-surface p-6 sm:p-8">
         <div>
-          <div className="flex items-center gap-2.5">
-            <span aria-hidden="true" className="h-1.5 w-1.5 bg-clay" />
-            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted">
-              Akun baru
-            </p>
-          </div>
-          <h1 className="mt-3 text-2xl font-semibold tracking-tight text-ink sm:text-3xl">
+          <h1 className="text-2xl font-semibold tracking-tight text-ink sm:text-3xl">
             Buat akun baru
           </h1>
-          <p className="mt-2 text-sm leading-relaxed text-muted">
-            Pilih peran Anda untuk mendapatkan pengalaman yang sesuai.
-          </p>
         </div>
 
         {!isSupabaseConfigured && (
@@ -280,21 +271,6 @@ export default function Register() {
         </p>
       </div>
 
-      <p className="mt-6 text-center text-sm">
-        <Link
-          to="/"
-          className="inline-flex items-center gap-1.5 rounded-[4px] text-muted transition-colors hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 focus-visible:ring-offset-surface motion-reduce:transition-none"
-        >
-          <svg viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4" aria-hidden="true">
-            <path
-              fillRule="evenodd"
-              d="M12.79 5.23a.75.75 0 0 1-.02 1.06L8.832 10l3.938 3.71a.75.75 0 1 1-1.04 1.08l-4.5-4.25a.75.75 0 0 1 0-1.08l4.5-4.25a.75.75 0 0 1 1.06.02Z"
-              clipRule="evenodd"
-            />
-          </svg>
-          Kembali ke beranda
-        </Link>
-      </p>
     </AuthLayout>
   )
 }

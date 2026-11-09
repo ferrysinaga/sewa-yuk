@@ -3,7 +3,7 @@ import { useToast } from '../../../components/ui/Toast'
 import { useBookingClock } from '../../../hooks/useBookingClock'
 import { useBookingFeed } from '../../../hooks/useBookingFeed'
 import { useExpiredBookingSweep } from '../../../hooks/useExpiredBookingSweep'
-import { getBookingErrorMessage, isExpiredBooking } from '../../../lib/booking'
+import { getBookingErrorMessage } from '../../../lib/booking'
 import { sweepExpiredBookings } from '../../../lib/bookingExpiry'
 import { isSupabaseConfigured, supabase } from '../../../lib/supabase'
 import { useAuthStore } from '../../../store/useAuthStore'
@@ -126,18 +126,6 @@ export function useTenantBookings() {
     [bookings, statusFilter],
   )
 
-  const metrics = useMemo(() => {
-    const active = bookings.filter(
-      (booking) =>
-        booking.status === 'awaiting_confirmation' ||
-        (booking.status === 'pending' && !isExpiredBooking(booking, now)),
-    ).length
-    const confirmed = bookings.filter((booking) => booking.status === 'confirmed')
-    const totalPaid = confirmed.reduce((sum, booking) => sum + booking.price, 0)
-
-    return { active, confirmed: confirmed.length, totalPaid }
-  }, [bookings, now])
-
   const handleMarkPaid = async (booking: BookingRow) => {
     if (updatingId) return
 
@@ -234,7 +222,6 @@ export function useTenantBookings() {
     lastUpdatedAt,
     blueprintById,
     visibleBookings,
-    metrics,
     handleMarkPaid,
     handleCancel,
     handleRefresh,

@@ -42,21 +42,12 @@ export default function EventSummaryList({ dashboard }: { dashboard: AdminDashbo
                       {BLUEPRINT_STATUS_LABEL[event.status]}
                     </span>
                   </span>
-                  <span className="shrink-0 text-[11px] font-medium tabular-nums text-muted">
-                    {event.booked}/{event.total}
-                  </span>
                 </span>
                 <span className="mt-1 block truncate text-[11px] text-muted">
                   {event.venue ?? 'Venue belum diatur'}
                 </span>
-                <span className="mt-2 block h-1.5 w-full overflow-hidden rounded-[2px] bg-unavailable">
-                  <span
-                    className="block h-full rounded-[2px] bg-pine"
-                    style={{ width: `${event.occupancy}%` }}
-                  />
-                </span>
-                <span className="mt-1.5 block text-[11px] tabular-nums text-muted">
-                  {event.occupancy}% terjual · {event.available} tersedia
+                <span className="mt-2 block text-[11px] tabular-nums text-muted">
+                  {event.available} dari {event.total} booth tersedia
                 </span>
               </button>
               <Link

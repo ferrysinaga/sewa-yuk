@@ -155,32 +155,19 @@ export default function EventExplorer() {
       <AppHeader />
 
       <main id="main" tabIndex={-1} className="mx-auto max-w-7xl px-4 py-10 focus:outline-none sm:px-6 sm:py-12 lg:px-8">
-        <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
-          <div className="max-w-2xl">
-            <div className="flex items-center gap-2.5">
-              <span aria-hidden="true" className="h-px w-6 bg-clay" />
-              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted">
-                Penjelajahan event
-              </p>
-            </div>
-            <h1 className="mt-3 text-3xl font-semibold leading-tight tracking-[-0.02em] text-ink sm:text-4xl">
-              Temukan booth untuk bisnis Anda
-            </h1>
-            <p className="mt-3 text-sm leading-relaxed text-muted sm:text-base">
-              Jelajahi acara yang sedang membuka pendaftaran penyewaan ruang, lalu bandingkan posisi
-              strategis langsung di atas kanvas.
+        <div className="max-w-2xl">
+          <div className="flex items-center gap-2.5">
+            <span aria-hidden="true" className="h-px w-6 bg-clay" />
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted">
+              Penjelajahan event
             </p>
           </div>
-
-          <div className="border-t border-line pt-4 sm:border-l sm:border-t-0 sm:pl-6 sm:pt-0 sm:text-right">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted">
-              Acara tersedia
-            </p>
-            <p className="mt-1 text-2xl font-semibold tabular-nums text-ink">
-              {loading ? '—' : events.length}
-              <span className="ml-1 text-sm font-medium text-muted">event</span>
-            </p>
-          </div>
+          <h1 className="mt-3 text-3xl font-semibold leading-tight tracking-[-0.02em] text-ink sm:text-4xl">
+            Temukan booth untuk bisnis Anda
+          </h1>
+          <p className="mt-3 text-sm leading-relaxed text-muted sm:text-base">
+            Pilih acara untuk melihat denah, status, dan harga booth yang tersedia.
+          </p>
         </div>
 
         <div className="mt-8 flex flex-wrap items-center gap-x-4 gap-y-3 border-y border-line py-3">
@@ -194,7 +181,7 @@ export default function EventExplorer() {
               value={search}
               onChange={(event) => setSearch(event.target.value)}
               placeholder="Cari nama event atau venue…"
-              className="min-h-[38px] w-full rounded-[6px] border border-line bg-surface px-3 py-1.5 text-xs text-ink placeholder:text-muted focus:border-pine focus:outline-none focus:ring-2 focus:ring-pine-soft sm:w-64"
+              className="min-h-[44px] w-full rounded-[6px] border border-line bg-surface px-3 py-1.5 text-sm text-ink placeholder:text-muted focus:border-pine focus:outline-none focus:ring-2 focus:ring-pine-soft sm:w-64"
             />
           </div>
           <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted">
@@ -210,7 +197,7 @@ export default function EventExplorer() {
                   type="button"
                   aria-pressed={isActive}
                   onClick={() => setActiveCategory(item)}
-                  className={`inline-flex min-h-[38px] items-center rounded-[6px] border px-3 py-1.5 text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 focus-visible:ring-offset-canvas motion-reduce:transition-none ${
+                  className={`inline-flex min-h-[44px] items-center rounded-[6px] border px-3 py-1.5 text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 focus-visible:ring-offset-canvas motion-reduce:transition-none ${
                     isActive
                       ? 'border-pine bg-pine text-white'
                       : 'border-line bg-surface text-muted hover:border-pine hover:text-pine'
@@ -281,100 +268,62 @@ export default function EventExplorer() {
 
         {!loading && !error && visibleEvents.length > 0 && (
           <div className="divide-y divide-line border-b border-line">
-            {visibleEvents.map((event) => {
-              const sold = event.totalBooths - event.availableBooths
-              const occupancy =
-                event.totalBooths > 0 ? Math.round((sold / event.totalBooths) * 100) : 0
-              const categoryText =
-                event.categories.length === 0
-                  ? 'Belum ada booth'
-                  : event.categories.length === 1
-                    ? getBoothCategoryLabel(event.categories[0])
-                    : `${event.categories.length} kategori`
-
-              return (
-                <Link
-                  key={event.id}
-                  to={`/event/${event.id}`}
-                  className="group grid gap-4 px-1 py-6 transition-colors hover:bg-pine-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-pine sm:grid-cols-[112px_minmax(0,1fr)_200px] sm:items-center sm:gap-6 sm:px-4 motion-reduce:transition-none"
-                >
-                  <div className="relative h-24 overflow-hidden rounded-[6px] border border-line bg-map sm:h-20">
-                    {event.image_url ? (
-                      <img
-                        src={event.image_url}
-                        alt={`Gambar denah ${event.name}`}
-                        loading="lazy"
-                        className="h-full w-full object-cover"
-                      />
-                    ) : (
-                      <svg viewBox="0 0 320 128" aria-hidden="true" className="h-full w-full">
-                        <rect x="16" y="16" width="70" height="42" rx="6" fill="var(--color-surface)" stroke="var(--color-line)" />
-                        <rect x="96" y="16" width="80" height="42" rx="6" fill="var(--color-surface)" stroke="var(--color-line)" />
-                        <rect x="186" y="16" width="118" height="42" rx="6" fill="var(--color-pine)" />
-                        <rect x="16" y="68" width="140" height="44" rx="6" fill="var(--color-unavailable)" stroke="var(--color-line)" />
-                        <rect x="166" y="68" width="138" height="44" rx="6" fill="var(--color-surface)" stroke="var(--color-line)" />
-                      </svg>
-                    )}
-                    {event.image_url && (
-                      <span className="absolute left-1.5 top-1.5 rounded-[3px] bg-ink/75 px-1.5 py-0.5 text-[9px] font-semibold text-white">
-                        Gambar denah
-                      </span>
-                    )}
+            {visibleEvents.map((event) => (
+              <Link
+                key={event.id}
+                to={`/event/${event.id}`}
+                className={`group grid gap-4 px-1 py-6 transition-colors hover:bg-pine-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-pine sm:items-center sm:gap-6 sm:px-4 motion-reduce:transition-none ${
+                  event.image_url
+                    ? 'sm:grid-cols-[112px_minmax(0,1fr)_200px]'
+                    : 'sm:grid-cols-[minmax(0,1fr)_200px]'
+                }`}
+              >
+                {event.image_url && (
+                  <div className="h-24 overflow-hidden rounded-[6px] border border-line bg-map sm:h-20">
+                    <img
+                      src={event.image_url}
+                      alt={`Gambar denah ${event.name}`}
+                      loading="lazy"
+                      className="h-full w-full object-cover"
+                    />
                   </div>
+                )}
 
-                  <div className="min-w-0">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <h2 className="text-base font-semibold text-ink sm:text-lg">{event.name}</h2>
-                      <span className="rounded-[4px] border border-line bg-surface px-1.5 py-0.5 text-[10px] font-medium text-muted">
-                        {categoryText}
-                      </span>
-                    </div>
-                    <p className="mt-1 text-xs text-muted">{event.venue || 'Venue belum diatur'}</p>
-                    <p className="mt-0.5 text-xs tabular-nums text-muted">
-                      {event.event_date || 'Tanggal belum diatur'}
+                <div className="min-w-0">
+                  <h2 className="text-base font-semibold text-ink sm:text-lg">{event.name}</h2>
+                  <p className="mt-1 text-xs text-muted">{event.venue || 'Venue belum diatur'}</p>
+                  <p className="mt-0.5 text-xs tabular-nums text-muted">
+                    {event.event_date || 'Tanggal belum diatur'}
+                  </p>
+                  {event.description && (
+                    <p className="mt-2 line-clamp-2 text-xs leading-relaxed text-muted">
+                      {event.description}
                     </p>
-                    {event.description && (
-                      <p className="mt-2 line-clamp-2 text-xs leading-relaxed text-muted">
-                        {event.description}
-                      </p>
-                    )}
-                    <div className="mt-3 flex items-center gap-3">
-                      <div className="h-1.5 w-full max-w-[220px] overflow-hidden rounded-[2px] bg-unavailable">
-                        <div
-                          className="h-full rounded-[2px] bg-pine"
-                          style={{ width: `${occupancy}%` }}
-                        />
-                      </div>
-                      <span className="shrink-0 text-[11px] tabular-nums text-muted">
-                        {occupancy}% terisi
-                      </span>
-                    </div>
-                  </div>
+                  )}
+                </div>
 
-                  <div className="flex items-center justify-between gap-4 sm:flex-col sm:items-end sm:gap-2 sm:text-right">
-                    <div>
-                      <p className="text-sm font-semibold tabular-nums text-ink">
-                        {event.availableBooths}{' '}
-                        <span className="font-normal text-muted">dari {event.totalBooths}</span>
-                      </p>
-                      <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted">
-                        booth tersedia
-                      </p>
-                    </div>
-                    <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-pine transition-colors group-hover:text-pine-dark">
-                      Lihat peta
-                      <ArrowRight />
-                    </span>
+                <div className="flex items-center justify-between gap-4 sm:flex-col sm:items-end sm:gap-2 sm:text-right">
+                  <div>
+                    <p className="text-sm font-semibold tabular-nums text-ink">
+                      {event.availableBooths}{' '}
+                      <span className="font-normal text-muted">dari {event.totalBooths}</span>
+                    </p>
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted">
+                      booth tersedia
+                    </p>
                   </div>
-                </Link>
-              )
-            })}
+                  <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-pine transition-colors group-hover:text-pine-dark">
+                    Lihat peta
+                    <ArrowRight />
+                  </span>
+                </div>
+              </Link>
+            ))}
           </div>
         )}
 
         <p className="mt-6 max-w-2xl text-xs leading-relaxed text-muted">
-          Setiap acara memakai denah yang sama dengan yang dikelola penyelenggara. Status booth
-          diperbarui otomatis, termasuk saat penyewa lain sedang mengunci posisi.
+          Status booth pada denah acara diperbarui otomatis saat ada perubahan pemesanan.
         </p>
       </main>
     </div>

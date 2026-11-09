@@ -47,7 +47,7 @@ export default function BlueprintCard({
 
   return (
     <article className="flex flex-col rounded-[10px] border border-line bg-surface p-5 transition-colors">
-      <div className="flex items-center justify-between gap-3">
+      <div className="flex items-center gap-3">
         <span
           className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold ring-1 ring-inset ${BLUEPRINT_STATUS_BADGE[blueprint.status]}`}
         >
@@ -57,9 +57,6 @@ export default function BlueprintCard({
             }`}
           />
           {BLUEPRINT_STATUS_LABEL[blueprint.status]}
-        </span>
-        <span className="text-[11px] text-muted">
-          {blueprint.totalBooths} booth
         </span>
       </div>
 
@@ -195,19 +192,11 @@ export default function BlueprintCard({
         </>
       )}
 
-      <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
-        <div className="rounded-[8px] bg-canvas p-2.5">
-          <p className="text-[11px] text-muted">Tersedia</p>
-          <p className="mt-0.5 font-semibold text-ink">
-            {blueprint.availableBooths} / {blueprint.totalBooths}
-          </p>
-        </div>
-        <div className="rounded-[8px] bg-canvas p-2.5">
-          <p className="text-[11px] text-muted">ID denah</p>
-          <p className="mt-0.5 truncate font-mono text-[11px] font-semibold text-ink" title={blueprint.id}>
-            {blueprint.id}
-          </p>
-        </div>
+      <div className="mt-3 border-t border-line pt-3 text-xs text-muted">
+        <span className="font-semibold tabular-nums text-ink">{blueprint.availableBooths}</span>
+        {' '}dari{' '}
+        <span className="font-semibold tabular-nums text-ink">{blueprint.totalBooths}</span>
+        {' '}booth tersedia
       </div>
 
       <div className="mt-auto flex flex-col gap-2 pt-4">

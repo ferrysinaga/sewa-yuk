@@ -19,16 +19,6 @@ export default function BlueprintEditor() {
       <main id="main" tabIndex={-1} className="mx-auto max-w-7xl px-4 py-8 focus:outline-none sm:px-6 lg:px-8">
         <EditorHeader state={state} />
 
-        {!loading && !loadError && draft && (
-          <BlueprintMetadataForm
-            draft={draft}
-            blueprintId={state.blueprintId}
-            savedImagePath={state.savedImagePath}
-            saving={state.saving}
-            updateDraft={state.updateDraft}
-          />
-        )}
-
         {loading && (
           <LoadingPanel
             title="Memuat denah dari Supabase..."
@@ -55,9 +45,18 @@ export default function BlueprintEditor() {
         )}
 
         {!loading && !loadError && draft && (
-          <div className="mt-6">
-            <BlueprintWorkspace />
-          </div>
+          <>
+            <div className="mt-6">
+              <BlueprintWorkspace />
+            </div>
+            <BlueprintMetadataForm
+              draft={draft}
+              blueprintId={state.blueprintId}
+              savedImagePath={state.savedImagePath}
+              saving={state.saving}
+              updateDraft={state.updateDraft}
+            />
+          </>
         )}
       </main>
     </div>

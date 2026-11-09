@@ -68,15 +68,10 @@ export default function EditorHeader({ state }: { state: BlueprintEditorState })
           {loading && <span className="text-xs text-muted">Memuat denah…</span>}
         </div>
 
-        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted">
-          Tarik kategori booth ke kanvas, atur posisi dengan snap-to-grid, lalu simpan
-          konfigurasi ke Supabase.
-        </p>
-        <p className="mt-1 text-sm text-muted">
+        <p className="mt-2 text-sm text-muted">
           {[draft?.venue, draft?.eventDate].filter(Boolean).join(' · ') ||
             (loading ? 'Memuat informasi event...' : 'Lengkapi informasi denah di bawah.')}
         </p>
-        <p className="mt-1 font-mono text-[11px] text-muted">/event/{blueprintId}</p>
       </div>
 
       <div className="flex flex-col gap-2 sm:flex-row">
