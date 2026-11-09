@@ -13,7 +13,10 @@ export default function StatusDistribution({ dashboard }: { dashboard: AdminDash
           <div key={item.status}>
             <div className="flex items-center justify-between gap-3 text-xs">
               <dt className="flex items-center gap-2 font-medium text-ink">
-                <span aria-hidden="true" className={`h-1.5 w-1.5 rounded-full ${statusMeta[item.status].dot}`} />
+                <span
+                  aria-hidden="true"
+                  className={`h-1.5 w-1.5 rounded-full ${statusMeta[item.status].dot}`}
+                />
                 {statusMeta[item.status].label}
               </dt>
               <dd className="font-semibold tabular-nums text-ink">

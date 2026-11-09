@@ -18,12 +18,14 @@ function makeBooth(overrides: Partial<Booth> = {}): Booth {
   }
 }
 
-function renderModal(overrides: {
-  booth?: Booth
-  reserved?: boolean
-  confirming?: boolean
-  bookingCode?: string | null
-} = {}) {
+function renderModal(
+  overrides: {
+    booth?: Booth
+    reserved?: boolean
+    confirming?: boolean
+    bookingCode?: string | null
+  } = {},
+) {
   const onClose = vi.fn()
   const onConfirm = vi.fn()
   const onViewBookings = vi.fn()

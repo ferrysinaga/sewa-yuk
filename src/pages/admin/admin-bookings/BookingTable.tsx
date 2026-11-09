@@ -50,8 +50,7 @@ export default function BookingTable({ state }: { state: AdminBookingsState }) {
             const isUpdating = state.updatingId === booking.id
             const expired = isExpiredBooking(booking, state.now)
             const canCancel =
-              booking.status === 'pending' ||
-              booking.status === 'awaiting_confirmation'
+              booking.status === 'pending' || booking.status === 'awaiting_confirmation'
             const canConfirm = canCancel && !expired
             const bookingStatusLabel = expired
               ? BOOKING_EXPIRED_LABEL
@@ -59,9 +58,7 @@ export default function BookingTable({ state }: { state: AdminBookingsState }) {
             const statusBadge = expired
               ? BOOKING_EXPIRED_BADGE
               : BOOKING_STATUS_BADGE[booking.status]
-            const statusDot = expired
-              ? BOOKING_EXPIRED_DOT
-              : BOOKING_STATUS_DOT[booking.status]
+            const statusDot = expired ? BOOKING_EXPIRED_DOT : BOOKING_STATUS_DOT[booking.status]
 
             const confirmingCancel = state.confirmingCancelId === booking.id
 

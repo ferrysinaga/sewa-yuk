@@ -28,9 +28,7 @@ export default function StepsSection() {
                 Langkah {String(index + 1).padStart(2, '0')}
               </p>
               <h3 className="mt-3 text-lg font-semibold text-ink">{step.title}</h3>
-              <p className="mt-2 max-w-xs text-sm leading-relaxed text-muted">
-                {step.description}
-              </p>
+              <p className="mt-2 max-w-xs text-sm leading-relaxed text-muted">{step.description}</p>
             </li>
           ))}
         </ol>

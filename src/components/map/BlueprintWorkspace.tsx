@@ -31,10 +31,7 @@ type DragData = PaletteDragData | BoothDragData
 function getActivatorPoint(activatorEvent: Event): { x: number; y: number } | null {
   const pointerLike = activatorEvent as PointerEvent
 
-  if (
-    typeof pointerLike.clientX === 'number' &&
-    typeof pointerLike.clientY === 'number'
-  ) {
+  if (typeof pointerLike.clientX === 'number' && typeof pointerLike.clientY === 'number') {
     return { x: pointerLike.clientX, y: pointerLike.clientY }
   }
 
@@ -92,10 +89,18 @@ export default function BlueprintWorkspace() {
     if (!booth) return
 
     const nextX = snapToGrid(
-      clamp(start.x + (event.delta.x / canvasRect.width) * CANVAS_WIDTH, 0, CANVAS_WIDTH - booth.width),
+      clamp(
+        start.x + (event.delta.x / canvasRect.width) * CANVAS_WIDTH,
+        0,
+        CANVAS_WIDTH - booth.width,
+      ),
     )
     const nextY = snapToGrid(
-      clamp(start.y + (event.delta.y / canvasRect.height) * CANVAS_HEIGHT, 0, CANVAS_HEIGHT - booth.height),
+      clamp(
+        start.y + (event.delta.y / canvasRect.height) * CANVAS_HEIGHT,
+        0,
+        CANVAS_HEIGHT - booth.height,
+      ),
     )
 
     if (nextX !== booth.positionX || nextY !== booth.positionY) {

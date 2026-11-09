@@ -44,9 +44,7 @@ describe('formatDateTime', () => {
 describe('formatDate', () => {
   it('memformat tanggal tanpa waktu', () => {
     const iso = '2026-11-05T10:30:00+07:00'
-    const expected = new Intl.DateTimeFormat('id-ID', { dateStyle: 'medium' }).format(
-      new Date(iso),
-    )
+    const expected = new Intl.DateTimeFormat('id-ID', { dateStyle: 'medium' }).format(new Date(iso))
 
     expect(formatDate(iso)).toBe(expected)
   })
@@ -108,16 +106,10 @@ describe('isExpiredBooking', () => {
 
   it('hanya menandai cancelled yang alasannya expired', () => {
     expect(
-      isExpiredBooking(
-        { status: 'cancelled', cancelled_reason: 'expired', expires_at: null },
-        now,
-      ),
+      isExpiredBooking({ status: 'cancelled', cancelled_reason: 'expired', expires_at: null }, now),
     ).toBe(true)
     expect(
-      isExpiredBooking(
-        { status: 'cancelled', cancelled_reason: 'manual', expires_at: null },
-        now,
-      ),
+      isExpiredBooking({ status: 'cancelled', cancelled_reason: 'manual', expires_at: null }, now),
     ).toBe(false)
   })
 
@@ -137,9 +129,7 @@ describe('isExpiredBooking', () => {
 
 describe('getBookingErrorMessage', () => {
   it('menjelaskan tabel yang belum tersedia', () => {
-    const message = getBookingErrorMessage(
-      new Error('relation "bookings" does not exist'),
-    )
+    const message = getBookingErrorMessage(new Error('relation "bookings" does not exist'))
 
     expect(message).toBe(
       'Tabel pemesanan belum tersedia. Jalankan migrasi pemesanan terlebih dahulu.',
@@ -157,9 +147,7 @@ describe('getBookingErrorMessage', () => {
   })
 
   it('menjelaskan kegagalan row-level security', () => {
-    const message = getBookingErrorMessage(
-      new Error('new row violates row-level security policy'),
-    )
+    const message = getBookingErrorMessage(new Error('new row violates row-level security policy'))
 
     expect(message).toBe('Anda tidak memiliki akses untuk tindakan ini.')
   })
@@ -172,8 +160,6 @@ describe('getBookingErrorMessage', () => {
 
   it('menangani error non-Error dan nilai kosong', () => {
     expect(getBookingErrorMessage('gagal jaringan')).toBe('gagal jaringan')
-    expect(getBookingErrorMessage(null)).toBe(
-      'Terjadi kesalahan saat memproses pemesanan.',
-    )
+    expect(getBookingErrorMessage(null)).toBe('Terjadi kesalahan saat memproses pemesanan.')
   })
 })

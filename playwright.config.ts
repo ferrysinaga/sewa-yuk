@@ -32,10 +32,7 @@ export default defineConfig({
   expect: {
     timeout: 20_000,
   },
-  reporter: [
-    ['list'],
-    ['html', { open: 'never', outputFolder: 'playwright-report' }],
-  ],
+  reporter: [['list'], ['html', { open: 'never', outputFolder: 'playwright-report' }]],
   use: {
     baseURL,
     trace: 'retain-on-failure',

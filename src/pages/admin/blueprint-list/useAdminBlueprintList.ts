@@ -34,11 +34,7 @@ export interface EditDraft {
   eventDate: string
 }
 
-const ACTIVE_BOOKING_STATUSES: BookingStatus[] = [
-  'pending',
-  'awaiting_confirmation',
-  'confirmed',
-]
+const ACTIVE_BOOKING_STATUSES: BookingStatus[] = ['pending', 'awaiting_confirmation', 'confirmed']
 
 function getCreateFormError(name: string, id: string) {
   if (!name.trim()) return 'Nama denah wajib diisi.'
@@ -141,9 +137,7 @@ export function useAdminBlueprintList() {
     () =>
       blueprints.map((blueprint) => {
         const eventBooths = booths.filter((booth) => booth.blueprint_id === blueprint.id)
-        const eventBookings = bookings.filter(
-          (booking) => booking.blueprint_id === blueprint.id,
-        )
+        const eventBookings = bookings.filter((booking) => booking.blueprint_id === blueprint.id)
 
         return {
           ...blueprint,
@@ -225,7 +219,10 @@ export function useAdminBlueprintList() {
 
       if (insertError) throw insertError
 
-      showToast(`Denah "${name.trim()}" dibuat sebagai draft. Tambahkan booth lalu publikasikan.`, 'success')
+      showToast(
+        `Denah "${name.trim()}" dibuat sebagai draft. Tambahkan booth lalu publikasikan.`,
+        'success',
+      )
       resetForm()
       setShowCreate(false)
       setReloadToken((token) => token + 1)
@@ -261,9 +258,7 @@ export function useAdminBlueprintList() {
       if (updateError) throw updateError
 
       setBlueprints((current) =>
-        current.map((row) =>
-          row.id === blueprint.id ? { ...row, status: nextStatus } : row,
-        ),
+        current.map((row) => (row.id === blueprint.id ? { ...row, status: nextStatus } : row)),
       )
 
       showToast(

@@ -17,7 +17,11 @@ export default function AdminDashboard() {
     <div className="min-h-screen bg-canvas text-ink">
       <AppHeader />
 
-      <main id="main" tabIndex={-1} className="mx-auto max-w-7xl px-4 py-8 focus:outline-none sm:px-6 sm:py-10 lg:px-8">
+      <main
+        id="main"
+        tabIndex={-1}
+        className="mx-auto max-w-7xl px-4 py-8 focus:outline-none sm:px-6 sm:py-10 lg:px-8"
+      >
         <DashboardHeader dashboard={dashboard} />
 
         {dashboard.loading && (

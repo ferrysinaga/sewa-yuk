@@ -93,11 +93,7 @@ const TenantBooth = memo(function TenantBooth({
   const titleTone = isSelected && !isUnavailable ? 'fill-white' : 'fill-ink'
   const metaTone = isSelected && !isUnavailable ? 'fill-pine-soft' : 'fill-muted'
   const priceTone =
-    isSelected && !isUnavailable
-      ? 'fill-white'
-      : isUnavailable
-        ? 'fill-muted'
-        : 'fill-ink'
+    isSelected && !isUnavailable ? 'fill-white' : isUnavailable ? 'fill-muted' : 'fill-ink'
 
   const handleSelect = useCallback(() => onSelect(booth.id), [booth.id, onSelect])
 
@@ -132,7 +128,6 @@ const TenantBooth = memo(function TenantBooth({
       }`}
     >
       <title>{`${categoryLabel[booth.category]} — ${statusLabel[booth.status]}`}</title>
-
       <rect
         x={booth.positionX}
         y={booth.positionY}
@@ -143,7 +138,6 @@ const TenantBooth = memo(function TenantBooth({
         strokeDasharray={isReserved ? '4 3' : undefined}
         className={`transition-colors motion-reduce:transition-none ${rectTone}`}
       />
-
       <rect
         x={booth.positionX - 3}
         y={booth.positionY - 3}
@@ -156,23 +150,20 @@ const TenantBooth = memo(function TenantBooth({
         strokeDasharray="4 3"
         className="pointer-events-none opacity-0 transition-opacity group-focus-visible:opacity-100 motion-reduce:transition-none"
       />
-
       <text
         x={booth.positionX + 12}
         y={booth.positionY + 22}
         className={`pointer-events-none text-[11px] font-semibold ${titleTone}`}
       >
         {categoryLabel[booth.category]}
-      </text>
-      {' '}
+      </text>{' '}
       <text
         x={booth.positionX + 12}
         y={booth.positionY + 38}
         className={`pointer-events-none text-[9px] font-medium ${metaTone}`}
       >
         {statusLabel[booth.status]}
-      </text>
-      {' '}
+      </text>{' '}
       <text
         x={booth.positionX + 12}
         y={booth.positionY + booth.height - 12}
@@ -180,7 +171,6 @@ const TenantBooth = memo(function TenantBooth({
       >
         {formatPrice(booth.price)}
       </text>
-
       {isSelected && (
         <g
           transform={`translate(${booth.positionX + booth.width - 14} ${booth.positionY + 14})`}
@@ -246,7 +236,10 @@ export default function InteractiveMap({ activeCategory }: InteractiveMapProps) 
       const size = { width: element.clientWidth, height: element.clientHeight }
       applyView((previous) => {
         if (previous.scale <= MIN_SCALE) return previous
-        return { ...previous, ...clampOffset({ x: previous.x, y: previous.y }, previous.scale, size) }
+        return {
+          ...previous,
+          ...clampOffset({ x: previous.x, y: previous.y }, previous.scale, size),
+        }
       })
     }
 
@@ -501,41 +494,41 @@ export default function InteractiveMap({ activeCategory }: InteractiveMapProps) 
             aria-label="Kontrol zoom peta"
             className="flex items-center gap-0.5 rounded-[6px] border border-line bg-surface p-0.5"
           >
-          <button
-            type="button"
-            onClick={() => zoomBy(1.25)}
-            disabled={!canZoomIn}
-            aria-label="Perbesar peta"
-            className="flex h-11 w-11 items-center justify-center rounded-[4px] text-ink transition-colors hover:bg-pine-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine disabled:cursor-not-allowed disabled:opacity-40 motion-reduce:transition-none"
-          >
-            <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true" className="h-4 w-4">
-              <path d="M10.75 4.75a.75.75 0 0 0-1.5 0v4.5h-4.5a.75.75 0 0 0 0 1.5h4.5v4.5a.75.75 0 0 0 1.5 0v-4.5h4.5a.75.75 0 0 0 0-1.5h-4.5v-4.5Z" />
-            </svg>
-          </button>
-          <span className="px-1 text-[10px] font-semibold tabular-nums text-muted">
-            {Math.round(view.scale * 100)}%
-          </span>
-          <button
-            type="button"
-            onClick={() => zoomBy(0.8)}
-            disabled={!isZoomed}
-            aria-label="Perkecil peta"
-            className="flex h-11 w-11 items-center justify-center rounded-[4px] text-ink transition-colors hover:bg-pine-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine disabled:cursor-not-allowed disabled:opacity-40 motion-reduce:transition-none"
-          >
-            <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true" className="h-4 w-4">
-              <path d="M4 10a.75.75 0 0 1 .75-.75h10.5a.75.75 0 0 1 0 1.5H4.75A.75.75 0 0 1 4 10Z" />
-            </svg>
-          </button>
-          <button
-            type="button"
-            onClick={resetView}
-            disabled={!isZoomed}
-            aria-label="Reset zoom peta ke 1×"
-            className="flex h-11 w-11 items-center justify-center rounded-[4px] text-[10px] font-bold text-muted transition-colors hover:bg-pine-soft hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine disabled:cursor-not-allowed disabled:opacity-40 motion-reduce:transition-none"
-          >
-            1×
-          </button>
-        </div>
+            <button
+              type="button"
+              onClick={() => zoomBy(1.25)}
+              disabled={!canZoomIn}
+              aria-label="Perbesar peta"
+              className="flex h-11 w-11 items-center justify-center rounded-[4px] text-ink transition-colors hover:bg-pine-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine disabled:cursor-not-allowed disabled:opacity-40 motion-reduce:transition-none"
+            >
+              <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true" className="h-4 w-4">
+                <path d="M10.75 4.75a.75.75 0 0 0-1.5 0v4.5h-4.5a.75.75 0 0 0 0 1.5h4.5v4.5a.75.75 0 0 0 1.5 0v-4.5h4.5a.75.75 0 0 0 0-1.5h-4.5v-4.5Z" />
+              </svg>
+            </button>
+            <span className="px-1 text-[10px] font-semibold tabular-nums text-muted">
+              {Math.round(view.scale * 100)}%
+            </span>
+            <button
+              type="button"
+              onClick={() => zoomBy(0.8)}
+              disabled={!isZoomed}
+              aria-label="Perkecil peta"
+              className="flex h-11 w-11 items-center justify-center rounded-[4px] text-ink transition-colors hover:bg-pine-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine disabled:cursor-not-allowed disabled:opacity-40 motion-reduce:transition-none"
+            >
+              <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true" className="h-4 w-4">
+                <path d="M4 10a.75.75 0 0 1 .75-.75h10.5a.75.75 0 0 1 0 1.5H4.75A.75.75 0 0 1 4 10Z" />
+              </svg>
+            </button>
+            <button
+              type="button"
+              onClick={resetView}
+              disabled={!isZoomed}
+              aria-label="Reset zoom peta ke 1×"
+              className="flex h-11 w-11 items-center justify-center rounded-[4px] text-[10px] font-bold text-muted transition-colors hover:bg-pine-soft hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine disabled:cursor-not-allowed disabled:opacity-40 motion-reduce:transition-none"
+            >
+              1×
+            </button>
+          </div>
         </div>
       </div>
 
@@ -662,8 +655,19 @@ export default function InteractiveMap({ activeCategory }: InteractiveMapProps) 
             <div className="pointer-events-none absolute inset-0 flex items-center justify-center p-6">
               <div className="rounded-[8px] border border-line bg-surface px-6 py-5 text-center">
                 <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-[6px] bg-canvas text-muted">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" className="h-5 w-5" aria-hidden="true">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25H12" />
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.6"
+                    className="h-5 w-5"
+                    aria-hidden="true"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25H12"
+                    />
                   </svg>
                 </div>
                 <p className="mt-3 text-sm font-semibold text-ink">Belum ada booth</p>
@@ -678,7 +682,10 @@ export default function InteractiveMap({ activeCategory }: InteractiveMapProps) 
         <div className="mt-3 flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
           <ul className="flex flex-wrap items-center gap-x-4 gap-y-2 text-[11px] font-medium text-muted">
             <li className="inline-flex items-center gap-1.5">
-              <span aria-hidden="true" className="h-2.5 w-2.5 rounded-[2px] border border-pine bg-surface" />
+              <span
+                aria-hidden="true"
+                className="h-2.5 w-2.5 rounded-[2px] border border-pine bg-surface"
+              />
               Tersedia
             </li>
             <li className="inline-flex items-center gap-1.5">

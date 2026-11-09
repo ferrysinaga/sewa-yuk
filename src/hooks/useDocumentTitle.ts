@@ -1,7 +1,6 @@
 import { useEffect } from 'react'
 
-export const DEFAULT_DOCUMENT_TITLE =
-  'sewa-yuk - Manajemen Booth Event Berbasis Peta Spasial'
+export const DEFAULT_DOCUMENT_TITLE = 'sewa-yuk - Manajemen Booth Event Berbasis Peta Spasial'
 
 /**
  * Tetapkan judul dokumen dengan format "Halaman · sewa-yuk" dan kembalikan

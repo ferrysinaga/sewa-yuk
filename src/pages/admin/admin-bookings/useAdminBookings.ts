@@ -3,10 +3,7 @@ import { useToast } from '../../../components/ui/Toast'
 import { useBookingClock } from '../../../hooks/useBookingClock'
 import { useBookingFeed } from '../../../hooks/useBookingFeed'
 import { useDebouncedValue } from '../../../hooks/useDebouncedValue'
-import {
-  getBookingErrorMessage,
-  isExpiredBooking,
-} from '../../../lib/booking'
+import { getBookingErrorMessage, isExpiredBooking } from '../../../lib/booking'
 import type { BookingRealtimePayload } from '../../../lib/bookingRealtime'
 import { sweepExpiredBookings } from '../../../lib/bookingExpiry'
 import { isSupabaseConfigured, supabase } from '../../../lib/supabase'
@@ -55,8 +52,7 @@ export function useAdminBookings() {
   const [confirmingCancelId, setConfirmingCancelId] = useState<string | null>(null)
   const [refreshing, setRefreshing] = useState(false)
 
-  const filtersActive =
-    search.trim().length > 0 || eventFilter !== 'all' || statusFilter !== 'all'
+  const filtersActive = search.trim().length > 0 || eventFilter !== 'all' || statusFilter !== 'all'
 
   const searchTerm = debouncedSearch
     .trim()
@@ -153,9 +149,7 @@ export function useAdminBookings() {
         ...(row.status !== undefined ? { status: row.status } : {}),
         ...(row.price !== undefined ? { price: row.price } : {}),
         ...('expires_at' in row ? { expires_at: row.expires_at ?? null } : {}),
-        ...('cancelled_reason' in row
-          ? { cancelled_reason: row.cancelled_reason ?? null }
-          : {}),
+        ...('cancelled_reason' in row ? { cancelled_reason: row.cancelled_reason ?? null } : {}),
       }
       return next
     })
@@ -258,9 +252,7 @@ export function useAdminBookings() {
 
       const [blueprintResult, metricResult] = await Promise.all([
         supabase.from('blueprints').select('id, name, venue, event_date, status'),
-        supabase
-          .from('bookings')
-          .select('id, status, price, expires_at, cancelled_reason'),
+        supabase.from('bookings').select('id, status, price, expires_at, cancelled_reason'),
       ])
 
       if (cancelled) return
@@ -378,9 +370,7 @@ export function useAdminBookings() {
   const lastUpdatedAt = Math.max(feed.lastEventAt ?? 0, lastLoadedAt ?? 0) || null
 
   const metrics = useMemo(() => {
-    const awaiting = metricRows.filter(
-      (row) => row.status === 'awaiting_confirmation',
-    ).length
+    const awaiting = metricRows.filter((row) => row.status === 'awaiting_confirmation').length
     const pending = metricRows.filter(
       (row) => row.status === 'pending' && !isExpiredBooking(row, now),
     ).length
@@ -473,10 +463,7 @@ export function useAdminBookings() {
       const released = await sweepExpiredBookings()
 
       if (released) {
-        showToast(
-          `${released} pesanan kedaluwarsa dibatalkan dan booth kembali tersedia.`,
-          'info',
-        )
+        showToast(`${released} pesanan kedaluwarsa dibatalkan dan booth kembali tersedia.`, 'info')
       }
     } finally {
       setRefreshing(false)

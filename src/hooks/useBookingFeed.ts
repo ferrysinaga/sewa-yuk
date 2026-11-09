@@ -71,7 +71,9 @@ export function useBookingFeed({
           const transformCurrent = transformRef.current
 
           setBookings((current) =>
-            transformCurrent ? transformCurrent(current, change) : applyBookingChange(current, change),
+            transformCurrent
+              ? transformCurrent(current, change)
+              : applyBookingChange(current, change),
           )
           onPayloadRef.current?.(change)
           setLastEventAt(Date.now())

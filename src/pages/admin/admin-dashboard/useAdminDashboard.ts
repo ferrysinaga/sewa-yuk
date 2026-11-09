@@ -133,13 +133,9 @@ export function useAdminDashboard() {
 
     const channel = supabase
       .channel(createChannelName('admin-booths'))
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'booths' },
-        (payload) => {
-          setBooths((current) => applyBoothChange(current, payload as BoothChangePayload))
-        },
-      )
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'booths' }, (payload) => {
+        setBooths((current) => applyBoothChange(current, payload as BoothChangePayload))
+      })
       .subscribe((status) => {
         setIsLive(status === 'SUBSCRIBED')
         if (status === 'CHANNEL_ERROR') {
@@ -253,9 +249,7 @@ export function useAdminDashboard() {
 
       if (updateError) throw updateError
 
-      setBooths((current) =>
-        current.map((row) => (row.id === booth.id ? (data as BoothRow) : row)),
-      )
+      setBooths((current) => current.map((row) => (row.id === booth.id ? (data as BoothRow) : row)))
       useBoothStore.getState().updateBoothStatus(booth.id, nextStatus)
 
       showToast(

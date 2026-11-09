@@ -1,9 +1,6 @@
 import { Link } from 'react-router-dom'
 import Spinner from '../../../components/ui/Spinner'
-import {
-  BLUEPRINT_STATUS_BADGE,
-  BLUEPRINT_STATUS_LABEL,
-} from '../../../types/blueprint'
+import { BLUEPRINT_STATUS_BADGE, BLUEPRINT_STATUS_LABEL } from '../../../types/blueprint'
 import type { BlueprintEditorState } from './useBlueprintEditor'
 
 export default function EditorHeader({ state }: { state: BlueprintEditorState }) {
@@ -69,8 +66,8 @@ export default function EditorHeader({ state }: { state: BlueprintEditorState })
         </div>
 
         <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted">
-          Tarik kategori booth ke kanvas, atur posisi dengan snap-to-grid, lalu simpan
-          konfigurasi ke Supabase.
+          Tarik kategori booth ke kanvas, atur posisi dengan snap-to-grid, lalu simpan konfigurasi
+          ke Supabase.
         </p>
         <p className="mt-1 text-sm text-muted">
           {[draft?.venue, draft?.eventDate].filter(Boolean).join(' · ') ||

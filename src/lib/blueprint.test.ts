@@ -56,9 +56,7 @@ describe('isValidBlueprintId', () => {
 
 describe('getBlueprintErrorMessage', () => {
   it('menjelaskan tabel blueprints yang belum tersedia', () => {
-    expect(
-      getBlueprintErrorMessage(new Error('relation "blueprints" does not exist')),
-    ).toBe(
+    expect(getBlueprintErrorMessage(new Error('relation "blueprints" does not exist'))).toBe(
       'Tabel "blueprints" belum tersedia di Supabase. Jalankan migrasi skema terlebih dahulu.',
     )
   })
@@ -77,8 +75,6 @@ describe('getBlueprintErrorMessage', () => {
 
   it('meneruskan pesan lain dan menangani pesan kosong', () => {
     expect(getBlueprintErrorMessage(new Error('Gagal khusus'))).toBe('Gagal khusus')
-    expect(getBlueprintErrorMessage('')).toBe(
-      'Terjadi kesalahan saat menghubungi Supabase.',
-    )
+    expect(getBlueprintErrorMessage('')).toBe('Terjadi kesalahan saat menghubungi Supabase.')
   })
 })

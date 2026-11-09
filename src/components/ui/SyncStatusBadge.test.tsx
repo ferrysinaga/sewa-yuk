@@ -22,11 +22,7 @@ describe('SyncStatusBadge', () => {
     const lastUpdatedAt = new Date('2026-11-07T10:30:00Z').getTime()
 
     render(
-      <SyncStatusBadge
-        status="disconnected"
-        lastUpdatedAt={lastUpdatedAt}
-        onRefresh={onRefresh}
-      />,
+      <SyncStatusBadge status="disconnected" lastUpdatedAt={lastUpdatedAt} onRefresh={onRefresh} />,
     )
 
     expect(screen.getByRole('status')).toHaveTextContent('Koneksi terputus')
@@ -37,9 +33,7 @@ describe('SyncStatusBadge', () => {
   })
 
   it('menonaktifkan tombol saat sedang memuat ulang', () => {
-    render(
-      <SyncStatusBadge status="disconnected" onRefresh={() => {}} refreshing />,
-    )
+    render(<SyncStatusBadge status="disconnected" onRefresh={() => {}} refreshing />)
 
     expect(screen.getByRole('button', { name: 'Memuat…' })).toBeDisabled()
     expect(screen.getByText('Belum ada pembaruan')).toBeInTheDocument()

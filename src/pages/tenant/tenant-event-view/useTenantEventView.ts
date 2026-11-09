@@ -178,7 +178,10 @@ export function useTenantEventView() {
             !locallyReservedRef.current.has(row.id)
           ) {
             showToast(
-              `Booth ${row.category ?? ''} baru saja dikunci oleh penyewa lain.`.replace(/\s+/g, ' '),
+              `Booth ${row.category ?? ''} baru saja dikunci oleh penyewa lain.`.replace(
+                /\s+/g,
+                ' ',
+              ),
               'info',
             )
           }

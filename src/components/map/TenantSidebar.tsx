@@ -184,7 +184,12 @@ export default function TenantSidebar({
             </button>
 
             <p className="mt-3 flex items-start gap-2 text-[11px] leading-relaxed text-muted">
-              <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true" className="mt-0.5 h-3.5 w-3.5 shrink-0 text-muted">
+              <svg
+                viewBox="0 0 20 20"
+                fill="currentColor"
+                aria-hidden="true"
+                className="mt-0.5 h-3.5 w-3.5 shrink-0 text-muted"
+              >
                 <path
                   fillRule="evenodd"
                   d="M10 1a4.5 4.5 0 0 0-4.5 4.5V9H5a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6a2 2 0 0 0-2-2h-.5V5.5A4.5 4.5 0 0 0 10 1Zm3 8V5.5a3 3 0 1 0-6 0V9h6Z"
@@ -205,8 +210,16 @@ export default function TenantSidebar({
               aria-hidden="true"
               className="mx-auto h-7 w-7 text-muted"
             >
-              <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-              <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
+              />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z"
+              />
             </svg>
             <p className="mt-2 text-sm font-semibold text-ink">Belum ada booth dipilih</p>
             <p className="mt-1 text-xs leading-relaxed text-muted">

@@ -1,9 +1,6 @@
 import { Link } from 'react-router-dom'
 import InlineConfirm from '../../../components/ui/InlineConfirm'
-import {
-  BLUEPRINT_STATUS_BADGE,
-  BLUEPRINT_STATUS_LABEL,
-} from '../../../types/blueprint'
+import { BLUEPRINT_STATUS_BADGE, BLUEPRINT_STATUS_LABEL } from '../../../types/blueprint'
 import type { BlueprintSummary, EditDraft } from './useAdminBlueprintList'
 
 interface BlueprintCardProps {
@@ -58,9 +55,7 @@ export default function BlueprintCard({
           />
           {BLUEPRINT_STATUS_LABEL[blueprint.status]}
         </span>
-        <span className="text-[11px] text-muted">
-          {blueprint.totalBooths} booth
-        </span>
+        <span className="text-[11px] text-muted">{blueprint.totalBooths} booth</span>
       </div>
 
       {blueprint.image_url && (
@@ -81,8 +76,8 @@ export default function BlueprintCard({
         >
           <p className="text-xs font-semibold text-ink">Edit detail denah</p>
           <p className="mt-1 text-[11px] leading-relaxed text-muted">
-            ID denah tetap <span className="font-mono">{blueprint.id}</span> agar tautan
-            event tidak berubah.
+            ID denah tetap <span className="font-mono">{blueprint.id}</span> agar tautan event tidak
+            berubah.
           </p>
 
           <div className="mt-3 space-y-2.5">
@@ -180,9 +175,7 @@ export default function BlueprintCard({
       ) : (
         <>
           <h2 className="mt-3 text-base font-semibold text-ink">{blueprint.name}</h2>
-          <p className="mt-1 text-xs text-muted">
-            {blueprint.venue || 'Venue belum diatur'}
-          </p>
+          <p className="mt-1 text-xs text-muted">{blueprint.venue || 'Venue belum diatur'}</p>
           <p className="mt-0.5 text-xs text-muted">
             {blueprint.event_date || 'Tanggal belum diatur'}
           </p>
@@ -204,7 +197,10 @@ export default function BlueprintCard({
         </div>
         <div className="rounded-[8px] bg-canvas p-2.5">
           <p className="text-[11px] text-muted">ID denah</p>
-          <p className="mt-0.5 truncate font-mono text-[11px] font-semibold text-ink" title={blueprint.id}>
+          <p
+            className="mt-0.5 truncate font-mono text-[11px] font-semibold text-ink"
+            title={blueprint.id}
+          >
             {blueprint.id}
           </p>
         </div>
@@ -255,9 +251,7 @@ export default function BlueprintCard({
             type="button"
             onClick={onToggleDelete}
             aria-expanded={confirmingDelete}
-            aria-controls={
-              confirmingDelete ? `delete-blueprint-${blueprint.id}` : undefined
-            }
+            aria-controls={confirmingDelete ? `delete-blueprint-${blueprint.id}` : undefined}
             disabled={deleting}
             className="inline-flex items-center justify-center rounded-[8px] border border-danger bg-surface px-3 py-2 text-xs font-semibold text-danger-dark transition-colors hover:bg-danger-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-danger focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
           >

@@ -17,6 +17,7 @@ atas agar aplikasi, database, akun uji, dan tes otomatis siap dipakai.
 - Supabase (Postgres, Auth, Storage, Realtime)
 - Vitest + Testing Library untuk unit test
 - Playwright + `@axe-core/playwright` untuk E2E dan audit aksesibilitas
+- ESLint + Prettier untuk lint dan format kode
 
 ## 2. Prasyarat
 
@@ -62,15 +63,15 @@ Catatan keamanan:
 Buka **Supabase Dashboard → SQL Editor**, lalu jalankan file berikut satu per
 satu. Urutan ini penting karena saling bergantung.
 
-| Urutan | File | Isi |
-| --- | --- | --- |
-| 1 | `supabase/migrations/20261103000000_create_booths.sql` | Tabel `booths`, index, RLS dasar |
-| 2 | `supabase/migrations/20261103000100_create_blueprints.sql` | Tabel `blueprints` + 3 event contoh (`hall-a`, `hall-b`, `hall-5`) |
-| 3 | `supabase/migrations/20261103000200_tenant_realtime_policies.sql` | Policy reservasi tenant + aktifkan Realtime `booths` |
-| 4 | `supabase/migrations/20261103000300_blueprint_publishing.sql` | Kolom `status`, aturan publish/draft, RLS baca booth |
-| 5 | `supabase/migrations/20261103000400_blueprint_images.sql` | Kolom gambar denah + bucket Storage `blueprint-assets` |
-| 6 | `supabase/migrations/20261103000500_bookings.sql` | Tabel `bookings`, RPC pemesanan, Realtime `bookings` |
-| 7 | `supabase/migrations/20261105000000_booking_expiry.sql` | Auto-release booking kedaluwarsa + `cancelled_reason` |
+| Urutan | File                                                              | Isi                                                                |
+| ------ | ----------------------------------------------------------------- | ------------------------------------------------------------------ |
+| 1      | `supabase/migrations/20261103000000_create_booths.sql`            | Tabel `booths`, index, RLS dasar                                   |
+| 2      | `supabase/migrations/20261103000100_create_blueprints.sql`        | Tabel `blueprints` + 3 event contoh (`hall-a`, `hall-b`, `hall-5`) |
+| 3      | `supabase/migrations/20261103000200_tenant_realtime_policies.sql` | Policy reservasi tenant + aktifkan Realtime `booths`               |
+| 4      | `supabase/migrations/20261103000300_blueprint_publishing.sql`     | Kolom `status`, aturan publish/draft, RLS baca booth               |
+| 5      | `supabase/migrations/20261103000400_blueprint_images.sql`         | Kolom gambar denah + bucket Storage `blueprint-assets`             |
+| 6      | `supabase/migrations/20261103000500_bookings.sql`                 | Tabel `bookings`, RPC pemesanan, Realtime `bookings`               |
+| 7      | `supabase/migrations/20261105000000_booking_expiry.sql`           | Auto-release booking kedaluwarsa + `cancelled_reason`              |
 
 Semua migrasi ditulis idempoten, jadi aman dijalankan ulang bila eksekusi
 sebelumnya terputus. Bila memakai Supabase CLI dengan konfigurasi lokal,
@@ -129,11 +130,11 @@ Cara membuat akun:
 
 Akun minimum untuk QA lengkap:
 
-| Akun | Role | Kegunaan |
-| --- | --- | --- |
+| Akun      | Role        | Kegunaan                                    |
+| --------- | ----------- | ------------------------------------------- |
 | Organizer | `organizer` | Dashboard, kelola denah, verifikasi booking |
-| Tenant A | `tenant` | Membuat booking, uji realtime |
-| Tenant B | `tenant` | Tab kedua untuk uji realtime/race condition |
+| Tenant A  | `tenant`    | Membuat booking, uji realtime               |
+| Tenant B  | `tenant`    | Tab kedua untuk uji realtime/race condition |
 
 Jika role akun salah, perbaiki lewat **Authentication → Users → Edit user**
 (`raw_user_meta_data`) atau SQL berikut, lalu logout/login agar JWT diperbarui:
@@ -165,20 +166,20 @@ npm run preview
 
 ## 8. Daftar route aktual
 
-| Route | Akses | Halaman |
-| --- | --- | --- |
-| `/` | Publik | Landing page + demo denah |
-| `/login` | Publik | Masuk |
-| `/register` | Publik | Daftar akun tenant/organizer |
-| `/event` | Publik | Jelajah event yang sudah dipublikasikan |
-| `/event/:eventId` | Publik | Kanvas booth + checkout |
-| `/bookings` | Tenant | Daftar pesanan milik sendiri |
-| `/admin` | Organizer | Dashboard okupansi dan status booth |
-| `/admin/bookings` | Organizer | Verifikasi / batalkan booking |
-| `/admin/blueprint` | Organizer | Daftar dan publikasi denah |
-| `/admin/blueprint/:blueprintId` | Organizer | Editor denah drag-and-drop |
-| `/admin/*` | Organizer | Dialihkan ke `/admin` |
-| `*` | Publik | Dialihkan ke `/` |
+| Route                           | Akses     | Halaman                                 |
+| ------------------------------- | --------- | --------------------------------------- |
+| `/`                             | Publik    | Landing page + demo denah               |
+| `/login`                        | Publik    | Masuk                                   |
+| `/register`                     | Publik    | Daftar akun tenant/organizer            |
+| `/event`                        | Publik    | Jelajah event yang sudah dipublikasikan |
+| `/event/:eventId`               | Publik    | Kanvas booth + checkout                 |
+| `/bookings`                     | Tenant    | Daftar pesanan milik sendiri            |
+| `/admin`                        | Organizer | Dashboard okupansi dan status booth     |
+| `/admin/bookings`               | Organizer | Verifikasi / batalkan booking           |
+| `/admin/blueprint`              | Organizer | Daftar dan publikasi denah              |
+| `/admin/blueprint/:blueprintId` | Organizer | Editor denah drag-and-drop              |
+| `/admin/*`                      | Organizer | Dialihkan ke `/admin`                   |
+| `*`                             | Publik    | Dialihkan ke `/`                        |
 
 Aturan redirect:
 
@@ -196,14 +197,26 @@ Sebelum push, jalankan seluruh gerbang wajib dalam satu perintah:
 npm run verify
 ```
 
-Perintah ini menjalankan `npm run typecheck` (`tsc --noEmit`), unit test,
-lalu build produksi. Arti kegagalannya:
+Perintah ini menjalankan lint, cek format, `npm run typecheck`
+(`tsc --noEmit`), unit test, lalu build produksi. Arti kegagalannya:
 
-| Langkah | Jika gagal |
-| --- | --- |
-| `npm run typecheck` | Ada error tipe TypeScript; perbaiki sebelum build |
-| `npm test` | Ada unit test gagal atau perilaku yang berubah |
-| `npm run build` | Bundle produksi gagal dibuat, biasanya karena error tipe atau import |
+| Langkah                | Jika gagal                                                           |
+| ---------------------- | -------------------------------------------------------------------- |
+| `npm run lint`         | Ada pelanggaran ESLint; jalankan `npm run lint:fix` lalu tinjau diff |
+| `npm run format:check` | Ada file belum sesuai Prettier; jalankan `npm run format`            |
+| `npm run typecheck`    | Ada error tipe TypeScript; perbaiki sebelum build                    |
+| `npm test`             | Ada unit test gagal atau perilaku yang berubah                       |
+| `npm run build`        | Bundle produksi gagal dibuat, biasanya karena error tipe atau import |
+
+Lint dan format juga bisa dijalankan terpisah dengan `npm run lint` dan
+`npm run format`. Prettier memakai pengaturan di `.prettierrc`; file yang
+dikecualikan ada di `.prettierignore`.
+
+Catatan tooling: `typescript` di-_alias_ ke `@typescript/typescript6` agar
+typescript-eslint tetap mendapat API TypeScript 6, sementara `tsc` untuk
+typecheck dan build memakai TypeScript 7 lewat paket `typescript7`
+(`node ./node_modules/typescript7/bin/tsc`). Ini mengikuti anjuran resmi
+TypeScript untuk menjalankan versi 6 dan 7 berdampingan.
 
 Cakupan kode diperiksa terpisah dengan `npm run test:coverage`. Ambang batas
 ada di `vite.config.ts` dan berlaku untuk `src/lib` + `src/store`; bila turun
@@ -227,12 +240,15 @@ indikator status realtime. Tes tidak memerlukan kredensial Supabase.
 ### CI GitHub Actions
 
 Workflow `.github/workflows/ci.yml` berjalan pada setiap push dan pull request:
-Node 22 dengan cache npm, `npm ci`, `npm run typecheck`, `npm run test:coverage`,
-`npm run build`, lalu smoke test Playwright (`e2e/smoke.spec.ts`). Smoke test
-tidak membutuhkan kredensial; tes E2E berautentikasi tetap dilewati.
+Node 22 dengan cache npm, `npm ci`, `npm run lint`, `npm run format:check`,
+`npm run typecheck`, `npm run test:coverage`, `npm run build`, lalu smoke test
+Playwright (`e2e/smoke.spec.ts`). Smoke test tidak membutuhkan kredensial; tes
+E2E berautentikasi tetap dilewati.
 
 Bila workflow merah, buka langkah yang gagal di tab **Actions**:
 
+- **Lint** — pelanggaran ESLint; jalankan `npm run lint` lokal.
+- **Format check** — file belum diformat; jalankan `npm run format` lokal.
 - **Typecheck** — error tipe; jalankan `npm run typecheck` lokal.
 - **Unit test with coverage** — test gagal atau cakupan turun; jalankan
   `npm run test:coverage` lokal.
@@ -287,14 +303,14 @@ booth produksi.
 
 Audit aksesibilitas mencakup:
 
-| Tes | Route | Syarat |
-| --- | --- | --- |
-| A11Y-01 | `/` | selalu jalan |
-| A11Y-02 | `/event` | selalu jalan |
-| A11Y-03 | `/event/:eventId` | `E2E_EVENT_ID` terisi |
-| A11Y-04 | `/admin` | kredensial organizer terisi |
+| Tes     | Route             | Syarat                      |
+| ------- | ----------------- | --------------------------- |
+| A11Y-01 | `/`               | selalu jalan                |
+| A11Y-02 | `/event`          | selalu jalan                |
+| A11Y-03 | `/event/:eventId` | `E2E_EVENT_ID` terisi       |
+| A11Y-04 | `/admin`          | kredensial organizer terisi |
 | A11Y-05 | `/admin/bookings` | kredensial organizer terisi |
-| A11Y-06 | `/bookings` | kredensial tenant A terisi |
+| A11Y-06 | `/bookings`       | kredensial tenant A terisi  |
 
 ## 10. Alur QA singkat
 
@@ -319,17 +335,17 @@ Audit aksesibilitas mencakup:
 
 ## 11. Troubleshooting
 
-| Gejala | Penyebab umum | Solusi |
-| --- | --- | --- |
-| "Supabase belum dikonfigurasi" | `.env` belum ada / kosong | Isi `VITE_SUPABASE_URL` dan `VITE_SUPABASE_ANON_KEY`, restart `npm run dev` |
-| "Tabel ... belum tersedia" | Migrasi belum dijalankan | Jalankan migrasi sesuai urutan bagian 5.1 |
-| Login berhasil tetapi diarahkan ke halaman salah | `user_metadata.role` salah | Perbaiki role, logout, login ulang |
-| Tenant tidak bisa membuka `/admin` | Memang dibatasi | Gunakan akun organizer |
-| Booth tidak muncul di `/event` | Blueprint masih `draft` | Publikasikan lewat `/admin/blueprint` |
-| Denah tidak bisa dihapus | Masih ada booking aktif | Selesaikan atau batalkan booking terkait di `/admin/bookings` |
-| Perubahan booth tidak realtime | Realtime belum aktif | Aktifkan `booths` dan `bookings` di Database → Replication |
-| E2E SYNC dilewati | `.env.e2e` belum lengkap | Isi semua variabel dan sediakan booth `Available` |
-| `npm` ditolak di PowerShell | Execution policy | Gunakan `npm.cmd` |
+| Gejala                                           | Penyebab umum              | Solusi                                                                      |
+| ------------------------------------------------ | -------------------------- | --------------------------------------------------------------------------- |
+| "Supabase belum dikonfigurasi"                   | `.env` belum ada / kosong  | Isi `VITE_SUPABASE_URL` dan `VITE_SUPABASE_ANON_KEY`, restart `npm run dev` |
+| "Tabel ... belum tersedia"                       | Migrasi belum dijalankan   | Jalankan migrasi sesuai urutan bagian 5.1                                   |
+| Login berhasil tetapi diarahkan ke halaman salah | `user_metadata.role` salah | Perbaiki role, logout, login ulang                                          |
+| Tenant tidak bisa membuka `/admin`               | Memang dibatasi            | Gunakan akun organizer                                                      |
+| Booth tidak muncul di `/event`                   | Blueprint masih `draft`    | Publikasikan lewat `/admin/blueprint`                                       |
+| Denah tidak bisa dihapus                         | Masih ada booking aktif    | Selesaikan atau batalkan booking terkait di `/admin/bookings`               |
+| Perubahan booth tidak realtime                   | Realtime belum aktif       | Aktifkan `booths` dan `bookings` di Database → Replication                  |
+| E2E SYNC dilewati                                | `.env.e2e` belum lengkap   | Isi semua variabel dan sediakan booth `Available`                           |
+| `npm` ditolak di PowerShell                      | Execution policy           | Gunakan `npm.cmd`                                                           |
 
 ## 12. Catatan pengembangan
 
@@ -354,7 +370,8 @@ Audit aksesibilitas mencakup:
 - Satu task dari `NEXT_TASKS.txt` dikerjakan pada satu branch dengan awalan
   sesuai jenisnya: `feature/`, `fix/`, `refactor/`, `test/`, `docs/`,
   `chore/`, atau `perf/`.
-- Sebelum commit, jalankan `npm run verify` (typecheck, unit test, build).
+- Sebelum commit, jalankan `npm run verify` (lint, format, typecheck, unit
+  test, build).
   Untuk perubahan UI, jalankan juga smoke dan audit aksesibilitas:
 
   ```bash

@@ -123,7 +123,10 @@ export default function CheckoutModal({
                 {reserved ? 'Booth terkunci' : 'Konfirmasi'}
               </p>
             </div>
-            <h2 id="checkout-title" className="mt-1.5 text-lg font-semibold tracking-tight text-ink">
+            <h2
+              id="checkout-title"
+              className="mt-1.5 text-lg font-semibold tracking-tight text-ink"
+            >
               {reserved ? 'Booth berhasil dikunci' : 'Konfirmasi pemesanan'}
             </h2>
             <p className="mt-0.5 text-xs text-muted">{eventName ?? 'Penyewaan booth event'}</p>
@@ -148,8 +151,19 @@ export default function CheckoutModal({
           {reserved ? (
             <div className="text-center">
               <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-[10px] bg-pine-soft text-pine">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true" className="h-7 w-7">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                  aria-hidden="true"
+                  className="h-7 w-7"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+                  />
                 </svg>
               </div>
               <h3 className="mt-4 text-lg font-semibold text-ink">Booth aman untuk Anda</h3>
@@ -179,7 +193,9 @@ export default function CheckoutModal({
                 </div>
                 <div className="flex items-center justify-between gap-3 border-t border-line pt-2">
                   <dt className="text-muted">Total</dt>
-                  <dd className="font-semibold tabular-nums text-ink">{formatCurrency(booth.price)}</dd>
+                  <dd className="font-semibold tabular-nums text-ink">
+                    {formatCurrency(booth.price)}
+                  </dd>
                 </div>
               </dl>
 
@@ -221,7 +237,9 @@ export default function CheckoutModal({
               <dl className="mt-4 space-y-2.5 text-sm">
                 <div className="flex items-center justify-between gap-3">
                   <dt className="text-muted">Harga sewa booth</dt>
-                  <dd className="font-medium tabular-nums text-ink">{formatCurrency(booth.price)}</dd>
+                  <dd className="font-medium tabular-nums text-ink">
+                    {formatCurrency(booth.price)}
+                  </dd>
                 </div>
                 <div className="flex items-center justify-between gap-3">
                   <dt className="text-muted">Biaya layanan</dt>
@@ -281,7 +299,12 @@ export default function CheckoutModal({
               </fieldset>
 
               <p className="mt-4 flex items-start gap-2 text-[11px] leading-relaxed text-muted">
-                <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true" className="mt-0.5 h-3.5 w-3.5 shrink-0 text-muted">
+                <svg
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                  aria-hidden="true"
+                  className="mt-0.5 h-3.5 w-3.5 shrink-0 text-muted"
+                >
                   <path
                     fillRule="evenodd"
                     d="M10 1a4.5 4.5 0 0 0-4.5 4.5V9H5a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6a2 2 0 0 0-2-2h-.5V5.5A4.5 4.5 0 0 0 10 1Zm3 8V5.5a3 3 0 1 0-6 0V9h6Z"

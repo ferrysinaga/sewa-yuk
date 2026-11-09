@@ -73,7 +73,6 @@ const BoothRect = memo(function BoothRect({ booth }: BoothRectProps) {
         strokeDasharray={booth.status === 'Reserved' ? '4 3' : undefined}
         className={`transition-colors motion-reduce:transition-none ${rectTone}`}
       />
-
       <rect
         x={booth.positionX - 3}
         y={booth.positionY - 3}
@@ -86,7 +85,6 @@ const BoothRect = memo(function BoothRect({ booth }: BoothRectProps) {
         strokeDasharray="4 3"
         className="pointer-events-none opacity-0 transition-opacity group-focus-visible:opacity-100 motion-reduce:transition-none"
       />
-
       <text
         x={booth.positionX + 12}
         y={booth.positionY + 22}
@@ -95,8 +93,7 @@ const BoothRect = memo(function BoothRect({ booth }: BoothRectProps) {
         }`}
       >
         {booth.category}
-      </text>
-      {' '}
+      </text>{' '}
       <text
         x={booth.positionX + 12}
         y={booth.positionY + 38}
@@ -105,8 +102,7 @@ const BoothRect = memo(function BoothRect({ booth }: BoothRectProps) {
         }`}
       >
         {booth.width} × {booth.height} px · {statusLabel[booth.status]}
-      </text>
-      {' '}
+      </text>{' '}
       <text
         x={booth.positionX + 12}
         y={booth.positionY + booth.height - 12}
@@ -146,12 +142,18 @@ export default function BlueprintCanvas({ svgRef }: BlueprintCanvasProps) {
           <div className="flex flex-wrap items-center gap-4 text-[11px] text-muted">
             {blueprintImageUrl && (
               <span className="inline-flex items-center gap-1.5 text-pine">
-                <span aria-hidden="true" className="h-2.5 w-2.5 rounded-[2px] border border-pine bg-pine-soft" />
+                <span
+                  aria-hidden="true"
+                  className="h-2.5 w-2.5 rounded-[2px] border border-pine bg-pine-soft"
+                />
                 Gambar latar aktif
               </span>
             )}
             <span className="inline-flex items-center gap-1.5">
-              <span aria-hidden="true" className="h-2.5 w-2.5 rounded-[2px] border border-pine bg-surface" />
+              <span
+                aria-hidden="true"
+                className="h-2.5 w-2.5 rounded-[2px] border border-pine bg-surface"
+              />
               Tersedia
             </span>
             <span className="inline-flex items-center gap-1.5">
@@ -159,7 +161,10 @@ export default function BlueprintCanvas({ svgRef }: BlueprintCanvasProps) {
               Dipilih
             </span>
             <span className="inline-flex items-center gap-1.5">
-              <span aria-hidden="true" className="h-2.5 w-2.5 rounded-[2px] border border-muted bg-unavailable" />
+              <span
+                aria-hidden="true"
+                className="h-2.5 w-2.5 rounded-[2px] border border-muted bg-unavailable"
+              />
               Tidak tersedia
             </span>
           </div>
@@ -273,7 +278,11 @@ export default function BlueprintCanvas({ svgRef }: BlueprintCanvasProps) {
                       aria-hidden="true"
                       className="h-5 w-5"
                     >
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M12 4.5v15m7.5-7.5h-15"
+                      />
                     </svg>
                   </div>
                   <p className="mt-3 text-sm font-semibold text-ink">Kanvas masih kosong</p>

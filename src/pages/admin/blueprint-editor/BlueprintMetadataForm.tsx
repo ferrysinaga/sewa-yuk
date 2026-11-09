@@ -1,8 +1,5 @@
 import BlueprintImageUploader from '../../../components/admin/BlueprintImageUploader'
-import {
-  BLUEPRINT_STATUS_LABEL,
-  BLUEPRINT_STATUS_OPTIONS,
-} from '../../../types/blueprint'
+import { BLUEPRINT_STATUS_LABEL, BLUEPRINT_STATUS_OPTIONS } from '../../../types/blueprint'
 import type { BlueprintDraft, BlueprintStatus } from '../../../types/blueprint'
 
 interface BlueprintMetadataFormProps {
@@ -25,9 +22,7 @@ export default function BlueprintMetadataForm({
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h2 className="text-base font-semibold text-ink">Informasi denah</h2>
-          <p className="mt-1 text-xs text-muted">
-            Metadata ini tampil di halaman event tenant.
-          </p>
+          <p className="mt-1 text-xs text-muted">Metadata ini tampil di halaman event tenant.</p>
         </div>
         <select
           value={draft.status}

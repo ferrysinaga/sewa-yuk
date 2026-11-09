@@ -154,7 +154,11 @@ export default function EventExplorer() {
     <div className="min-h-screen bg-canvas text-ink">
       <AppHeader />
 
-      <main id="main" tabIndex={-1} className="mx-auto max-w-7xl px-4 py-10 focus:outline-none sm:px-6 sm:py-12 lg:px-8">
+      <main
+        id="main"
+        tabIndex={-1}
+        className="mx-auto max-w-7xl px-4 py-10 focus:outline-none sm:px-6 sm:py-12 lg:px-8"
+      >
         <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
           <div className="max-w-2xl">
             <div className="flex items-center gap-2.5">
@@ -227,10 +231,7 @@ export default function EventExplorer() {
         </div>
 
         {loading && (
-          <LoadingPanel
-            title="Memuat event yang tersedia…"
-            minHeightClassName="min-h-[260px]"
-          />
+          <LoadingPanel title="Memuat event yang tersedia…" minHeightClassName="min-h-[260px]" />
         )}
 
         {!loading && error && (
@@ -308,11 +309,50 @@ export default function EventExplorer() {
                       />
                     ) : (
                       <svg viewBox="0 0 320 128" aria-hidden="true" className="h-full w-full">
-                        <rect x="16" y="16" width="70" height="42" rx="6" fill="var(--color-surface)" stroke="var(--color-line)" />
-                        <rect x="96" y="16" width="80" height="42" rx="6" fill="var(--color-surface)" stroke="var(--color-line)" />
-                        <rect x="186" y="16" width="118" height="42" rx="6" fill="var(--color-pine)" />
-                        <rect x="16" y="68" width="140" height="44" rx="6" fill="var(--color-unavailable)" stroke="var(--color-line)" />
-                        <rect x="166" y="68" width="138" height="44" rx="6" fill="var(--color-surface)" stroke="var(--color-line)" />
+                        <rect
+                          x="16"
+                          y="16"
+                          width="70"
+                          height="42"
+                          rx="6"
+                          fill="var(--color-surface)"
+                          stroke="var(--color-line)"
+                        />
+                        <rect
+                          x="96"
+                          y="16"
+                          width="80"
+                          height="42"
+                          rx="6"
+                          fill="var(--color-surface)"
+                          stroke="var(--color-line)"
+                        />
+                        <rect
+                          x="186"
+                          y="16"
+                          width="118"
+                          height="42"
+                          rx="6"
+                          fill="var(--color-pine)"
+                        />
+                        <rect
+                          x="16"
+                          y="68"
+                          width="140"
+                          height="44"
+                          rx="6"
+                          fill="var(--color-unavailable)"
+                          stroke="var(--color-line)"
+                        />
+                        <rect
+                          x="166"
+                          y="68"
+                          width="138"
+                          height="44"
+                          rx="6"
+                          fill="var(--color-surface)"
+                          stroke="var(--color-line)"
+                        />
                       </svg>
                     )}
                     {event.image_url && (

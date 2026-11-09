@@ -4,8 +4,18 @@ export default function BookingEmptyState({ hasBookings }: { hasBookings: boolea
   return (
     <div className="mt-6 rounded-[10px] border border-line bg-surface p-10 text-center ">
       <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-[10px] bg-pine-soft text-pine">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-6 w-6">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 4H7a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h5.586a1 1 0 0 1 .707.293l5.414 5.414a1 1 0 0 1 .293.707V18a2 2 0 0 1-2 2Z" />
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.8"
+          className="h-6 w-6"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M9 12h6m-6 4h6m2 4H7a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h5.586a1 1 0 0 1 .707.293l5.414 5.414a1 1 0 0 1 .293.707V18a2 2 0 0 1-2 2Z"
+          />
         </svg>
       </div>
       <h2 className="mt-4 text-lg font-semibold text-ink">

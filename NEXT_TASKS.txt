@@ -1115,21 +1115,26 @@ P2 - KEBERSIHAN UI, AKSESIBILITAS, DAN TOOLING
     Acceptance: tombol ikon punya area minimal 44x44 dan tidak ada target di
     bawah 24x24; axe tetap lulus; tampilan tidak berubah berarti.
 
-[ ] 38. Tambah lint dan format otomatis
-    Masalah: task 21 menambah typecheck dan CI, tetapi belum ada ESLint atau
-    Prettier; kesalahan hooks, import tak terpakai, dan format hanya
-    tertangkap saat review manual.
-    Bukti: package.json tidak punya script lint/format dan tidak ada
-    eslint.config.js maupun .prettierrc.
-    Rencana:
-    - Tambah ESLint flat config (typescript-eslint, react-hooks,
-      react-refresh) dan Prettier.
-    - Tambah script "lint", "lint:fix", "format", dan "format:check"; jalankan
-      lint di CI task 21 bila sudah tersedia.
-    - Perbaiki pelanggaran yang muncul tanpa mengubah perilaku; abaikan dist,
-      coverage, dan playwright-report.
-    Acceptance: `npm run lint` dan `npm run format:check` lulus; tsc/test/build
-    tetap lulus.
+[x] 38. Tambah lint dan format otomatis
+    STATUS: SELESAI (9 November 2026)
+    File: eslint.config.js (baru), .prettierrc (baru), .prettierignore (baru),
+          package.json, package-lock.json, .github/workflows/ci.yml,
+          README.md, serta perapian format di src/, e2e/, dan config.
+    Hasil: ESLint flat config memakai @eslint/js, typescript-eslint recommended,
+    dua aturan inti react-hooks (rules-of-hooks error, exhaustive-deps warning),
+    react-refresh, dan eslint-config-prettier. Aturan compiler baru
+    (set-state-in-effect) sengaja belum diaktifkan agar pola fetch yang sudah
+    berjalan tidak diubah pada task tooling ini. Prettier memakai gaya repo:
+    tanpa semicolon, kutip tunggal, trailing comma all, print width 100,
+    endOfLine auto (menghormati CRLF lokal dan LF di CI).
+    Karena typescript-eslint belum mendukung TypeScript 7, package mengikuti
+    anjuran resmi side-by-side: "typescript" dialias ke
+    @typescript/typescript6 untuk API lint, dan "typescript7" menyediakan
+    binary tsc 7 untuk typecheck/build. Script verify kini menjalankan lint +
+    format:check sebelum typecheck/test/build; CI menjalankan langkah yang sama.
+    Verifikasi: npm run lint lulus (0 error), npm run format:check lulus
+    (69 file dirapikan, tanpa perubahan perilaku), typecheck TS 7 lulus,
+    128 unit test di 18 file lulus, build lulus, npm ci berhasil tanpa .npmrc.
 
 
 ===============================================================================

@@ -23,11 +23,7 @@ const TONE_CLASS: Record<NonNullable<SpinnerProps['tone']>, string> = {
  * (`aria-hidden`) dan berhenti berputar saat pengguna meminta
  * `prefers-reduced-motion`.
  */
-export default function Spinner({
-  size = 'md',
-  tone = 'pine',
-  className,
-}: SpinnerProps) {
+export default function Spinner({ size = 'md', tone = 'pine', className }: SpinnerProps) {
   return (
     <span
       aria-hidden="true"
