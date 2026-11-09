@@ -773,7 +773,19 @@ P2 - KUALITAS, PERFORMA, DAN KEJELASAN KODE
     Acceptance: tidak ada file halaman >400 baris; build chunk stabil;
     E2E smoke + a11y tetap lulus; tidak ada perubahan perilaku.
 
-[ ] 27. Optimasi bundle vendor
+[x] 27. Optimasi bundle vendor
+    STATUS: SELESAI (8 November 2026)
+    File: vite.config.ts
+    Hasil: vendor dipisah memakai `build.rollupOptions.output.codeSplitting`
+    (API rolldown di Vite 8; `manualChunks` objek tidak lagi didukung).
+    Grup yang dibuat: react/react-dom/scheduler, react-router,
+    @supabase/supabase-js, dan @dnd-kit. Build tidak lagi memunculkan
+    warning chunk >500 kB: chunk terbesar adalah supabase 214,38 kB dan
+    react 218,75 kB, sedangkan entry hanya 16,46 kB. JS awal (entry +
+    react + react-router + supabase) 488,41 kB, sedikit lebih kecil dari
+    488,55 kB sebelumnya; chunk @dnd-kit 41,63 kB hanya dimuat bersama
+    route BlueprintEditor. Seluruh route lazy tetap terpisah dan preview
+    `vite preview` menyajikan halaman dengan benar.
     Masalah: chunk utama 484,29 kB, hanya ~16 kB di bawah ambang peringatan
     500 kB. Penambahan fitur kecil bisa memunculkan warning lagi.
     Rencana:
