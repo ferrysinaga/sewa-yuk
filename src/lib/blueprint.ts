@@ -1,5 +1,6 @@
 import type { BlueprintDraft, BlueprintRow } from '../types/blueprint'
 import { isBlueprintStatus } from '../types/blueprint'
+import { getErrorMessage, isNetworkError } from './errors'
 
 export function mapBlueprintRowToDraft(row: BlueprintRow): BlueprintDraft {
   return {
@@ -28,12 +29,7 @@ export function isValidBlueprintId(value: string) {
 }
 
 export function getBlueprintErrorMessage(error: unknown): string {
-  const message =
-    error instanceof Error
-      ? error.message
-      : typeof error === 'object' && error !== null && 'message' in error
-        ? String(error.message)
-        : String(error)
+  const message = getErrorMessage(error, '')
 
   if (/could not find the table|relation .* does not exist|schema cache/i.test(message)) {
     return 'Tabel "blueprints" belum tersedia di Supabase. Jalankan migrasi skema terlebih dahulu.'
@@ -55,7 +51,7 @@ export function getBlueprintErrorMessage(error: unknown): string {
     return 'Akun Anda tidak memiliki izin untuk mengelola denah ini. Pastikan akun memiliki role organizer.'
   }
 
-  if (/failed to fetch|network|timeout/i.test(message)) {
+  if (isNetworkError(message)) {
     return 'Tidak dapat terhubung ke Supabase. Periksa koneksi internet Anda lalu coba lagi.'
   }
 

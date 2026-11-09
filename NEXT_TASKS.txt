@@ -1,6 +1,6 @@
 DAFTAR TASK SELANJUTNYA - sewa-yuk
 Disusun dari gap analysis qa_checklist_test_plan.md vs kode aktual
-Status acuan commit: 927e6b4 (main sebelum PR judul dokumen ini)
+Status acuan commit: cfae47e (main sebelum PR ekstraksi pesan error ini)
 Legenda prioritas: [P0] blocker QA / risiko data, [P1] penting, [P2] nice to have
 Centang [x] jika sudah selesai.
 
@@ -826,7 +826,7 @@ URUTAN EKSEKUSI FASE 2 YANG DISARANKAN
 ===============================================================================
 FASE 3 - ITERASI LANJUTAN
 ===============================================================================
-Status acuan: 927e6b4 (task 15-33 selesai dan error boundary sudah
+Status acuan: cfae47e (task 15-35 selesai dan error boundary sudah
 terintegrasi melalui PR #19).
 Fokus: menghilangkan sisa duplikasi kecil, melengkapi aksesibilitas, mengunci
 kualitas dengan tooling, dan memperluas cakupan E2E.
@@ -1025,7 +1025,21 @@ P2 - KEBERSIHAN UI, AKSESIBILITAS, DAN TOOLING
     Acceptance: Tab pertama memunculkan skip link; Enter memindahkan fokus ke
     main; axe Landing dan /event tetap lulus.
 
-[ ] 35. Satukan ekstraksi pesan error lintas modul
+[x] 35. Satukan ekstraksi pesan error lintas modul
+    STATUS: SELESAI (8 November 2026)
+    File: src/lib/errors.ts (baru), src/lib/errors.test.ts (baru),
+          src/lib/auth.ts, src/lib/booking.ts, src/lib/blueprint.ts,
+          src/lib/storage.ts,
+          src/pages/admin/admin-dashboard/useAdminDashboard.ts, README.md
+    Hasil: getErrorMessage(error, fallback) menangani Error, string, objek
+    { message }, serta nilai kosong/null tanpa menampilkan teks mentah;
+    isNetworkError mendeteksi failed to fetch/network/timeout/load failed.
+    Kelima pemakaian lama diganti; pesan domain auth, booking, denah, dan
+    gambar tetap sama, dan booking kini juga memetakan error jaringan.
+    Pencarian `instanceof Error` untuk ekstraksi pesan hanya tersisa di
+    errors.ts.     Enam unit test baru mencakup Error, string, objek, null, pesan kosong,
+    dan pola jaringan. Setelah integrasi dengan main, `npm run verify` lulus:
+    typecheck, 137 unit test di 20 file, dan production build.
     Masalah: pola `error instanceof Error ? error.message : ...` disalin di
     beberapa modul dengan bentuk slightly berbeda, sehingga pesan jaringan
     atau objek error Supabase bisa tampil mentah.

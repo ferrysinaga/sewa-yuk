@@ -1,3 +1,4 @@
+import { getErrorMessage, isNetworkError } from './errors'
 import { createId } from './id'
 import { supabase } from './supabase'
 
@@ -75,12 +76,7 @@ export async function removeBlueprintImage(path: string) {
 }
 
 export function getBlueprintImageErrorMessage(error: unknown): string {
-  const message =
-    error instanceof Error
-      ? error.message
-      : typeof error === 'object' && error !== null && 'message' in error
-        ? String(error.message)
-        : String(error)
+  const message = getErrorMessage(error, '')
 
   if (/bucket not found|bucket.*does not exist/i.test(message)) {
     return 'Bucket gambar belum tersedia. Jalankan migrasi gambar denah terlebih dahulu.'
@@ -98,7 +94,7 @@ export function getBlueprintImageErrorMessage(error: unknown): string {
     return 'Format gambar tidak didukung. Gunakan JPG, PNG, atau WEBP.'
   }
 
-  if (/failed to fetch|network|timeout/i.test(message)) {
+  if (isNetworkError(message)) {
     return 'Tidak dapat terhubung ke penyimpanan gambar. Periksa koneksi internet Anda.'
   }
 
