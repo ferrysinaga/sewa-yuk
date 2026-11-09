@@ -150,7 +150,7 @@ UI/UX DESIGNER
     - Spesifikasi ditinjau terhadap kode InteractiveMap, TenantSidebar, dan
       CheckoutModal; baseline diuji dengan Playwright pada tiga viewport.
 
-[ ] UX-02. Rancang state error boundary, offline, dan reconnect [P1]
+[x] UX-02. Rancang state error boundary, offline, dan reconnect [P1]
     Pemilik: UI/UX Designer
     Kolaborator: FE, QA
     Konteks: FE-01 menambahkan fallback error, tetapi tampilan dan pesannya
@@ -166,6 +166,22 @@ UI/UX DESIGNER
     Verifikasi:
     - Review dengan FE dan QA; simulasi chunk gagal dan jaringan putus.
     Dependensi: -
+    STATUS: SELESAI (9 November 2026)
+    Hasil:
+    - Spesifikasi: job-desk/specs/UX-02-error-boundary-offline-reconnect.md
+    - Lima kondisi dibedakan: render error, chunk gagal, offline, realtime
+      terputus, dan gagal memuat data.
+    - Fallback halaman penuh memakai role="alert" dan fokus ke judul; banner
+      offline memakai role="status" tanpa merebut fokus.
+    - Chunk recovery memakai penanda sessionStorage dan reload maksimal sekali.
+    - Saat offline, badge "Sinkron real-time" tidak boleh tampil; gunakan
+      banner offline sebagai pesan utama.
+    - Implementasi diserahkan ke FE-01 (error boundary) dan FE-02 (offline dan
+      reconnect), dengan pengujian di QA-01/QA-02.
+    Verifikasi:
+    - Spesifikasi ditinjau terhadap AppErrorBoundary dan chunkRecovery di branch
+      fix/error-boundary-chunk-recovery, StatePanel, SyncStatusBadge, dan
+      realtimeStatus.
 
 [ ] UX-03. Audit aksesibilitas kanvas dan status non-warna [P1]
     Pemilik: UI/UX Designer
@@ -249,7 +265,7 @@ FRONTEND DEVELOPER
     - Tidak ada memory leak channel.
     Verifikasi:
     - Unit test store/hook + uji manual dua tab dengan jaringan dimatikan.
-    Dependensi: BE-04
+    Dependensi: BE-04, UX-02
 
 [ ] FE-03. Implementasikan panel detail dan checkout mobile sesuai UX-01 [P1]
     Pemilik: Frontend Developer
