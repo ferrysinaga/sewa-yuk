@@ -104,11 +104,9 @@ export default function TenantSidebar({
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
                 <p className="text-lg font-semibold text-ink">
-                  {categoryLabel[activeBooth.category]}
-                </p>
-                <p className="text-xs tabular-nums text-muted">
                   Booth {activeBooth.id.slice(0, 8)}
                 </p>
+                <p className="text-xs text-muted">{categoryLabel[activeBooth.category]}</p>
               </div>
               <span
                 className={`shrink-0 rounded-[4px] px-2.5 py-1 text-[11px] font-semibold ${statusBadgeClass[activeBooth.status]}`}
@@ -125,33 +123,6 @@ export default function TenantSidebar({
                 {formatPrice(activeBooth.price)}
               </p>
             </div>
-
-            <dl className="mt-3 grid grid-cols-2 gap-2 text-xs">
-              <div className="rounded-[6px] border border-line p-2.5">
-                <dt className="text-[10px] uppercase tracking-[0.1em] text-muted">Dimensi</dt>
-                <dd className="mt-0.5 font-semibold tabular-nums text-ink">
-                  {activeBooth.width} × {activeBooth.height} px
-                </dd>
-              </div>
-              <div className="rounded-[6px] border border-line p-2.5">
-                <dt className="text-[10px] uppercase tracking-[0.1em] text-muted">Kategori</dt>
-                <dd className="mt-0.5 font-semibold text-ink">
-                  {categoryLabel[activeBooth.category]}
-                </dd>
-              </div>
-              <div className="rounded-[6px] border border-line p-2.5">
-                <dt className="text-[10px] uppercase tracking-[0.1em] text-muted">Posisi X</dt>
-                <dd className="mt-0.5 font-semibold tabular-nums text-ink">
-                  {Math.round(activeBooth.positionX)} px
-                </dd>
-              </div>
-              <div className="rounded-[6px] border border-line p-2.5">
-                <dt className="text-[10px] uppercase tracking-[0.1em] text-muted">Posisi Y</dt>
-                <dd className="mt-0.5 font-semibold tabular-nums text-ink">
-                  {Math.round(activeBooth.positionY)} px
-                </dd>
-              </div>
-            </dl>
 
             {!isAvailable && (
               <p className="mt-3 rounded-[6px] border border-line bg-unavailable px-3 py-2 text-xs leading-relaxed text-ink">

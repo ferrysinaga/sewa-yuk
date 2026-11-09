@@ -17,7 +17,6 @@ export default function BoothMap() {
   const [zoom, setZoom] = useState(MIN_ZOOM)
 
   const activeBooth = booths.find((booth) => booth.id === activeId) ?? null
-  const availableCount = booths.filter((booth) => booth.status === 'Available').length
   const isZoomed = zoom > MIN_ZOOM + 0.001
   const canZoomIn = zoom < MAX_ZOOM - 0.001
   const zoomPercent = Math.round(zoom * 100)
@@ -69,21 +68,15 @@ export default function BoothMap() {
           <div className="flex items-center gap-2">
             <span aria-hidden="true" className="h-1.5 w-1.5 bg-clay" />
             <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted">
-              Pratinjau denah
+              Denah contoh
             </p>
           </div>
           <h2 className="mt-2 text-base font-semibold leading-snug tracking-tight text-ink sm:text-lg">
-            Pameran Teknologi Nusantara 2026
+            Eksplorasi denah interaktif
           </h2>
-          <p className="mt-1 text-xs text-muted">12–15 Maret 2026 · Jakarta Convention Center, Hall A</p>
-        </div>
-        <div className="text-right">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted">
-            Booth contoh
-          </p>
-          <p className="mt-1 text-lg font-semibold tabular-nums text-ink">
-            {availableCount}
-            <span className="text-sm font-medium text-muted"> / {booths.length}</span>
+          <p className="mt-1 max-w-lg text-xs leading-relaxed text-muted">
+            Susunan, harga, dan status booth di sini hanya ilustrasi. Pilih acara untuk melihat
+            informasi aktual.
           </p>
         </div>
       </div>
