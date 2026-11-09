@@ -12,7 +12,12 @@ export default defineConfig({
       provider: 'v8',
       reporter: ['text', 'html'],
       reportsDirectory: './coverage',
-      include: ['src/lib/**/*.ts', 'src/store/**/*.ts'],
+      include: [
+        'src/components/ui/**/*.tsx',
+        'src/hooks/**/*.ts',
+        'src/lib/**/*.ts',
+        'src/store/**/*.ts',
+      ],
       exclude: ['src/**/*.{test,spec}.{ts,tsx}'],
       // Ambang batas ditetapkan sedikit di bawah baseline saat CI pertama
       // dipasang (lines 42%, branches 43%, functions 66%, statements 46%)

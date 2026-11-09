@@ -639,7 +639,26 @@ P2 - KUALITAS, PERFORMA, DAN KEJELASAN KODE
     Acceptance: tidak ada duplikasi panel status besar; setiap loading
     mengumumkan status ke screen reader; audit axe tetap lulus.
 
-[ ] 23. Perluas tes komponen, hook, dan jalur error
+[x] 23. Perluas tes komponen, hook, dan jalur error
+    STATUS: SELESAI (8 November 2026)
+    File: src/components/ui/StatePanel.test.tsx (baru),
+          src/components/ui/InlineConfirm.test.tsx (baru),
+          src/components/ui/Toast.test.tsx (baru),
+          src/components/checkout/CheckoutModal.test.tsx (baru),
+          src/components/layout/ProtectedRoute.test.tsx (baru),
+          vite.config.ts
+    Hasil: 29 test baru (total 115 test di 16 file) mencakup panel
+    Loading/Error/Empty, fokus awal dan Tab trap InlineConfirm, Escape dan
+    pengembalian fokus, auto-dismiss Toast 5 detik serta role alert, fokus
+    trap/Escape/metode pembayaran/tombol booth tidak tersedia di
+    CheckoutModal, dan redirect ProtectedRoute untuk sesi kosong maupun role
+    salah. Coverage include diperluas ke src/components/ui, src/hooks,
+    src/lib, dan src/store tanpa menurunkan threshold Task 21. Hasil coverage:
+    statements 60,74%, branches 55,90%, functions 74,59%, lines 58,51% —
+    seluruhnya di atas ambang dan naik dari baseline 45,74/43,45/65,78/42,18.
+    Tidak ada snapshot; tes tidak memanggil Supabase. Verifikasi: tsc --noEmit
+    lulus, 115 unit test lulus, build lulus, E2E a11y + smoke 3 lulus
+    (4 axe berautentikasi skip).
     Masalah: 52 unit test (4 file) hanya mencakup store, canvas, booking,
     blueprint. Komponen interaktif dan jalur error belum diuji.
     Rencana tambah tes:
