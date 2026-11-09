@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import AppHeader from '../../components/layout/AppHeader'
 import BlueprintWorkspace from '../../components/map/BlueprintWorkspace'
 import { ErrorPanel, LoadingPanel } from '../../components/ui/StatePanel'
+import { useDocumentTitle } from '../../hooks/useDocumentTitle'
 import BlueprintMetadataForm from './blueprint-editor/BlueprintMetadataForm'
 import EditorHeader from './blueprint-editor/EditorHeader'
 import { useBlueprintEditor } from './blueprint-editor/useBlueprintEditor'
@@ -9,6 +10,7 @@ import { useBlueprintEditor } from './blueprint-editor/useBlueprintEditor'
 export default function BlueprintEditor() {
   const state = useBlueprintEditor()
   const { draft, loading, loadError } = state
+  useDocumentTitle(draft?.name ?? 'Editor Denah')
 
   return (
     <div className="min-h-screen bg-canvas text-ink">

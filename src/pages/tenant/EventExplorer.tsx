@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import AppHeader from '../../components/layout/AppHeader'
 import { EmptyPanel, ErrorPanel, LoadingPanel } from '../../components/ui/StatePanel'
 import { useDebouncedValue } from '../../hooks/useDebouncedValue'
+import { useDocumentTitle } from '../../hooks/useDocumentTitle'
 import { getBoothCategoryLabel } from '../../lib/boothDisplay'
 import { getBlueprintErrorMessage } from '../../lib/blueprint'
 import { sweepExpiredBookings } from '../../lib/bookingExpiry'
@@ -39,6 +40,8 @@ function ArrowRight({ className = 'h-4 w-4' }: { className?: string }) {
 }
 
 export default function EventExplorer() {
+  useDocumentTitle('Jelajah Event')
+
   const [blueprints, setBlueprints] = useState<BlueprintRow[]>([])
   const [booths, setBooths] = useState<BoothSummaryRow[]>([])
   const [activeCategory, setActiveCategory] = useState<BoothCategory | 'all'>('all')

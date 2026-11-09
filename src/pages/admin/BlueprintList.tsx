@@ -1,5 +1,6 @@
 import AppHeader from '../../components/layout/AppHeader'
 import { EmptyPanel, ErrorPanel, LoadingPanel } from '../../components/ui/StatePanel'
+import { useDocumentTitle } from '../../hooks/useDocumentTitle'
 import BlueprintCard from './blueprint-list/BlueprintCard'
 import BlueprintListHeader from './blueprint-list/BlueprintListHeader'
 import CreateBlueprintForm from './blueprint-list/CreateBlueprintForm'
@@ -7,6 +8,7 @@ import { useAdminBlueprintList } from './blueprint-list/useAdminBlueprintList'
 
 export default function BlueprintList() {
   const list = useAdminBlueprintList()
+  useDocumentTitle('Kelola Denah')
 
   return (
     <div className="min-h-screen bg-canvas">
