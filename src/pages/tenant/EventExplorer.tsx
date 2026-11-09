@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import AppHeader from '../../components/layout/AppHeader'
+import { getBoothCategoryLabel } from '../../lib/boothDisplay'
 import { getBlueprintErrorMessage } from '../../lib/blueprint'
 import { sweepExpiredBookings } from '../../lib/bookingExpiry'
 import { isSupabaseConfigured, supabase } from '../../lib/supabase'
@@ -17,13 +18,6 @@ interface EventSummary extends BlueprintRow {
   totalBooths: number
   availableBooths: number
   categories: BoothCategory[]
-}
-
-const categoryLabel: Record<BoothCategory | 'all', string> = {
-  all: 'Semua',
-  'F&B': 'F&B',
-  Tech: 'Teknologi',
-  Apparel: 'Pakaian',
 }
 
 const categoryFilters: (BoothCategory | 'all')[] = ['all', 'F&B', 'Tech', 'Apparel']
@@ -203,7 +197,7 @@ export default function EventExplorer() {
                       : 'border-line bg-surface text-muted hover:border-pine hover:text-pine'
                   }`}
                 >
-                  {categoryLabel[item]}
+                  {getBoothCategoryLabel(item)}
                 </button>
               )
             })}
@@ -253,7 +247,7 @@ export default function EventExplorer() {
             <p className="text-sm font-semibold text-ink">
               {searchTerm
                 ? `Tidak ada event yang cocok dengan "${search.trim()}"`
-                : `Tidak ada event dengan kategori ${categoryLabel[activeCategory]}`}
+                : `Tidak ada event dengan kategori ${getBoothCategoryLabel(activeCategory)}`}
             </p>
             <p className="mx-auto mt-1 max-w-sm text-xs leading-relaxed text-muted">
               {searchTerm
@@ -283,7 +277,7 @@ export default function EventExplorer() {
                 event.categories.length === 0
                   ? 'Belum ada booth'
                   : event.categories.length === 1
-                    ? categoryLabel[event.categories[0]]
+                    ? getBoothCategoryLabel(event.categories[0])
                     : `${event.categories.length} kategori`
 
               return (

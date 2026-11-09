@@ -2,7 +2,13 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import AppHeader from '../../components/layout/AppHeader'
 import { useToast } from '../../components/ui/Toast'
+import {
+  BOOTH_CATEGORY_LABEL as categoryLabel,
+  BOOTH_STATUS_META as statusMeta,
+  formatPrice,
+} from '../../lib/boothDisplay'
 import { createChannelName } from '../../lib/id'
+import type { BoothRow } from '../../lib/boothRow'
 import { isSupabaseConfigured, supabase } from '../../lib/supabase'
 import { useAuthStore } from '../../store/useAuthStore'
 import { useBoothStore } from '../../store/useBoothStore'
@@ -21,63 +27,14 @@ interface BlueprintRow {
   status: BlueprintStatus
 }
 
-interface BoothRow {
-  id: string
-  blueprint_id: string
-  category: BoothCategory
-  position_x: number
-  position_y: number
-  width: number
-  height: number
-  price: number
-  status: BoothStatus
-}
-
 interface BoothChangePayload {
   eventType?: 'INSERT' | 'UPDATE' | 'DELETE'
   new?: Partial<BoothRow>
   old?: Partial<BoothRow>
 }
 
-const statusMeta: Record<
-  BoothStatus,
-  { label: string; dot: string; badge: string; bar: string }
-> = {
-  Available: {
-    label: 'Tersedia',
-    dot: 'bg-pine',
-    badge: 'border border-line bg-pine-soft text-pine',
-    bar: 'bg-pine',
-  },
-  Reserved: {
-    label: 'Dipesan',
-    dot: 'bg-clay',
-    badge: 'border border-line bg-clay-soft text-clay-dark',
-    bar: 'bg-clay',
-  },
-  Booked: {
-    label: 'Terisi',
-    dot: 'bg-ink',
-    badge: 'border border-line bg-unavailable-deep text-ink',
-    bar: 'bg-ink',
-  },
-}
-
 const statusOptions: BoothStatus[] = ['Available', 'Reserved', 'Booked']
 const categoryOptions: BoothCategory[] = ['Tech', 'F&B', 'Apparel']
-
-const categoryLabel: Record<BoothCategory, string> = {
-  Tech: 'Teknologi',
-  'F&B': 'F&B',
-  Apparel: 'Pakaian',
-}
-
-const formatPrice = (price: number) =>
-  new Intl.NumberFormat('id-ID', {
-    style: 'currency',
-    currency: 'IDR',
-    maximumFractionDigits: 0,
-  }).format(price)
 
 const formatCompactPrice = (price: number) =>
   new Intl.NumberFormat('id-ID', {

@@ -1,32 +1,18 @@
 import { memo, useCallback, useEffect, useRef, useState } from 'react'
 import type { KeyboardEvent as ReactKeyboardEvent, PointerEvent as ReactPointerEvent } from 'react'
+import {
+  BOOTH_CATEGORY_LABEL as categoryLabel,
+  BOOTH_STATUS_LABEL as statusLabel,
+  formatPrice,
+} from '../../lib/boothDisplay'
 import { useBoothStore } from '../../store/useBoothStore'
-import type { Booth, BoothCategory, BoothStatus } from '../../types/booth'
+import type { Booth, BoothCategory } from '../../types/booth'
 
 const CANVAS_WIDTH = 1000
 const CANVAS_HEIGHT = 640
 const GRID_SIZE = 20
 const MIN_SCALE = 1
 const MAX_SCALE = 3
-
-const formatPrice = (price: number) =>
-  new Intl.NumberFormat('id-ID', {
-    style: 'currency',
-    currency: 'IDR',
-    maximumFractionDigits: 0,
-  }).format(price)
-
-const categoryLabel: Record<BoothCategory, string> = {
-  Tech: 'Teknologi',
-  'F&B': 'F&B',
-  Apparel: 'Pakaian',
-}
-
-const statusLabel: Record<BoothStatus, string> = {
-  Available: 'Tersedia',
-  Reserved: 'Dipesan',
-  Booked: 'Terisi',
-}
 
 interface Point {
   x: number

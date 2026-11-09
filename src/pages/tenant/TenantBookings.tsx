@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import AppHeader from '../../components/layout/AppHeader'
 import InlineConfirm from '../../components/ui/InlineConfirm'
 import { useToast } from '../../components/ui/Toast'
+import { useBookingFeed } from '../../hooks/useBookingFeed'
 import {
   formatCurrency,
   formatDateTime,
@@ -11,7 +12,6 @@ import {
   isExpiredBooking,
 } from '../../lib/booking'
 import { sweepExpiredBookings } from '../../lib/bookingExpiry'
-import { createChannelName } from '../../lib/id'
 import { isSupabaseConfigured, supabase } from '../../lib/supabase'
 import { useAuthStore } from '../../store/useAuthStore'
 import {
@@ -33,28 +33,7 @@ interface BlueprintSummaryRow {
   event_date: string | null
 }
 
-interface BookingChangePayload {
-  eventType?: 'INSERT' | 'UPDATE' | 'DELETE'
-  new?: Partial<BookingRow>
-  old?: Partial<BookingRow>
-}
-
 const statusFilters: (BookingStatus | 'all')[] = ['all', ...BOOKING_STATUS_OPTIONS]
-
-function applyBookingChange(current: BookingRow[], payload: BookingChangePayload): BookingRow[] {
-  if (payload.eventType === 'DELETE') {
-    const deletedId = payload.old?.id
-    return deletedId ? current.filter((booking) => booking.id !== deletedId) : current
-  }
-
-  const row = payload.new
-  if (!row?.id) return current
-
-  const updated = row as BookingRow
-  return current.some((booking) => booking.id === updated.id)
-    ? current.map((booking) => (booking.id === updated.id ? updated : booking))
-    : [updated, ...current]
-}
 
 export default function TenantBookings() {
   const user = useAuthStore((state) => state.user)
@@ -69,6 +48,8 @@ export default function TenantBookings() {
   const [updatingId, setUpdatingId] = useState<string | null>(null)
   const [confirmingCancelId, setConfirmingCancelId] = useState<string | null>(null)
   const [refreshing, setRefreshing] = useState(false)
+
+  useBookingFeed({ userId: user?.id ?? null, setBookings, enabled: Boolean(user) })
 
   useEffect(() => {
     if (!isSupabaseConfigured) {
@@ -125,34 +106,6 @@ export default function TenantBookings() {
       cancelled = true
     }
   }, [reloadToken, user])
-
-  useEffect(() => {
-    if (!user || !isSupabaseConfigured) return
-
-    const channel = supabase
-      .channel(createChannelName(`tenant-bookings-${user.id}`))
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'bookings',
-          filter: `user_id=eq.${user.id}`,
-        },
-        (payload) => {
-          setBookings((current) => applyBookingChange(current, payload as BookingChangePayload))
-        },
-      )
-      .subscribe((status) => {
-        if (status === 'CHANNEL_ERROR') {
-          console.warn('Koneksi realtime pemesanan gagal. Perubahan status mungkin tertunda.')
-        }
-      })
-
-    return () => {
-      void supabase.removeChannel(channel)
-    }
-  }, [user])
 
   const blueprintById = useMemo(
     () => new Map(blueprints.map((blueprint) => [blueprint.id, blueprint])),
@@ -419,7 +372,7 @@ export default function TenantBookings() {
                       : null
                   const isUpdating = updatingId === booking.id
                   const confirmingCancel = confirmingCancelId === booking.id
-                  const statusLabel = expired
+                  const bookingStatusLabel = expired
                     ? BOOKING_EXPIRED_LABEL
                     : BOOKING_STATUS_LABEL[booking.status]
                   const statusBadge = expired
@@ -444,7 +397,7 @@ export default function TenantBookings() {
                               className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold ring-1 ring-inset ${statusBadge}`}
                             >
                               <span className={`h-1.5 w-1.5 rounded-full ${statusDot}`} />
-                              {statusLabel}
+                              {bookingStatusLabel}
                             </span>
                           </div>
                           <p className="mt-1 text-sm font-semibold text-ink">

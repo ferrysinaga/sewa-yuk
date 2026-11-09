@@ -7,6 +7,8 @@ import TenantSidebar from '../../components/map/TenantSidebar'
 import { useToast } from '../../components/ui/Toast'
 import { getBookingErrorMessage } from '../../lib/booking'
 import { sweepExpiredBookings } from '../../lib/bookingExpiry'
+import { isCompleteBoothRow, mapRowToBooth } from '../../lib/boothRow'
+import type { BoothRow } from '../../lib/boothRow'
 import { createChannelName } from '../../lib/id'
 import { isSupabaseConfigured, supabase } from '../../lib/supabase'
 import { useAuthStore } from '../../store/useAuthStore'
@@ -14,7 +16,7 @@ import { useBoothStore } from '../../store/useBoothStore'
 import { BLUEPRINT_STATUS_BADGE, BLUEPRINT_STATUS_LABEL } from '../../types/blueprint'
 import type { BlueprintStatus } from '../../types/blueprint'
 import type { BookingRow, PaymentMethod } from '../../types/booking'
-import type { Booth, BoothCategory, BoothStatus } from '../../types/booth'
+import type { BoothCategory } from '../../types/booth'
 
 interface BlueprintRow {
   id: string
@@ -25,46 +27,6 @@ interface BlueprintRow {
   status: BlueprintStatus
   image_url: string | null
   image_path: string | null
-}
-
-interface BoothRow {
-  id: string
-  blueprint_id: string
-  category: BoothCategory
-  position_x: number
-  position_y: number
-  width: number
-  height: number
-  price: number
-  status: BoothStatus
-}
-
-function mapRowToBooth(row: BoothRow): Booth {
-  return {
-    id: row.id,
-    blueprintId: row.blueprint_id,
-    category: row.category,
-    positionX: row.position_x,
-    positionY: row.position_y,
-    width: row.width,
-    height: row.height,
-    price: row.price,
-    status: row.status,
-  }
-}
-
-function isCompleteBoothRow(row: Partial<BoothRow>): row is BoothRow {
-  return (
-    typeof row.id === 'string' &&
-    typeof row.blueprint_id === 'string' &&
-    (row.category === 'Tech' || row.category === 'F&B' || row.category === 'Apparel') &&
-    typeof row.position_x === 'number' &&
-    typeof row.position_y === 'number' &&
-    typeof row.width === 'number' &&
-    typeof row.height === 'number' &&
-    typeof row.price === 'number' &&
-    (row.status === 'Available' || row.status === 'Reserved' || row.status === 'Booked')
-  )
 }
 
 function getLoadErrorMessage(error: { message?: string } | null): string {

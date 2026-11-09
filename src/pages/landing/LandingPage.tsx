@@ -1,5 +1,10 @@
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
+import {
+  BOOTH_CATEGORY_LABEL as categoryLabel,
+  BOOTH_STATUS_LABEL as statusLabel,
+  formatPrice,
+} from '../../lib/boothDisplay'
 
 type Category = 'Tech' | 'F&B' | 'Apparel'
 type BoothStatus = 'Available' | 'Reserved' | 'Booked'
@@ -32,25 +37,6 @@ const booths: Booth[] = [
   { id: 'B-02', label: 'Booth B-02', category: 'Tech', price: 7400000, size: '4 × 3 m', note: 'Area tengah · paling strategis', x: 300, y: 164, width: 196, height: 88, status: 'Available' },
   { id: 'B-03', label: 'Booth B-03', category: 'Apparel', price: 5100000, size: '4 × 3 m', note: 'Area tengah · dekat pintu masuk', x: 300, y: 264, width: 196, height: 88, status: 'Reserved' },
 ]
-
-const formatPrice = (price: number) =>
-  new Intl.NumberFormat('id-ID', {
-    style: 'currency',
-    currency: 'IDR',
-    maximumFractionDigits: 0,
-  }).format(price)
-
-const categoryLabel: Record<Category, string> = {
-  Tech: 'Teknologi',
-  'F&B': 'F&B',
-  Apparel: 'Pakaian',
-}
-
-const statusLabel: Record<BoothStatus, string> = {
-  Available: 'Tersedia',
-  Reserved: 'Dipesan',
-  Booked: 'Terisi',
-}
 
 const categoryFilters: Array<{ value: Category | 'all'; label: string }> = [
   { value: 'all', label: 'Semua' },

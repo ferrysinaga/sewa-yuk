@@ -5,6 +5,8 @@ import AppHeader from '../../components/layout/AppHeader'
 import BlueprintWorkspace from '../../components/map/BlueprintWorkspace'
 import { useToast } from '../../components/ui/Toast'
 import { getBlueprintErrorMessage, mapBlueprintRowToDraft } from '../../lib/blueprint'
+import { mapRowToBooth } from '../../lib/boothRow'
+import type { BoothRow } from '../../lib/boothRow'
 import { getBlueprintImageErrorMessage, removeBlueprintImage } from '../../lib/storage'
 import { isSupabaseConfigured, supabase } from '../../lib/supabase'
 import { useBoothStore } from '../../store/useBoothStore'
@@ -14,33 +16,7 @@ import {
   BLUEPRINT_STATUS_OPTIONS,
 } from '../../types/blueprint'
 import type { BlueprintDraft, BlueprintRow, BlueprintStatus } from '../../types/blueprint'
-import type { Booth, BoothCategory, BoothStatus } from '../../types/booth'
-
-interface BoothRow {
-  id: string
-  blueprint_id: string
-  category: BoothCategory
-  position_x: number
-  position_y: number
-  width: number
-  height: number
-  price: number
-  status: BoothStatus
-}
-
-function mapRowToBooth(row: BoothRow): Booth {
-  return {
-    id: row.id,
-    blueprintId: row.blueprint_id,
-    category: row.category,
-    positionX: row.position_x,
-    positionY: row.position_y,
-    width: row.width,
-    height: row.height,
-    price: row.price,
-    status: row.status,
-  }
-}
+import type { BoothStatus } from '../../types/booth'
 
 export default function BlueprintEditor() {
   const { blueprintId = '' } = useParams<{ blueprintId: string }>()

@@ -8,12 +8,7 @@ import {
 } from '../../types/booking'
 import type { PaymentMethod } from '../../types/booking'
 import { formatCurrency } from '../../lib/booking'
-
-const categoryLabel: Record<Booth['category'], string> = {
-  Tech: 'Teknologi',
-  'F&B': 'F&B',
-  Apparel: 'Pakaian',
-}
+import { BOOTH_CATEGORY_LABEL as categoryLabel } from '../../lib/boothDisplay'
 
 interface CheckoutModalProps {
   booth: Booth
