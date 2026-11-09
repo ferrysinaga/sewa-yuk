@@ -14,6 +14,16 @@ export default defineConfig({
       reportsDirectory: './coverage',
       include: ['src/lib/**/*.ts', 'src/store/**/*.ts'],
       exclude: ['src/**/*.{test,spec}.{ts,tsx}'],
+      // Ambang batas ditetapkan sedikit di bawah baseline saat CI pertama
+      // dipasang (lines 42%, branches 43%, functions 66%, statements 46%)
+      // agar perubahan kecil tidak langsung memerahkan pipeline. Naikkan
+      // angka ini setiap kali cakupan bertambah.
+      thresholds: {
+        lines: 40,
+        branches: 41,
+        functions: 62,
+        statements: 44,
+      },
     },
   },
 })

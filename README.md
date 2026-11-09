@@ -188,6 +188,27 @@ Aturan redirect:
 
 ## 9. Menjalankan tes
 
+### Verifikasi lokal
+
+Sebelum push, jalankan seluruh gerbang wajib dalam satu perintah:
+
+```bash
+npm run verify
+```
+
+Perintah ini menjalankan `npm run typecheck` (`tsc --noEmit`), unit test,
+lalu build produksi. Arti kegagalannya:
+
+| Langkah | Jika gagal |
+| --- | --- |
+| `npm run typecheck` | Ada error tipe TypeScript; perbaiki sebelum build |
+| `npm test` | Ada unit test gagal atau perilaku yang berubah |
+| `npm run build` | Bundle produksi gagal dibuat, biasanya karena error tipe atau import |
+
+Cakupan kode diperiksa terpisah dengan `npm run test:coverage`. Ambang batas
+ada di `vite.config.ts` dan berlaku untuk `src/lib` + `src/store`; bila turun
+di bawah ambang, perintah keluar dengan status gagal.
+
 ### Unit test
 
 ```bash
@@ -196,8 +217,25 @@ npm run test:watch
 npm run test:coverage
 ```
 
-Cakupan unit test saat ini: store booth (termasuk aksi realtime), helper kanvas,
-util booking, dan util blueprint.
+Cakupan unit test saat ini: store booth (termasuk aksi realtime), hook booking
+(realtime, hitungan kedaluwarsa, sweep), helper kanvas, util booking, util
+blueprint, dan indikator status realtime.
+
+### CI GitHub Actions
+
+Workflow `.github/workflows/ci.yml` berjalan pada setiap push dan pull request:
+Node 22 dengan cache npm, `npm ci`, `npm run typecheck`, `npm run test:coverage`,
+`npm run build`, lalu smoke test Playwright (`e2e/smoke.spec.ts`). Smoke test
+tidak membutuhkan kredensial; tes E2E berautentikasi tetap dilewati.
+
+Bila workflow merah, buka langkah yang gagal di tab **Actions**:
+
+- **Typecheck** — error tipe; jalankan `npm run typecheck` lokal.
+- **Unit test with coverage** — test gagal atau cakupan turun; jalankan
+  `npm run test:coverage` lokal.
+- **Build production bundle** — jalankan `npm run build` lokal.
+- **E2E smoke** — halaman login gagal dimuat; jalankan
+  `npx playwright test e2e/smoke.spec.ts` lokal.
 
 ### E2E dan aksesibilitas
 

@@ -563,7 +563,22 @@ P1 - RISIKO VISUAL, REGRESI, DAN OPERASIONAL
     Acceptance: simulasi CHANNEL_ERROR mengubah badge dan menampilkan aksi
     manual; setelah SUBSCRIBED badge kembali normal; tidak ada channel ganda.
 
-[ ] 21. Pipeline verifikasi otomatis (CI) dan script typecheck
+[x] 21. Pipeline verifikasi otomatis (CI) dan script typecheck
+    STATUS: SELESAI (7 November 2026)
+    File: package.json, vite.config.ts, .github/workflows/ci.yml (baru),
+          README.md
+    Hasil: script `typecheck` (tsc --noEmit) dan `verify`
+    (typecheck + test + build) ditambahkan ke package.json. Workflow CI
+    berjalan pada push dan pull_request dengan Node 22, cache npm, npm ci,
+    typecheck, test:coverage, build, lalu smoke Playwright
+    (`e2e/smoke.spec.ts`) tanpa kredensial. Coverage threshold global untuk
+    src/lib + src/store dipasang di vite.config.ts: lines 40%, branches 41%,
+    functions 62%, statements 44% — sedikit di bawah baseline terukur
+    (42,18% / 43,45% / 65,78% / 45,74%) agar pipeline tidak langsung merah.
+    README bagian 9 menjelaskan perintah verify, arti setiap kegagalan, dan
+    langkah CI. Verifikasi: `npm run verify` lulus (tsc, 83 test, build),
+    `npm run test:coverage` lulus dengan ambang baru, dan smoke Playwright
+    lulus.
     Masalah: verifikasi masih manual (`npm test`, `npm run build`, E2E).
     Tidak ada typecheck script, lint, maupun CI, sehingga regresi bisa masuk
     ke main tanpa ketahuan.
