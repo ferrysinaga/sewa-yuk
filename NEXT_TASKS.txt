@@ -444,7 +444,24 @@ P1 - RISIKO VISUAL, REGRESI, DAN OPERASIONAL
     INSERT/UPDATE/DELETE/row parsial lulus; halaman tenant dan admin tetap
     menerima perubahan realtime tanpa reload.
 
-[ ] 18. Error boundary global + pemulihan chunk lazy
+[x] 18. Error boundary global + pemulihan chunk lazy
+    STATUS: SELESAI (7 November 2026)
+    File: src/components/layout/AppErrorBoundary.tsx (baru),
+          src/components/layout/AppErrorBoundary.test.tsx (baru),
+          src/lib/chunkRecovery.ts (baru),
+          src/lib/chunkRecovery.test.ts (baru),
+          src/App.tsx, README.md
+    Hasil: class component AppErrorBoundary membungkus <AppRoutes /> di
+    dalam BrowserRouter tanpa mengubah daftar route. Fallback role="alert"
+    memakai token warm dengan judul "Terjadi kesalahan" serta tombol
+    "Muat ulang" dan tautan "Kembali ke beranda" yang dapat dioperasikan
+    keyboard. Deteksi chunk gagal mencakup "Failed to fetch dynamically
+    imported module", "Importing a module script failed", pesan variasi
+    browser lain, dan error bernama ChunkLoadError. Reload otomatis dibatasi
+    sekali per sesi tab lewat penanda sessionStorage; penanda baru dihapus
+    saat halaman benar-benar pulih, bukan saat fallback tampil. Verifikasi:
+    tsc --noEmit lulus, 61 unit test lulus (9 test baru), build lulus, dan
+    E2E publik 3 lulus (4 axe berautentikasi skip).
     Masalah: README bagian 12 mencatat belum ada error boundary global.
     Render error atau kegagalan memuat chunk setelah deploy baru akan
     menghasilkan layar putih tanpa jalan pulih. Route sudah lazy-load
