@@ -217,9 +217,12 @@ npm run test:watch
 npm run test:coverage
 ```
 
-Cakupan unit test saat ini: store booth (termasuk aksi realtime), hook booking
-(realtime, hitungan kedaluwarsa, sweep), helper kanvas, util booking, util
-blueprint, dan indikator status realtime.
+Cakupan unit test saat ini: **124 test di 18 file** yang mencakup store booth
+(termasuk aksi realtime), panel status, dialog konfirmasi inline, toast,
+modal checkout, route terproteksi, error boundary dan pemulihan chunk, hook
+booking (realtime, hitungan kedaluwarsa, sweep, debounce), helper kanvas, util
+booking, util blueprint, mapper row booth, dan indikator status realtime.
+Tes tidak memerlukan kredensial Supabase.
 
 ### CI GitHub Actions
 
@@ -334,8 +337,11 @@ Audit aksesibilitas mencakup:
   sudah berjalan tanpa alasan kuat.
 - Ikuti `frontend.md`: token warna warm, radius 6–10px, border tipis, tanpa
   gradient/blur/shadow tebal/emoji.
-- Route sudah di-lazy-load per halaman sehingga bundle awal berada di bawah
-  ambang peringatan 500 kB. Jika menambah dependensi besar, pantau kembali
+- Route sudah di-lazy-load per halaman. `vite.config.ts` juga memisahkan
+  vendor React, React Router, Supabase, dan `@dnd-kit` lewat
+  `build.rollupOptions.output.codeSplitting` (API rolldown di Vite 8), sehingga
+  tidak ada chunk yang melewati ambang peringatan 500 kB dan cache vendor
+  tetap stabil antar-rilis. Jika menambah dependensi besar, pantau kembali
   ukuran chunk saat build.
 - Error boundary global tersedia di
   `src/components/layout/AppErrorBoundary.tsx`. Jika render gagal atau chunk
@@ -343,3 +349,23 @@ Audit aksesibilitas mencakup:
   "Muat ulang" dan "Kembali ke beranda". Kegagalan chunk memicu reload
   otomatis satu kali per sesi tab (penanda `sessionStorage`) untuk menghindari
   loop; penanda dihapus setelah halaman berhasil dimuat.
+
+## 13. Alur kontribusi
+
+- Satu task dari `NEXT_TASKS.txt` dikerjakan pada satu branch dengan awalan
+  sesuai jenisnya: `feature/`, `fix/`, `refactor/`, `test/`, `docs/`,
+  `chore/`, atau `perf/`.
+- Sebelum commit, jalankan `npm run verify` (typecheck, unit test, build).
+  Untuk perubahan UI, jalankan juga smoke dan audit aksesibilitas:
+
+  ```bash
+  npm run test:e2e -- e2e/smoke.spec.ts
+  npm run test:e2e -- e2e/a11y.spec.ts
+  ```
+
+- Jangan mengubah routing, RPC/skema Supabase, logika Zustand, atau DnD yang
+  sudah berjalan tanpa alasan kuat dan pengujian ulang.
+- Perbarui `NEXT_TASKS.txt` (status + hasil verifikasi) dan
+  `qa_checklist_test_plan.md` bila perilaku yang diuji berubah.
+- Gunakan pesan commit ringkas dalam bahasa Inggris, misalnya
+  `docs: sync project status and contribution guide`.
