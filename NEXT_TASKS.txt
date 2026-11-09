@@ -705,7 +705,25 @@ P2 - KUALITAS, PERFORMA, DAN KEJELASAN KODE
     Acceptance: mengetik cepat tidak memicu filter per karakter; reset
     mengembalikan seluruh daftar; fokus input tidak hilang; test lulus.
 
-[ ] 25. Optimasi query baca dan pagination daftar pesanan
+[x] 25. Optimasi query baca dan pagination daftar pesanan
+    STATUS: SELESAI (8 November 2026)
+    File: src/pages/tenant/EventExplorer.tsx,
+          src/pages/admin/AdminBookings.tsx,
+          src/hooks/useBookingFeed.ts
+    Hasil: EventExplorer mengambil blueprint published lebih dulu, lalu
+    booth dengan `.in('blueprint_id', ids)`; bila tidak ada published,
+    query booth dilewati sehingga booth draft tidak pernah dihitung.
+    AdminBookings memakai server-side pagination 25 baris (`.range()` +
+    count exact), filter status/event/pencarian dijalankan di server, dan
+    kontrol "Sebelumnya/Berikutnya" native yang dapat dioperasikan keyboard
+    menampilkan rentang "1-25 dari N". Query metrik ringan
+    (id, status, price, expires_at, cancelled_reason) menjaga kartu total,
+    menunggu pembayaran, terverifikasi, dan pendapatan tetap akurat.
+    useBookingFeed menerima `transform`/`onPayload`; callback disimpan di
+    ref agar perubahan filter/halaman tidak memutus channel realtime.
+    UPDATE/INSERT pada halaman aktif diterapkan langsung, perubahan di luar
+    halaman hanya menyesuaikan total/metrik, dan DELETE atau perubahan
+    status saat filter aktif memicu reload daftar agar hitungan akurat.
     Masalah: AdminBookings memuat seluruh booking lalu memfilter di klien;
     EventExplorer memuat seluruh booth dari semua blueprint (termasuk draft
     bila RLS mengizinkan) hanya untuk menghitung ringkasan.
@@ -725,7 +743,21 @@ P2 - KUALITAS, PERFORMA, DAN KEJELASAN KODE
     tetap menampilkan total dan filter yang benar; tidak ada query ganda
     yang tidak perlu.
 
-[ ] 26. Pecah file halaman yang terlalu besar
+[x] 26. Pecah file halaman yang terlalu besar
+    STATUS: SELESAI (8 November 2026)
+    File: src/pages/landing/, src/pages/admin/blueprint-list/,
+          src/pages/admin/admin-dashboard/, src/pages/admin/blueprint-editor/,
+          src/pages/admin/admin-bookings/, src/pages/tenant/tenant-bookings/,
+          src/pages/tenant/tenant-event-view/
+    Hasil: seluruh halaman dipecah menjadi hook data + komponen lokal per
+    bagian. LandingPage 34 baris, BlueprintList 118, AdminDashboard 63,
+    BlueprintEditor 63, AdminBookings 80, TenantBookings 64, TenantEventView
+    64, dan tidak ada file di src/pages yang melebihi 400 baris. Markup,
+    label, aria-label, handler, dan perilaku realtime tidak berubah.
+    Verifikasi: `tsc --noEmit` lulus, 115 unit test lulus, `vite build`
+    menghasilkan ukuran chunk route yang stabil (main 488,55 kB), serta
+    E2E smoke login + A11Y-01/A11Y-02 lulus (4 test terautentikasi tetap
+    skip tanpa .env.e2e).
     Masalah: beberapa file sulit ditinjau dan rawan konflik merge.
     Ukuran saat ini: LandingPage.tsx ~49 KB, BlueprintList.tsx ~40 KB,
     AdminDashboard.tsx ~38 KB, AdminBookings.tsx ~28 KB,
