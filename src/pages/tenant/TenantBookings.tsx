@@ -2,13 +2,18 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import AppHeader from '../../components/layout/AppHeader'
 import InlineConfirm from '../../components/ui/InlineConfirm'
+import SyncStatusBadge from '../../components/ui/SyncStatusBadge'
 import { useToast } from '../../components/ui/Toast'
+import { useBookingClock } from '../../hooks/useBookingClock'
 import { useBookingFeed } from '../../hooks/useBookingFeed'
+import { useExpiredBookingSweep } from '../../hooks/useExpiredBookingSweep'
 import {
   formatCurrency,
   formatDateTime,
+  formatRemaining,
   getBookingErrorMessage,
   getPaymentInstruction,
+  getRemainingMs,
   isExpiredBooking,
 } from '../../lib/booking'
 import { sweepExpiredBookings } from '../../lib/bookingExpiry'
@@ -44,12 +49,17 @@ export default function TenantBookings() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [reloadToken, setReloadToken] = useState(0)
+  const [lastLoadedAt, setLastLoadedAt] = useState<number | null>(null)
   const [statusFilter, setStatusFilter] = useState<BookingStatus | 'all'>('all')
   const [updatingId, setUpdatingId] = useState<string | null>(null)
   const [confirmingCancelId, setConfirmingCancelId] = useState<string | null>(null)
   const [refreshing, setRefreshing] = useState(false)
 
-  useBookingFeed({ userId: user?.id ?? null, setBookings, enabled: Boolean(user) })
+  const hasPendingBooking = bookings.some((booking) => booking.status === 'pending')
+  const now = useBookingClock(hasPendingBooking)
+
+  const feed = useBookingFeed({ userId: user?.id ?? null, setBookings, enabled: Boolean(user) })
+  const lastUpdatedAt = Math.max(feed.lastEventAt ?? 0, lastLoadedAt ?? 0) || null
 
   useEffect(() => {
     if (!isSupabaseConfigured) {
@@ -97,6 +107,7 @@ export default function TenantBookings() {
 
       setBookings((bookingResult.data ?? []) as BookingRow[])
       setBlueprints((blueprintResult.data ?? []) as BlueprintSummaryRow[])
+      setLastLoadedAt(Date.now())
       setLoading(false)
     }
 
@@ -106,6 +117,22 @@ export default function TenantBookings() {
       cancelled = true
     }
   }, [reloadToken, user])
+
+  useExpiredBookingSweep({
+    bookings,
+    now,
+    onSweep: sweepExpiredBookings,
+    onSwept: (released) => {
+      if (released) {
+        showToast(
+          `${released} pesanan kedaluwarsa dibatalkan dan booth kembali tersedia.`,
+          'info',
+        )
+      }
+
+      setReloadToken((token) => token + 1)
+    },
+  })
 
   const blueprintById = useMemo(
     () => new Map(blueprints.map((blueprint) => [blueprint.id, blueprint])),
@@ -124,13 +151,13 @@ export default function TenantBookings() {
     const active = bookings.filter(
       (booking) =>
         booking.status === 'awaiting_confirmation' ||
-        (booking.status === 'pending' && !isExpiredBooking(booking)),
+        (booking.status === 'pending' && !isExpiredBooking(booking, now)),
     ).length
     const confirmed = bookings.filter((booking) => booking.status === 'confirmed')
     const totalPaid = confirmed.reduce((sum, booking) => sum + booking.price, 0)
 
     return { active, confirmed: confirmed.length, totalPaid }
-  }, [bookings])
+  }, [bookings, now])
 
   const handleMarkPaid = async (booking: BookingRow) => {
     if (updatingId) return
@@ -228,6 +255,14 @@ export default function TenantBookings() {
             <p className="mt-2 text-sm text-muted">
               Pantau status pemesanan booth dan selesaikan pembayaran sebelum batas waktu.
             </p>
+            <div className="mt-3">
+              <SyncStatusBadge
+                status={feed.status}
+                lastUpdatedAt={lastUpdatedAt}
+                onRefresh={() => void handleRefresh()}
+                refreshing={refreshing}
+              />
+            </div>
           </div>
           <div className="flex flex-col gap-2 sm:flex-row">
             <button
@@ -365,7 +400,8 @@ export default function TenantBookings() {
               <ul className="mt-6 space-y-4">
                 {visibleBookings.map((booking) => {
                   const event = blueprintById.get(booking.blueprint_id)
-                  const expired = isExpiredBooking(booking)
+                  const expired = isExpiredBooking(booking, now)
+                  const remainingMs = getRemainingMs(booking.expires_at, now)
                   const instruction =
                     booking.status === 'pending' && !expired
                       ? getPaymentInstruction(booking.payment_method, booking)
@@ -444,8 +480,17 @@ export default function TenantBookings() {
                                 <dt className="text-muted">
                                   {expired ? 'Batas pembayaran (terlewat)' : 'Batas pembayaran'}
                                 </dt>
-                                <dd className="font-medium text-clay-dark">
-                                  {formatDateTime(booking.expires_at)}
+                                <dd className="text-right">
+                                  <span className="block font-medium text-clay-dark">
+                                    {formatDateTime(booking.expires_at)}
+                                  </span>
+                                  {booking.status === 'pending' && (
+                                    <span className="mt-0.5 block text-[11px] tabular-nums text-clay-dark">
+                                      {expired
+                                        ? 'Kedaluwarsa'
+                                        : `Sisa ${formatRemaining(remainingMs)}`}
+                                    </span>
+                                  )}
                                 </dd>
                               </div>
                             )}

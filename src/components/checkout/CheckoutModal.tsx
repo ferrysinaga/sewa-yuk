@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import type { Booth } from '../../types/booth'
 import {
+  BOOKING_HOLD_HOURS,
   PAYMENT_METHOD_DESCRIPTION,
   PAYMENT_METHOD_LABEL,
   PAYMENT_METHOD_OPTIONS,
@@ -183,7 +184,7 @@ export default function CheckoutModal({
 
               <p className="mt-4 text-xs leading-relaxed text-muted">
                 Status booth: <span className="font-semibold text-ink">Dipesan</span>. Selesaikan
-                pembayaran dalam 24 jam melalui halaman Pesanan Saya.
+                pembayaran dalam {BOOKING_HOLD_HOURS} jam melalui halaman Pesanan Saya.
               </p>
             </div>
           ) : (
@@ -287,7 +288,7 @@ export default function CheckoutModal({
                   />
                 </svg>
                 Saat dikonfirmasi, pesanan dibuat dan booth dikunci untuk Anda. Selesaikan
-                pembayaran dalam 24 jam agar booth dapat terisi.
+                pembayaran dalam {BOOKING_HOLD_HOURS} jam agar booth dapat terisi.
               </p>
             </>
           )}

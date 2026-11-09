@@ -2,7 +2,9 @@ import { Fragment, useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import AppHeader from '../../components/layout/AppHeader'
 import InlineConfirm from '../../components/ui/InlineConfirm'
+import SyncStatusBadge from '../../components/ui/SyncStatusBadge'
 import { useToast } from '../../components/ui/Toast'
+import { useBookingClock } from '../../hooks/useBookingClock'
 import { useBookingFeed } from '../../hooks/useBookingFeed'
 import { formatCurrency, formatDateTime, getBookingErrorMessage, isExpiredBooking } from '../../lib/booking'
 import { sweepExpiredBookings } from '../../lib/bookingExpiry'
@@ -36,6 +38,7 @@ export default function AdminBookings() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [reloadToken, setReloadToken] = useState(0)
+  const [lastLoadedAt, setLastLoadedAt] = useState<number | null>(null)
 
   const [statusFilter, setStatusFilter] = useState<BookingStatus | 'all'>('all')
   const [eventFilter, setEventFilter] = useState('all')
@@ -44,7 +47,11 @@ export default function AdminBookings() {
   const [confirmingCancelId, setConfirmingCancelId] = useState<string | null>(null)
   const [refreshing, setRefreshing] = useState(false)
 
-  const isLive = useBookingFeed({ userId: null, setBookings })
+  const hasPendingBooking = bookings.some((booking) => booking.status === 'pending')
+  const now = useBookingClock(hasPendingBooking)
+
+  const feed = useBookingFeed({ userId: null, setBookings })
+  const lastUpdatedAt = Math.max(feed.lastEventAt ?? 0, lastLoadedAt ?? 0) || null
 
   useEffect(() => {
     let cancelled = false
@@ -86,6 +93,7 @@ export default function AdminBookings() {
 
       setBookings((bookingResult.data ?? []) as BookingRow[])
       setBlueprints((blueprintResult.data ?? []) as BlueprintSummaryRow[])
+      setLastLoadedAt(Date.now())
       setLoading(false)
     }
 
@@ -125,13 +133,13 @@ export default function AdminBookings() {
       (booking) => booking.status === 'awaiting_confirmation',
     ).length
     const pending = bookings.filter(
-      (booking) => booking.status === 'pending' && !isExpiredBooking(booking),
+      (booking) => booking.status === 'pending' && !isExpiredBooking(booking, now),
     ).length
     const confirmed = bookings.filter((booking) => booking.status === 'confirmed')
     const revenue = confirmed.reduce((sum, booking) => sum + booking.price, 0)
 
     return { awaiting, pending, confirmed: confirmed.length, revenue }
-  }, [bookings])
+  }, [bookings, now])
 
   const handleConfirm = async (booking: BookingRow) => {
     if (updatingId) return
@@ -315,20 +323,12 @@ export default function AdminBookings() {
                 <div>
                   <div className="flex flex-wrap items-center gap-2.5">
                     <h2 className="text-base font-semibold text-ink">Daftar pemesanan</h2>
-                    <span
-                      className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-medium ring-1 ring-inset ${
-                        isLive
-                          ? 'bg-pine-soft text-pine-dark ring-line'
-                          : 'bg-unavailable text-muted ring-line'
-                      }`}
-                    >
-                      <span
-                        className={`h-1.5 w-1.5 rounded-full ${
-                          isLive ? ' bg-pine' : 'bg-muted'
-                        }`}
-                      />
-                      {isLive ? 'Live' : 'Menghubungkan…'}
-                    </span>
+                    <SyncStatusBadge
+                      status={feed.status}
+                      lastUpdatedAt={lastUpdatedAt}
+                      onRefresh={() => void handleRefresh()}
+                      refreshing={refreshing}
+                    />
                   </div>
                   <p className="mt-1 text-xs text-muted">
                     {filteredBookings.length} dari {bookings.length} pesanan ditampilkan
@@ -432,7 +432,7 @@ export default function AdminBookings() {
                     {filteredBookings.map((booking) => {
                       const event = blueprintById.get(booking.blueprint_id)
                       const isUpdating = updatingId === booking.id
-                      const expired = isExpiredBooking(booking)
+                      const expired = isExpiredBooking(booking, now)
                       const canCancel =
                         booking.status === 'pending' ||
                         booking.status === 'awaiting_confirmation'

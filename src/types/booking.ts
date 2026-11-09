@@ -1,6 +1,9 @@
 export type BookingStatus = 'pending' | 'awaiting_confirmation' | 'confirmed' | 'cancelled'
 export type PaymentMethod = 'va' | 'transfer' | 'qris'
 
+/** Durasi booth ditahan untuk pembayaran sebelum dilepas otomatis. */
+export const BOOKING_HOLD_HOURS = 24
+
 export interface BookingRow {
   id: string
   booking_code: string
