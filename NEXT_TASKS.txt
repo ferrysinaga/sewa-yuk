@@ -183,7 +183,7 @@ UI/UX DESIGNER
       fix/error-boundary-chunk-recovery, StatePanel, SyncStatusBadge, dan
       realtimeStatus.
 
-[ ] UX-03. Audit aksesibilitas kanvas dan status non-warna [P1]
+[x] UX-03. Audit aksesibilitas kanvas dan status non-warna [P1]
     Pemilik: UI/UX Designer
     Kolaborator: FE, QA
     Konteks: Status booth harus terbaca tanpa hover dan tanpa mengandalkan
@@ -199,6 +199,27 @@ UI/UX DESIGNER
     Verifikasi:
     - Audit manual + `npm run test:e2e -- e2e/a11y.spec.ts`.
     Dependensi: -
+    STATUS: SELESAI (9 November 2026)
+    Hasil:
+    - Laporan: job-desk/specs/UX-03-canvas-accessibility-audit.md
+    - 12 temuan dicatat (1 tinggi, 5 sedang, 5 rendah, 1 info).
+    - Lulus: Tab mencapai booth, Enter/Space memilih, Escape melepas saat fokus
+      di booth, focus ring clay terlihat, axe WCAG A/AA 0 pelanggaran pada
+      375/768/1280 px termasuk saat booth terpilih, dan 7/7 unit test
+      CheckoutModal lulus.
+    - Perlu perbaikan: Escape tidak global, dua aria-live mengumumkan pilihan
+      yang sama, filter 38 px dan booth 40 px di mobile, label status 4-5 px di
+      375 px, tidak ada pan keyboard saat zoom, aria-pressed tidak toggle, dan
+      seleksi keyboard admin bentrok dengan drag dnd-kit.
+    - Perbaikan diserahkan ke FE-03 (tenant/filter/checkout) dan FE-04
+      (regression test + kanvas admin). Audit admin dengan kredensial
+      diserahkan ke QA-02.
+    Verifikasi:
+    - `E2E_EVENT_ID=hall-a npm run test:e2e -- e2e/a11y.spec.ts`: A11Y-01/02/03
+      lulus; A11Y-04/05/06 skip karena .env.e2e belum ada.
+    - `npx vitest run src/components/checkout/CheckoutModal.test.tsx`: 7 lulus.
+    - Playwright manual: ukuran target, urutan Tab, focus ring, Enter/Space,
+      Escape, dan axe pada state terpilih di tiga viewport.
 
 [ ] UX-04. Audit konsistensi token, radius, tipografi, dan copy [P2]
     Pemilik: UI/UX Designer
@@ -275,6 +296,9 @@ FRONTEND DEVELOPER
     Rencana:
     - Terapkan pola layout dari UX-01 pada TenantEventView/TenantSidebar dan
       CheckoutModal.
+    - Terapkan temuan UX-03: target sentuh 44 px, Escape global saat ada booth
+      terpilih, satu live region, pan keyboard saat zoom, dan urutan tombol
+      checkout mobile.
     - Pastikan urutan fokus, Escape, dan scroll terkunci saat modal terbuka.
     - Pertahankan ringkasan harga dan aksi utama tetap terlihat.
     Acceptance:
@@ -283,7 +307,7 @@ FRONTEND DEVELOPER
     - Modal/drawer dapat ditutup dengan keyboard.
     Verifikasi:
     - Uji 375/768/1280 px + keyboard + smoke test.
-    Dependensi: UX-01
+    Dependensi: UX-01, UX-03
 
 [ ] FE-04. Tambah regression test keyboard dan fokus [P1]
     Pemilik: Frontend Developer
@@ -293,13 +317,15 @@ FRONTEND DEVELOPER
     Rencana:
     - Tambah test untuk pilih booth dengan Enter/Space dan lepas dengan Escape.
     - Tambah test fokus awal/akhir pada CheckoutModal dan InlineConfirm.
+    - Pisahkan seleksi dan drag keyboard pada kanvas admin, lalu uji dengan
+      kredensial organizer.
     - Pastikan fokus kembali ke pemicu setelah dialog ditutup.
     Acceptance:
     - Test gagal jika fokus hilang atau Escape tidak menutup dialog.
     - Tidak ada perubahan perilaku yang tidak disengaja.
     Verifikasi:
     - npm test + npm run test:e2e -- e2e/a11y.spec.ts.
-    Dependensi: FE-03
+    Dependensi: FE-03, UX-03
 
 [ ] FE-05. Jaga budget bundle dan chunk vendor [P2]
     Pemilik: Frontend Developer
