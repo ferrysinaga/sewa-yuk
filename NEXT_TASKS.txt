@@ -657,7 +657,21 @@ P2 - KUALITAS, PERFORMA, DAN KEJELASAN KODE
     Acceptance: minimal +20 test dan seluruh `npm test` lulus; tidak ada
     snapshot rapuh; tes tidak memerlukan kredensial Supabase.
 
-[ ] 24. Debounce pencarian dan tombol reset filter
+[x] 24. Debounce pencarian dan tombol reset filter
+    STATUS: SELESAI (8 November 2026)
+    File: src/hooks/useDebouncedValue.ts (baru),
+          src/hooks/useDebouncedValue.test.ts (baru),
+          src/pages/tenant/EventExplorer.tsx,
+          src/pages/admin/AdminBookings.tsx
+    Hasil: useDebouncedValue (default 250 ms) menunda nilai turunan tanpa
+    menunda input. EventExplorer dan AdminBookings memfilter memakai nilai
+    debounce, sehingga mengetik cepat tidak menjalankan filter per karakter.
+    Kedua halaman mengumumkan jumlah hasil lewat aria-live="polite". Di
+    AdminBookings muncul tombol "Reset filter" hanya saat pencarian, filter
+    event, atau filter status aktif; tombol mengembalikan semuanya ke
+    all/''. Fokus input tetap dipertahankan karena input tetap dikendalikan
+    langsung oleh state aslinya. Verifikasi: tsc --noEmit lulus, 86 unit test
+    lulus (3 test hook baru), dan build lulus.
     Masalah: EventExplorer dan AdminBookings memfilter seluruh data pada
     setiap ketikan. AdminBookings juga tidak punya tombol reset saat filter
     aktif, sehingga user bisa bingung melihat daftar kosong.
