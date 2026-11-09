@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import Spinner from './Spinner'
 
 interface LoadingPanelProps {
   title: string
@@ -32,10 +33,7 @@ export function LoadingPanel({
   return (
     <div role="status" aria-live="polite" className={`${shellClassName} ${className}`}>
       <div className="flex flex-col items-center gap-3 text-center">
-        <span
-          aria-hidden="true"
-          className="h-8 w-8 animate-spin rounded-full border-2 border-line border-t-pine motion-reduce:animate-none"
-        />
+        <Spinner size="lg" tone="pine" />
         <p className={titleClassName}>{title}</p>
         {description && (
           <p className="max-w-xs text-xs leading-relaxed text-muted">{description}</p>

@@ -839,7 +839,24 @@ atau DnD yang sudah berjalan. Setiap task wajib lulus `tsc --noEmit`,
 P1 - DUPLIKASI KECIL DAN KETAHANAN INTERAKSI
 ===============================================================================
 
-[ ] 29. Satukan markup spinner
+[x] 29. Satukan markup spinner
+    STATUS: SELESAI (8 November 2026)
+    File: src/components/ui/Spinner.tsx (baru),
+          src/components/admin/BlueprintImageUploader.tsx,
+          src/components/checkout/CheckoutModal.tsx,
+          src/components/map/TenantSidebar.tsx,
+          src/components/ui/StatePanel.tsx,
+          src/pages/Login.tsx, src/pages/Register.tsx,
+          src/pages/admin/blueprint-editor/EditorHeader.tsx,
+          src/pages/admin/blueprint-list/CreateBlueprintForm.tsx
+    Hasil: Spinner mendukung size sm/md/lg (h-3.5, h-4, h-8) dan tone
+    pine/white, selalu aria-hidden="true", serta memakai
+    motion-reduce:animate-none. Seluruh markup spinner inline diganti tanpa
+    mengubah teks status, layout tombol, atau aria-hidden; pencarian
+    `animate-spin` di src kini hanya tersisa di Spinner.tsx. Setelah task 26,
+    jumlah pemakaian aktual 8 (bukan 15). Verifikasi: `npm run typecheck`,
+    115 unit test, dan `npm run build` lulus; E2E smoke + A11Y-01/A11Y-02
+    lulus (4 test terautentikasi skip tanpa .env.e2e).
     Masalah: markup spinner yang sama disalin 15 kali dengan ukuran dan warna
     berbeda, sehingga rawan tidak konsisten ketika tema berubah.
     Bukti:

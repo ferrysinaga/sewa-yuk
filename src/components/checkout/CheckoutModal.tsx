@@ -10,6 +10,7 @@ import {
 import type { PaymentMethod } from '../../types/booking'
 import { formatCurrency } from '../../lib/booking'
 import { BOOTH_CATEGORY_LABEL as categoryLabel } from '../../lib/boothDisplay'
+import Spinner from '../ui/Spinner'
 
 interface CheckoutModalProps {
   booth: Booth
@@ -336,10 +337,7 @@ export default function CheckoutModal({
               >
                 {confirming ? (
                   <>
-                    <span
-                      aria-hidden="true"
-                      className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white"
-                    />
+                    <Spinner size="md" tone="white" />
                     Membuat Pesanan…
                   </>
                 ) : isAvailable ? (

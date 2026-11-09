@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import Spinner from '../../../components/ui/Spinner'
 import {
   BLUEPRINT_STATUS_BADGE,
   BLUEPRINT_STATUS_LABEL,
@@ -105,10 +106,7 @@ export default function EditorHeader({ state }: { state: BlueprintEditorState })
         >
           {saving ? (
             <>
-              <span
-                aria-hidden="true"
-                className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white"
-              />
+              <Spinner size="md" tone="white" />
               Menyimpan…
             </>
           ) : (
