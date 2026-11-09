@@ -1,5 +1,14 @@
 import { expect, test } from '@playwright/test'
 import type { Browser, BrowserContext, Page } from '@playwright/test'
+import {
+  boothId,
+  eventId,
+  login,
+  missingEnv,
+  skipMessage,
+  tenantA,
+  tenantB,
+} from './fixtures'
 
 /**
  * E2E realtime SYNC-01/02/03.
@@ -10,44 +19,18 @@ import type { Browser, BrowserContext, Page } from '@playwright/test'
  * dilewati agar `npm run test:e2e` tetap hijau di mesin tanpa kredensial.
  */
 
-const tenantA = {
-  email: process.env.E2E_TENANT_A_EMAIL ?? '',
-  password: process.env.E2E_TENANT_A_PASSWORD ?? '',
-}
-
-const tenantB = {
-  email: process.env.E2E_TENANT_B_EMAIL ?? '',
-  password: process.env.E2E_TENANT_B_PASSWORD ?? '',
-}
-
-const eventId = process.env.E2E_EVENT_ID ?? ''
-const boothId = process.env.E2E_BOOTH_ID ?? ''
-
-const missingEnv = [
+const missing = missingEnv([
   ['E2E_TENANT_A_EMAIL', tenantA.email],
   ['E2E_TENANT_A_PASSWORD', tenantA.password],
   ['E2E_TENANT_B_EMAIL', tenantB.email],
   ['E2E_TENANT_B_PASSWORD', tenantB.password],
   ['E2E_EVENT_ID', eventId],
   ['E2E_BOOTH_ID', boothId],
-]
-  .filter(([, value]) => !value)
-  .map(([key]) => key)
+])
 
-test.skip(
-  missingEnv.length > 0,
-  `SYNC E2E dilewati. Isi ${missingEnv.join(', ')} pada .env.e2e (lihat .env.e2e.example).`,
-)
+test.skip(missing.length > 0, skipMessage('SYNC E2E', missing))
 
 const boothSelector = `[data-booth-id="${boothId}"]`
-
-async function login(page: Page, email: string, password: string) {
-  await page.goto('/login')
-  await page.locator('#email').fill(email)
-  await page.locator('#password').fill(password)
-  await page.getByRole('button', { name: 'Masuk', exact: true }).click()
-  await page.waitForURL(/\/(event|admin)(\/|$|\?)/, { timeout: 45_000 })
-}
 
 async function openEvent(page: Page) {
   await page.goto(`/event/${eventId}`)
@@ -66,8 +49,8 @@ async function openTwoTenants(browser: Browser): Promise<{
   const pageB = await contextB.newPage()
 
   await Promise.all([
-    login(pageA, tenantA.email, tenantA.password),
-    login(pageB, tenantB.email, tenantB.password),
+    login(pageA, tenantA),
+    login(pageB, tenantB),
   ])
 
   await Promise.all([openEvent(pageA), openEvent(pageB)])
