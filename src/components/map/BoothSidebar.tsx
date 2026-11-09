@@ -9,6 +9,7 @@ import {
 } from '../../lib/boothDisplay'
 import { useBoothStore } from '../../store/useBoothStore'
 import type { Booth, BoothCategory, BoothStatus, BoothTemplate } from '../../types/booth'
+import InlineConfirm from '../ui/InlineConfirm'
 
 export const boothTemplates: BoothTemplate[] = [
   { category: 'Tech', width: 160, height: 120, price: 4500000 },
@@ -273,48 +274,18 @@ export default function BoothSidebar() {
               </p>
 
               {confirmingDelete ? (
-                <div
-                  role="alertdialog"
-                  aria-labelledby="delete-booth-title"
-                  aria-describedby="delete-booth-description"
-                  onKeyDown={(event) => {
-                    if (event.key === 'Escape') {
-                      event.stopPropagation()
-                      setConfirmingDelete(false)
-                    }
+                <InlineConfirm
+                  id="delete-booth"
+                  title="Hapus booth ini?"
+                  description="Booth dihapus dari kanvas draf. Simpan denah untuk menerapkan perubahan."
+                  confirmLabel="Ya, hapus"
+                  onConfirm={() => {
+                    removeBooth(activeBooth.id)
+                    setConfirmingDelete(false)
                   }}
+                  onCancel={() => setConfirmingDelete(false)}
                   className="mt-2 rounded-[6px] border border-danger bg-danger-soft p-3"
-                >
-                  <p id="delete-booth-title" className="text-xs font-semibold text-danger-dark">
-                    Hapus booth ini?
-                  </p>
-                  <p
-                    id="delete-booth-description"
-                    className="mt-1 text-[11px] leading-relaxed text-danger-dark"
-                  >
-                    Booth dihapus dari kanvas draf. Simpan denah untuk menerapkan perubahan.
-                  </p>
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        removeBooth(activeBooth.id)
-                        setConfirmingDelete(false)
-                      }}
-                      className="inline-flex items-center justify-center rounded-[4px] bg-danger px-3 py-1.5 text-[11px] font-semibold text-white transition-colors hover:bg-danger-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-danger focus-visible:ring-offset-2 motion-reduce:transition-none"
-                    >
-                      Ya, hapus
-                    </button>
-                    <button
-                      type="button"
-                      autoFocus
-                      onClick={() => setConfirmingDelete(false)}
-                      className="inline-flex items-center justify-center rounded-[4px] border border-line bg-surface px-3 py-1.5 text-[11px] font-semibold text-ink transition-colors hover:bg-canvas focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 motion-reduce:transition-none"
-                    >
-                      Batal
-                    </button>
-                  </div>
-                </div>
+                />
               ) : (
                 <button
                   type="button"
