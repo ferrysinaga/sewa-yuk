@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useState } from 'react'
+import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 
 type ToastVariant = 'success' | 'error' | 'info'
@@ -14,6 +14,9 @@ interface ToastContextValue {
 }
 
 const ToastContext = createContext<ToastContextValue | null>(null)
+
+const MAX_TOASTS = 3
+const AUTO_DISMISS_MS = 5000
 
 const variantStyles: Record<ToastVariant, string> = {
   success: 'border-line border-l-2 border-l-pine bg-surface text-ink',
@@ -59,16 +62,62 @@ const variantIcon: Record<ToastVariant, ReactNode> = {
 
 export function ToastProvider({ children }: { children: ReactNode }) {
   const [toasts, setToasts] = useState<ToastItem[]>([])
+  const timersRef = useRef<Map<number, number>>(new Map())
+  const nextIdRef = useRef(0)
 
-  const removeToast = useCallback((id: number) => {
-    setToasts((current) => current.filter((toast) => toast.id !== id))
+  const clearTimer = useCallback((id: number) => {
+    const timerId = timersRef.current.get(id)
+
+    if (timerId === undefined) return
+
+    window.clearTimeout(timerId)
+    timersRef.current.delete(id)
+  }, [])
+
+  const removeToast = useCallback(
+    (id: number) => {
+      clearTimer(id)
+      setToasts((current) => current.filter((toast) => toast.id !== id))
+    },
+    [clearTimer],
+  )
+
+  useEffect(() => {
+    const timers = timersRef.current
+
+    return () => {
+      timers.forEach((timerId) => window.clearTimeout(timerId))
+      timers.clear()
+    }
   }, [])
 
   const showToast = useCallback(
     (message: string, variant: ToastVariant = 'info') => {
-      const id = Date.now() + Math.random()
-      setToasts((current) => [...current, { id, message, variant }])
-      window.setTimeout(() => removeToast(id), 5000)
+      nextIdRef.current += 1
+      const id = nextIdRef.current
+
+      setToasts((current) => {
+        const next = [...current, { id, message, variant }]
+
+        if (next.length <= MAX_TOASTS) return next
+
+        // Buang toast tertua, termasuk timer auto-dismiss-nya.
+        next.slice(0, next.length - MAX_TOASTS).forEach((toast) => {
+          const timerId = timersRef.current.get(toast.id)
+          if (timerId !== undefined) {
+            window.clearTimeout(timerId)
+            timersRef.current.delete(toast.id)
+          }
+        })
+
+        return next.slice(-MAX_TOASTS)
+      })
+
+      // Error harus tetap terbaca sampai pengguna menutupnya sendiri.
+      if (variant !== 'error') {
+        const timerId = window.setTimeout(() => removeToast(id), AUTO_DISMISS_MS)
+        timersRef.current.set(id, timerId)
+      }
     },
     [removeToast],
   )

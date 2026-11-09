@@ -1,6 +1,6 @@
 DAFTAR TASK SELANJUTNYA - sewa-yuk
 Disusun dari gap analysis qa_checklist_test_plan.md vs kode aktual
-Status acuan commit: 334e207 (main sebelum PR dokumentasi ini)
+Status acuan commit: c535b61 (main sebelum integrasi perbaikan Toast ini)
 Legenda prioritas: [P0] blocker QA / risiko data, [P1] penting, [P2] nice to have
 Centang [x] jika sudah selesai.
 
@@ -784,9 +784,9 @@ P2 - KUALITAS, PERFORMA, DAN KEJELASAN KODE
     STATUS: SELESAI (8 November 2026)
     File: NEXT_TASKS.txt, README.md, qa_checklist_test_plan.md
     Hasil: header NEXT_TASKS memakai acuan aac48c0; task 15-17 dan 19-28
-    ditandai selesai, sedangkan task 18 saat itu masih menunggu integrasi
-    branch fix/error-boundary-chunk-recovery. Task 18 kini selesai dan sudah
-    tergabung melalui PR #19. README kini menyebut 115 unit test di 16 file,
+    ditandai selesai. Task 18 saat itu masih menunggu integrasi branch
+    fix/error-boundary-chunk-recovery dan kini sudah tergabung melalui PR #19.
+    README menyebut jumlah unit test aktual,
     menjelaskan `npm run typecheck` dan `npm run verify`, langkah CI yang
     sebenarnya (typecheck, test:coverage, build, smoke Playwright), pemisahan
     vendor via `codeSplitting`, serta status error boundary yang akurat.
@@ -826,7 +826,7 @@ URUTAN EKSEKUSI FASE 2 YANG DISARANKAN
 ===============================================================================
 FASE 3 - ITERASI LANJUTAN
 ===============================================================================
-Status acuan: 334e207 (task 15-28 selesai dan error boundary sudah
+Status acuan: c535b61 (task 15-30 selesai dan error boundary sudah
 terintegrasi melalui PR #19).
 Fokus: menghilangkan sisa duplikasi kecil, melengkapi aksesibilitas, mengunci
 kualitas dengan tooling, dan memperluas cakupan E2E.
@@ -904,7 +904,19 @@ P1 - DUPLIKASI KECIL DAN KETAHANAN INTERAKSI
     Acceptance: hanya ada satu implementasi alertdialog untuk hapus booth;
     Tab/Escape/fokus kembali berfungsi; test dan build lulus.
 
-[ ] 31. Perkuat Toast: error persisten, timer dibersihkan, batasi tumpukan
+[x] 31. Perkuat Toast: error persisten, timer dibersihkan, batasi tumpukan
+    STATUS: SELESAI (8 November 2026)
+    File: src/components/ui/Toast.tsx,
+          src/components/ui/Toast.test.tsx, README.md
+    Hasil: timer auto-dismiss disimpan per toast di Map ref dan dibersihkan
+    saat toast ditutup manual, saat provider unmount, dan saat toast tertua
+    dibuang karena batas tumpukan. Varian error tidak dijadwalkan hilang
+    (persisten sampai ditutup), sedangkan success/info tetap 5 detik.
+    Maksimal 3 toast tampil; toast keempat melepas yang tertua beserta
+    timernya. aria-live, role, dan markup tidak berubah. Empat unit test baru
+    membuktikan error persisten, timer bersih saat tutup/unmount, dan batas 3
+    toast. Setelah integrasi dengan main, `npm run verify` lulus: typecheck,
+    128 unit test di 18 file, dan production build.
     Masalah: showToast memakai window.setTimeout tanpa menyimpan id
     (Toast.tsx:71) sehingga timer tidak dibatalkan saat toast ditutup atau
     provider unmount. Semua varian hilang dalam 5 detik, termasuk error yang
