@@ -77,10 +77,12 @@ denah), serta tim operasi yang harus memulihkan layanan bila deploy bermasalah.
 | ---------------------------------------- | --------------------- | --------- | -------------------------------------------------------- | ----------------------------------------------------------------------------- |
 | PM-02 Acceptance criteria + skenario UAT | Product               | P1        | PM-01                                                    | QA dapat menentukan lulus/tidak lulus tanpa menebak                           |
 | PM-03 Metrik funnel dan baseline         | Product               | P1        | PM-01                                                    | 5–7 metrik punya definisi, sumber, pemilik, dan query yang dapat direproduksi |
+| PM-04 Tinjau kebijakan expiry/copy       | Product               | P2        | PM-02                                                    | Review selesai; temuan copy menjadi follow-up, bukan gate rilis               |
 | REL-01 Release readiness checklist       | Product + QA + DevOps | P1        | PM-01, PM-02, FE-01, FE-02, BE-02, QA-01, OPS-02, OPS-03 | Semua gate lulus atau risiko diterima tertulis; release note + rollback siap  |
 
-> PM-03 disertakan sebagai **pendukung keputusan**, bukan gate rilis. Baseline
-> boleh diisi dari environment uji selama belum ada data produksi.
+> PM-03 dan PM-04 disertakan sebagai **pendukung keputusan**, bukan gate rilis.
+> Baseline PM-03 boleh diisi dari environment uji selama belum ada data
+> produksi; temuan copy PM-04 dikerjakan pada siklus UI berikutnya.
 
 ## 4. Non-goal (sengaja ditunda)
 
@@ -94,7 +96,6 @@ denah), serta tim operasi yang harus memulihkan layanan bila deploy bermasalah.
 | BE-05 Validasi storage + file yatim               | P2; tidak ada insiden produksi yang dilaporkan                 | Siklus kualitas berikutnya   |
 | OPS-05 Monitoring error + notifikasi deploy       | P2; dapat menyusul setelah gerbang dasar                       | Siklus operasi berikutnya    |
 | OPS-06 Uji backup/restore + versi runtime         | P2; menunggu runbook OPS-03                                    | Siklus operasi berikutnya    |
-| PM-04 Tinjau kebijakan expiry/copy                | P2; bergantung PM-02                                           | Siklus produk berikutnya     |
 | PM-05 Release note dan komunikasi                 | Bergantung REL-01; dikerjakan **setelah** gate lulus           | Pasca-rilis                  |
 | FE-05 Budget bundle, FE-06 unit test error/expiry | P2; bukan risiko rilis saat ini                                | Siklus kualitas berikutnya   |
 | QA-05 Flaky test, QA-06 Template sign-off         | P2; REL-01 memakai checklist sementara                         | Siklus QA berikutnya         |
@@ -150,6 +151,8 @@ atau issue rilis.
 - Backlog dan status: `NEXT_TASKS.txt`
 - Rencana UAT: `docs/product/PM-02-uat-critical-flows.md` (dibuat pada PM-02)
 - Metrik: `docs/product/PM-03-funnel-metrics.md` (dibuat pada PM-03)
+- Tinjauan expiry/copy: `docs/product/PM-04-expiry-cancellation-policy.md`
+  (dibuat pada PM-04)
 - Kontrak error RPC: `supabase/ERROR_CONTRACT.md`
 - Jaminan double booking: `supabase/DOUBLE_BOOKING.md`
 - Test plan: `qa_checklist_test_plan.md`
