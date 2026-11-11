@@ -6,9 +6,10 @@
   "scripts": {
     "dev": "vite",
     "build": "npm run typecheck && vite build",
+    "check:bundle": "node scripts/check-bundle-budget.mjs",
     "preview": "vite preview",
     "typecheck": "node ./node_modules/typescript7/bin/tsc --noEmit",
-    "verify": "npm run lint && npm run format:check && npm run typecheck && npm test && npm run build",
+    "verify": "npm run lint && npm run format:check && npm run typecheck && npm test && npm run build && npm run check:bundle",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",

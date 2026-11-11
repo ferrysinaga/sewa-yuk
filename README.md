@@ -368,6 +368,14 @@ Audit aksesibilitas mencakup:
   tidak ada chunk yang melewati ambang peringatan 500 kB dan cache vendor
   tetap stabil antar-rilis. Jika menambah dependensi besar, pantau kembali
   ukuran chunk saat build.
+- Budget bundle dijaga oleh `scripts/check-bundle-budget.mjs`. Pemeriksaan
+  berjalan otomatis di akhir `npm run verify`, atau manual dengan
+  `npm run check:bundle` setelah build. Baseline 11 November 2026: 32 chunk JS,
+  total 789,63 kB, CSS 28,51 kB; chunk terbesar `react` 218,75 kB dan `supabase`
+  214,38 kB. Budget saat ini: maksimal 500 kB per chunk, 850 kB total JS,
+  60 kB CSS, dengan batas khusus untuk chunk vendor. Hindari barrel file dan
+  import yang menarik seluruh modul; evaluasi dampak bundle setiap dependensi
+  baru. Naikkan budget hanya dengan alasan yang dicatat di PR.
 - Error boundary global **sudah tergabung** di `src/App.tsx` melalui
   `AppErrorBoundary`. Error render menampilkan fallback yang dapat dioperasikan
   dengan keyboard dan memindahkan fokus ke judul. Kegagalan memuat chunk lazy

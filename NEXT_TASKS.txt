@@ -518,7 +518,7 @@ FRONTEND DEVELOPER
       diverifikasi lewat unit test dengan mock dnd-kit. Jalankan A11Y-04/05
       dan uji drag keyboard di staging setelah OPS-04.
 
-[ ] FE-05. Jaga budget bundle dan chunk vendor [P2]
+[x] FE-05. Jaga budget bundle dan chunk vendor [P2]
     Pemilik: Frontend Developer
     Kolaborator: DevOps
     Konteks: Build sudah memisahkan vendor, tetapi penambahan dependensi dapat
@@ -534,6 +534,28 @@ FRONTEND DEVELOPER
     Verifikasi:
     - npm run build + bandingkan output sebelum/sesudah.
     Dependensi: -
+    STATUS: SELESAI (11 November 2026)
+    Hasil:
+    - Baseline build produksi 11 November 2026: 32 chunk JS, total 789,63 kB,
+      CSS 28,51 kB. Chunk terbesar `react` 218,75 kB, `supabase` 214,38 kB,
+      `TenantEventView` 43,92 kB, `dnd` 41,63 kB. Tidak ada chunk di atas
+      ambang peringatan 500 kB.
+    - scripts/check-bundle-budget.mjs: memeriksa seluruh `dist/assets/*.js`
+      dan `*.css` setelah build. Gagal bila ada chunk > 500 kB, total JS
+      > 850 kB, total CSS > 60 kB, atau chunk vendor melewati batas khusus
+      (react 260 kB, supabase 260 kB, react-router 50 kB, dnd 60 kB). Output
+      menampilkan total dan delapan chunk terbesar.
+    - package.json: script `check:bundle` ditambahkan dan dirangkai di akhir
+      `verify`, sehingga regresi budget menggagalkan gate yang sama dengan
+      lint/typecheck/test/build.
+    - README bagian 12 mencatat baseline, budget, cara menjalankan, dan
+      larangan barrel file/import seluruh modul.
+    Verifikasi:
+    - `npm run build`: 169 modul, 32 chunk JS, tanpa peringatan chunk > 500 kB.
+    - `npm run check:bundle`: total JS 789,63 kB, CSS 28,51 kB, semua chunk
+      dalam budget.
+    - `npm run verify` lulus (lint, format, typecheck, 177 unit test, build,
+      budget bundle).
 
 [ ] FE-06. Perluas unit test jalur error dan expiry [P2]
     Pemilik: Frontend Developer
