@@ -368,11 +368,13 @@ Audit aksesibilitas mencakup:
   tidak ada chunk yang melewati ambang peringatan 500 kB dan cache vendor
   tetap stabil antar-rilis. Jika menambah dependensi besar, pantau kembali
   ukuran chunk saat build.
-- Error boundary global **belum tergabung** di rangkaian rilis ini.
-  Implementasinya tersedia di branch `fix/error-boundary-chunk-recovery`
-  dan perlu di-merge sebelum rilis. Saat ini kegagalan data ditampilkan
-  sebagai panel error di tiap halaman; error render yang tidak tertangani
-  masih berpotensi menghasilkan layar kosong.
+- Error boundary global **sudah tergabung** di `src/App.tsx` melalui
+  `AppErrorBoundary`. Error render menampilkan fallback yang dapat dioperasikan
+  dengan keyboard dan memindahkan fokus ke judul. Kegagalan memuat chunk lazy
+  memicu reload otomatis maksimal sekali per sesi tab; bila masih gagal,
+  pengguna melihat fallback untuk muat ulang manual tanpa loop reload. Penanda
+  sesi disimpan di `sessionStorage` (`sewa-yuk:chunk-reload-attempted`) dan
+  dihapus setelah halaman berhasil dirender.
 
 ### 12.1 Dokumen produk dan rilis
 

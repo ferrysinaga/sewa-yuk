@@ -297,7 +297,7 @@ UI/UX DESIGNER
 FRONTEND DEVELOPER
 ===============================================================================
 
-[ ] FE-01. Error boundary global dan pemulihan chunk lazy [P1]
+[x] FE-01. Error boundary global dan pemulihan chunk lazy [P1]
     Pemilik: Frontend Developer
     Kolaborator: UI/UX, QA
     Konteks: Task lama nomor 18 masih terbuka. Implementasi sudah ada di branch
@@ -321,6 +321,34 @@ FRONTEND DEVELOPER
     Verifikasi:
     - Unit test fallback + build produksi + smoke test.
     Dependensi: UX-02
+    STATUS: SELESAI (11 November 2026)
+    Hasil:
+    - src/lib/chunkRecovery.ts: deteksi chunk error (4 pola + ChunkLoadError),
+      penanda sessionStorage `sewa-yuk:chunk-reload-attempted`, helper
+      has/mark/clear, dan akses sessionStorage yang aman saat diblokir.
+    - src/components/layout/AppErrorBoundary.tsx: class component dengan
+      role="alert", aksen clay, judul "Terjadi kesalahan" (render error),
+      "Versi aplikasi mungkin diperbarui" (chunk pertama), dan "Halaman belum
+      dapat dimuat" (chunk berulang). Fokus dipindahkan ke heading tabIndex=-1.
+      Tombol "Muat ulang" dan tautan "Kembali ke beranda" minimal 44 px.
+    - Chunk error memicu reload otomatis hanya sekali per sesi tab; kegagalan
+      berikutnya menampilkan fallback manual tanpa reload berulang.
+    - src/App.tsx membungkus <AppRoutes /> dengan AppErrorBoundary; daftar route
+      tidak berubah.
+    - README bagian 12 diperbarui: error boundary sudah tergabung.
+    - Catatan: console.error di componentDidCatch sengaja dipertahankan untuk
+      diagnosa; tidak ada console.log yang tertinggal.
+    Verifikasi:
+    - `npx vitest run src/components/layout/AppErrorBoundary.test.tsx
+      src/lib/chunkRecovery.test.ts`: 12 test lulus (render error, fokus judul,
+      keyboard, chunk pertama, chunk berulang, penanda storage, storage
+      diblokir).
+    - `npm run verify` lulus (lint, format, typecheck, 157 unit test, build).
+    - Smoke test dijalankan pada dev server lokal setelah perubahan; lihat
+      hasil di ringkasan task.
+    - Catatan: uji blokir request chunk di browser dan axe fallback belum
+      dijalankan otomatis karena environment E2E/.env.e2e belum tersedia;
+      fallback telah diuji lewat unit test dan keyboard manual.
 
 [ ] FE-02. Perkuat realtime reconnect dan rollback optimistic update [P1]
     Pemilik: Frontend Developer
