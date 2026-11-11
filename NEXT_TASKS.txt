@@ -116,7 +116,7 @@ PRODUCT MANAGER
       dan snapshot mingguan/harian menjadi cara pengambilan awal.
     Dependensi: PM-01
 
-[ ] PM-04. Tinjau kebijakan expiry, pembatalan, dan copy-nya [P2]
+[x] PM-04. Tinjau kebijakan expiry, pembatalan, dan copy-nya [P2]
     Pemilik: Product Manager
     Kolaborator: UI/UX, BE, QA
     Konteks: Booking ditahan 24 jam dan dapat kedaluwarsa otomatis. Dampaknya
@@ -131,7 +131,22 @@ PRODUCT MANAGER
     - Tidak ada perbedaan aturan antara UI, RPC, dan dokumentasi.
     - Copy menjelaskan akibat status kepada tenant dan organizer.
     Verifikasi:
-    - Review bersama BE dan QA; uji satu booking kedaluwarsa.
+    - docs/product/PM-04-expiry-cancellation-policy.md memuat kebijakan kanonik
+      (24 jam, sweep expiry, awaiting_confirmation tidak expiry, pembatalan
+      tenant/organizer, confirmed tidak dapat dibatalkan, alasan expired/manual)
+      dan matriks konsistensi DB vs UI vs dokumentasi.
+    - Aturan inti konsisten: create_booking memakai interval 24 jam,
+      BOOKING_HOLD_HOURS=24, sweep hanya memproses pending, dan cancel_booking
+      menolak confirmed. UI hanya menampilkan aksi batal untuk
+      pending/awaiting_confirmation.
+    - Temuan copy dicatat: F-01 label "Dibayar" memakai paid_at yang diisi saat
+      verifikasi; F-02 "Batas pembayaran" pada awaiting_confirmation tanpa
+      countdown; F-03 toast batal tidak membedakan expired; F-04 nilai 24 jam
+      ditulis di DB dan FE; F-05 refund/transfer booth belum didukung.
+    - Rekomendasi copy dan pemilik follow-up (FE/BE/UI-UX) tercatat; tidak ada
+      perubahan kode produksi pada task ini.
+    - Catatan: uji satu booking kedaluwarsa di environment uji dan review
+      bersama BE/QA belum dijalankan karena staging belum tersedia (OPS-04).
     Dependensi: PM-02
 
 [ ] PM-05. Susun release note dan komunikasi stakeholder [P2]
