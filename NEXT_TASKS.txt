@@ -85,7 +85,7 @@ PRODUCT MANAGER
       diisi pada tabel bagian 5 setelah environment siap.
     Dependensi: PM-01
 
-[ ] PM-03. Definisikan metrik funnel dan sumber datanya [P1]
+[x] PM-03. Definisikan metrik funnel dan sumber datanya [P1]
     Pemilik: Product Manager
     Kolaborator: FE, BE, DevOps
     Konteks: Belum ada definisi resmi untuk mengukur event view, pemilihan
@@ -100,7 +100,20 @@ PRODUCT MANAGER
     - Setiap metrik punya definisi, pemilik, dan cara pengambilan.
     - Tidak ada metrik yang tidak dapat ditindaklanjuti secara produk.
     Verifikasi:
-    - Angka baseline dapat direproduksi oleh BE/DevOps.
+    - docs/product/PM-03-funnel-metrics.md mendefinisikan 7 metrik inti:
+      booking volume (M1), confirmation rate (M2), manual loss rate (M3),
+      expiry rate (M4), occupancy (M5), time to confirmation (M6), dan
+      backlog/aging (M7).
+    - Setiap metrik mencantumkan definisi, rumus, sumber tabel, pemilik,
+      periode, aksi produk, dan query SQL yang dapat dijalankan BE/DevOps.
+    - Baseline seed terdokumentasi: 3 blueprint published, 6 booth, 0 booking,
+      occupancy 0%, metrik berbasis rasio N/A. Baseline staging disiapkan
+      sebagai tabel kosong untuk diisi setelah OPS-04.
+    - Gap dicatat jujur: event view/booth select/checkout start belum
+      terinstrumentasi; skema minimal analytics_events diusulkan tetapi ditunda.
+      Time to confirmation memakai proxy karena payment_reported_at belum ada.
+    - Tidak ada dashboard atau analytics SDK baru pada rilis ini; query manual
+      dan snapshot mingguan/harian menjadi cara pengambilan awal.
     Dependensi: PM-01
 
 [ ] PM-04. Tinjau kebijakan expiry, pembatalan, dan copy-nya [P2]
