@@ -13,6 +13,11 @@ const CANVAS_HEIGHT = 640
 const GRID_SIZE = 20
 const MIN_SCALE = 1
 const MAX_SCALE = 3
+const PAN_STEP = 48
+// Pada 375 px kanvas 1000 unit dirender sekitar 317 px, sehingga booth 120 unit
+// hanya setinggi ±38 px. Area sentuh transparan 140 unit menjaga target ±44 px
+// tanpa mengubah ukuran visual denah.
+const MIN_HIT_SIZE = 140
 
 interface Point {
   x: number
@@ -97,6 +102,9 @@ const TenantBooth = memo(function TenantBooth({
 
   const handleSelect = useCallback(() => onSelect(booth.id), [booth.id, onSelect])
 
+  const hitWidth = Math.max(booth.width, MIN_HIT_SIZE)
+  const hitHeight = Math.max(booth.height, MIN_HIT_SIZE)
+
   const handleKeyDown = useCallback(
     (event: ReactKeyboardEvent<SVGGElement>) => {
       if (event.key === 'Enter' || event.key === ' ') {
@@ -119,7 +127,7 @@ const TenantBooth = memo(function TenantBooth({
       data-booth-status={booth.status}
       role="button"
       tabIndex={0}
-      aria-pressed={isSelected}
+      aria-current={isSelected ? 'true' : undefined}
       aria-label={`Booth ${categoryLabel[booth.category]}, ${statusLabel[booth.status]}, ${formatPrice(booth.price)}`}
       onKeyDown={handleKeyDown}
       onClick={handleSelect}
@@ -128,6 +136,15 @@ const TenantBooth = memo(function TenantBooth({
       }`}
     >
       <title>{`${categoryLabel[booth.category]} — ${statusLabel[booth.status]}`}</title>
+      <rect
+        x={booth.positionX - (hitWidth - booth.width) / 2}
+        y={booth.positionY - (hitHeight - booth.height) / 2}
+        width={hitWidth}
+        height={hitHeight}
+        fill="transparent"
+        pointerEvents="all"
+        className="sm:hidden"
+      />
       <rect
         x={booth.positionX}
         y={booth.positionY}
@@ -211,6 +228,24 @@ export default function InteractiveMap({ activeCategory }: InteractiveMapProps) 
   useEffect(() => {
     viewRef.current = view
   }, [view])
+
+  useEffect(() => {
+    if (!activeBoothId) return
+
+    // Escape harus melepas pilihan dari mana pun fokus berada (filter, panel
+    // detail, atau tombol tutup). Saat dialog checkout terbuka, biarkan dialog
+    // yang menangani Escape agar fokus kembali ke pemicunya.
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape' || event.defaultPrevented) return
+      if (document.querySelector('[role="dialog"][aria-modal="true"]')) return
+
+      setActiveBooth(null)
+    }
+
+    document.addEventListener('keydown', handleEscape)
+
+    return () => document.removeEventListener('keydown', handleEscape)
+  }, [activeBoothId, setActiveBooth])
 
   const applyView = (updater: (previous: ViewState) => ViewState) => {
     setView((previous) => {
@@ -460,7 +495,30 @@ export default function InteractiveMap({ activeCategory }: InteractiveMapProps) 
     viewRef.current = { scale: 1, x: 0, y: 0 }
   }
 
+  const handleViewportKeyDown = (event: ReactKeyboardEvent<HTMLDivElement>) => {
+    if (viewRef.current.scale <= MIN_SCALE) return
+
+    const panDeltas: Record<string, Point> = {
+      ArrowLeft: { x: PAN_STEP, y: 0 },
+      ArrowRight: { x: -PAN_STEP, y: 0 },
+      ArrowUp: { x: 0, y: PAN_STEP },
+      ArrowDown: { x: 0, y: -PAN_STEP },
+    }
+    const delta = panDeltas[event.key]
+    if (!delta) return
+
+    event.preventDefault()
+    const size = getSize()
+
+    applyView((previous) => ({
+      ...previous,
+      ...clampOffset({ x: previous.x + delta.x, y: previous.y + delta.y }, previous.scale, size),
+    }))
+  }
+
   const availableCount = booths.filter((booth) => booth.status === 'Available').length
+  const reservedCount = booths.filter((booth) => booth.status === 'Reserved').length
+  const bookedCount = booths.filter((booth) => booth.status === 'Booked').length
   const isZoomed = view.scale > MIN_SCALE + 0.001
   const canZoomIn = view.scale < MAX_SCALE - 0.001
   const activeBooth = booths.find((booth) => booth.id === activeBoothId) ?? null
@@ -479,7 +537,8 @@ export default function InteractiveMap({ activeCategory }: InteractiveMapProps) 
             Denah interaktif
           </h2>
           <p className="mt-1 text-xs tabular-nums text-muted">
-            {availableCount} tersedia dari {booths.length} booth
+            {availableCount} tersedia · {reservedCount} dipesan · {bookedCount} terisi dari{' '}
+            {booths.length} booth
           </p>
         </div>
         <div className="flex flex-wrap items-center justify-end gap-3">
@@ -535,6 +594,11 @@ export default function InteractiveMap({ activeCategory }: InteractiveMapProps) 
       <div className="bg-map p-3 sm:p-4">
         <div
           ref={viewportRef}
+          role="group"
+          tabIndex={0}
+          aria-label="Area peta booth"
+          aria-describedby="peta-pan-hint"
+          onKeyDown={handleViewportKeyDown}
           onPointerDown={handlePointerDown}
           onPointerMove={handlePointerMove}
           onPointerUp={handlePointerEnd}
@@ -546,7 +610,7 @@ export default function InteractiveMap({ activeCategory }: InteractiveMapProps) 
               suppressClickRef.current = false
             }
           }}
-          className={`relative overflow-hidden rounded-[8px] border border-line bg-map ${
+          className={`relative overflow-hidden rounded-[8px] border border-line bg-map outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-pine ${
             isZoomed ? 'touch-none cursor-grab active:cursor-grabbing' : 'touch-pan-y'
           }`}
         >
@@ -647,7 +711,9 @@ export default function InteractiveMap({ activeCategory }: InteractiveMapProps) 
 
           <div className="pointer-events-none absolute inset-x-0 bottom-2 flex justify-center px-3">
             <span className="rounded-[4px] border border-line bg-surface px-3 py-1 text-[10px] font-medium text-muted">
-              {isZoomed ? 'Seret peta untuk menggeser' : 'Cubit atau Ctrl + scroll untuk zoom'}
+              {isZoomed
+                ? 'Seret peta atau gunakan tombol panah untuk menggeser'
+                : 'Cubit atau Ctrl + scroll untuk zoom'}
             </span>
           </div>
 
@@ -710,41 +776,48 @@ export default function InteractiveMap({ activeCategory }: InteractiveMapProps) 
           <p id="peta-hint" className="text-[11px] text-muted">
             Pilih booth untuk melihat detail. Booth terisi tetap bisa diperiksa statusnya.
           </p>
+          <p id="peta-pan-hint" className="sr-only">
+            Setelah peta diperbesar, fokuskan area peta lalu gunakan tombol panah untuk menggeser.
+          </p>
         </div>
       </div>
 
-      <div className="border-t border-line bg-surface px-4 py-4 sm:px-5" aria-live="polite">
-        {activeBooth ? (
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div className="flex min-w-0 items-center gap-3">
-              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[6px] border border-line bg-canvas text-[10px] font-semibold tabular-nums text-pine">
-                {activeBooth.category}
-              </span>
-              <div className="min-w-0">
-                <p className="text-sm font-semibold text-ink">
-                  Booth {categoryLabel[activeBooth.category]}{' '}
-                  <span className="font-normal text-muted">· {activeBooth.id.slice(0, 8)}</span>
-                </p>
-                <p className="mt-0.5 text-xs tabular-nums text-muted">
-                  {statusLabel[activeBooth.status]} · {formatPrice(activeBooth.price)} ·{' '}
-                  {activeBooth.width} × {activeBooth.height} px
-                </p>
-              </div>
-            </div>
+      <div className="border-t border-line bg-surface px-4 py-4 sm:px-5">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex min-w-0 items-center gap-3" aria-live="polite" aria-atomic="true">
+            {activeBooth ? (
+              <>
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[6px] border border-line bg-canvas text-[10px] font-semibold tabular-nums text-pine">
+                  {activeBooth.category}
+                </span>
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold text-ink">
+                    Booth {categoryLabel[activeBooth.category]}{' '}
+                    <span className="font-normal text-muted">· {activeBooth.id.slice(0, 8)}</span>
+                  </p>
+                  <p className="mt-0.5 text-xs tabular-nums text-muted">
+                    {statusLabel[activeBooth.status]} · {formatPrice(activeBooth.price)} ·{' '}
+                    {activeBooth.width} × {activeBooth.height} px
+                  </p>
+                </div>
+              </>
+            ) : (
+              <p className="text-sm text-muted">
+                Pilih salah satu booth pada denah untuk melihat ukuran, harga, dan statusnya. Detail
+                lengkap muncul di panel detail.
+              </p>
+            )}
+          </div>
+          {activeBooth && (
             <button
               type="button"
               onClick={() => setActiveBooth(null)}
-              className="rounded-[4px] text-xs font-semibold text-muted underline decoration-line underline-offset-4 transition-colors hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 focus-visible:ring-offset-surface motion-reduce:transition-none"
+              className="inline-flex min-h-11 items-center rounded-[4px] px-2 text-xs font-semibold text-muted underline decoration-line underline-offset-4 transition-colors hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 focus-visible:ring-offset-surface motion-reduce:transition-none"
             >
               Tutup pilihan
             </button>
-          </div>
-        ) : (
-          <p className="text-sm text-muted">
-            Pilih salah satu booth pada denah untuk melihat ukuran, harga, dan statusnya. Detail
-            lengkap muncul di panel samping.
-          </p>
-        )}
+          )}
+        </div>
       </div>
     </div>
   )

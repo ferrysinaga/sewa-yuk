@@ -380,6 +380,13 @@ Audit aksesibilitas mencakup:
   Perubahan status optimistis di dashboard admin dan reservasi tenant
   di-rollback bila request gagal tanpa menimpa perubahan yang sudah diterima
   dari Realtime. Privasi payload Realtime tetap menunggu BE-04.
+- Halaman detail event memakai pola UX-01: di bawah 1024 px urutannya filter →
+  peta → panel detail; di desktop peta di kiri dan filter + detail sticky di
+  kanan. Filter memakai satu state dari halaman (`TenantFilter`). Pilihan booth
+  memakai `aria-current`, Escape global melepas pilihan, dan viewport peta
+  dapat digeser dengan tombol panah setelah diperbesar. Checkout mobile
+  menaruh `Batal` sebelum aksi utama, memakai safe-area, dan tinggi `92dvh`
+  dengan fallback `92vh`.
 
 ### 12.1 Dokumen produk dan rilis
 

@@ -407,7 +407,7 @@ FRONTEND DEVELOPER
       diverifikasi lewat unit test dan audit kode. Jalankan CONN-02/CONN-04
       setelah OPS-04.
 
-[ ] FE-03. Implementasikan panel detail dan checkout mobile sesuai UX-01 [P1]
+[x] FE-03. Implementasikan panel detail dan checkout mobile sesuai UX-01 [P1]
     Pemilik: Frontend Developer
     Kolaborator: UI/UX, QA
     Konteks: Panel detail dan checkout harus tetap usable di 375 px tanpa
@@ -427,6 +427,47 @@ FRONTEND DEVELOPER
     Verifikasi:
     - Uji 375/768/1280 px + keyboard + smoke test.
     Dependensi: UX-01, UX-03
+    STATUS: SELESAI (11 November 2026)
+    Hasil:
+    - src/components/map/TenantFilter.tsx: kartu filter dipisah dari panel
+      detail dengan satu sumber state dari halaman. Tombol filter memakai
+      `min-h-11` (44 px) dan tetap `aria-pressed` karena bersifat toggle.
+    - src/pages/tenant/TenantEventView.tsx: urutan mobile filter -> peta ->
+      detail memakai grid + `display: contents`; desktop memakai dua kolom
+      dengan peta di kiri dan filter + detail sticky 340 px di kanan.
+      Tidak ada duplikasi state filter.
+    - src/components/map/TenantSidebar.tsx: panel detail menjadi `<section>`
+      dengan heading, tanpa `aria-live` ganda, dan aksi utama minimal 44 px.
+    - src/components/map/InteractiveMap.tsx:
+      - `aria-current` menggantikan `aria-pressed` untuk pilihan tunggal.
+      - Escape global melepas pilihan dari filter/panel/tombol mana pun;
+        diabaikan saat dialog checkout terbuka agar fokus modal tidak bentrok.
+      - Viewport peta dapat difokus dan tombol panah menggeser peta saat
+        diperbesar; petunjuk keyboard ditambahkan.
+      - Satu live region pada ringkasan booth; tombol `Tutup pilihan` 44 px.
+      - Area sentuh transparan 140 unit di mobile (>= 44 px pada 375 px)
+        tanpa mengubah ukuran visual denah.
+      - Ringkasan status teks `tersedia / dipesan / terisi` terbaca di mobile.
+      - Teks "panel samping" diganti "panel detail".
+    - src/components/checkout/CheckoutModal.tsx: urutan mobile `Batal` lalu
+      aksi utama (`flex-col`, bukan `flex-col-reverse`), footer memakai
+      safe-area `max(1rem, env(safe-area-inset-bottom))`, tinggi dialog
+      `92dvh` dengan fallback `92vh`, area isi `min-h-0 flex-1` agar dapat
+      digulir, serta header/footer `shrink-0`.
+    - Test: src/components/map/InteractiveMap.test.tsx (aria-current, Escape
+      global, Escape diabaikan saat dialog, pan keyboard) dan tambahan test
+      urutan tombol di CheckoutModal.test.tsx.
+    Verifikasi:
+    - `npx vitest run src/components/map/InteractiveMap.test.tsx
+      src/components/checkout/CheckoutModal.test.tsx`: 13 test lulus.
+    - `npm run verify` lulus (lint, format, typecheck, 172 unit test, build).
+    - `E2E_EVENT_ID=hall-a npm run test:e2e -- e2e/smoke.spec.ts
+      e2e/a11y.spec.ts`: 4 lulus, 3 skip karena `.env.e2e` tidak tersedia.
+      A11Y-03 lulus tanpa pelanggaran WCAG A/AA.
+    - Catatan: pengukuran visual 375/768/1280 px dan alur checkout penuh
+      dengan data Supabase belum dapat dijalankan lokal karena `.env`/`.env.e2e`
+      dan data uji belum tersedia; verifikasi layout dilakukan lewat kode,
+      unit test, dan audit axe halaman publik. Ulangi QA-02 di staging.
 
 [ ] FE-04. Tambah regression test keyboard dan fokus [P1]
     Pemilik: Frontend Developer

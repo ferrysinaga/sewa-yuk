@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import CheckoutModal from '../../components/checkout/CheckoutModal'
 import AppHeader from '../../components/layout/AppHeader'
 import InteractiveMap from '../../components/map/InteractiveMap'
+import TenantFilter from '../../components/map/TenantFilter'
 import TenantSidebar from '../../components/map/TenantSidebar'
 import { ErrorPanel, LoadingPanel } from '../../components/ui/StatePanel'
 import { useDocumentTitle } from '../../hooks/useDocumentTitle'
@@ -49,15 +50,30 @@ export default function TenantEventView() {
         )}
 
         {!state.loading && !state.error && (
-          <div className="mt-6 grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_340px]">
-            <InteractiveMap activeCategory={state.activeCategory} />
-            <TenantSidebar
-              activeCategory={state.activeCategory}
-              onCategoryChange={state.setActiveCategory}
-              onReserve={state.handleOpenCheckout}
-              reserving={state.reserving}
-              reservedBoothId={state.reservedBoothId}
-            />
+          <div className="mt-6 grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-start">
+            {/*
+              Di mobile filter dan detail ikut menjadi item grid lewat
+              `display: contents`, sehingga urutannya filter -> peta -> detail.
+              Di desktop pembungkus menjadi kolom kanan yang sticky.
+            */}
+            <div className="contents lg:sticky lg:top-20 lg:col-start-2 lg:row-start-1 lg:block lg:max-h-[calc(100vh-6rem)] lg:space-y-4 lg:overflow-y-auto">
+              <div className="order-1 min-w-0">
+                <TenantFilter
+                  activeCategory={state.activeCategory}
+                  onCategoryChange={state.setActiveCategory}
+                />
+              </div>
+              <div className="order-3 min-w-0">
+                <TenantSidebar
+                  onReserve={state.handleOpenCheckout}
+                  reserving={state.reserving}
+                  reservedBoothId={state.reservedBoothId}
+                />
+              </div>
+            </div>
+            <div className="order-2 min-w-0 lg:col-start-1 lg:row-start-1">
+              <InteractiveMap activeCategory={state.activeCategory} />
+            </div>
           </div>
         )}
       </main>

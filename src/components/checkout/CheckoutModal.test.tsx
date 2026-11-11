@@ -128,4 +128,22 @@ describe('CheckoutModal', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Lihat Pesanan Saya' }))
     expect(onViewBookings).toHaveBeenCalledTimes(1)
   })
+
+  it('menaruh Batal sebelum aksi utama pada urutan mobile', () => {
+    renderModal()
+
+    const labels = screen.getAllByRole('button').map((button) => button.textContent?.trim())
+
+    expect(labels.indexOf('Batal')).toBeGreaterThan(-1)
+    expect(labels.indexOf('Batal')).toBeLessThan(labels.indexOf('Buat Pesanan & Kunci Booth'))
+  })
+
+  it('menaruh Selesai sebelum Lihat Pesanan Saya pada urutan mobile', () => {
+    renderModal({ reserved: true, bookingCode: 'BK-001' })
+
+    const labels = screen.getAllByRole('button').map((button) => button.textContent?.trim())
+
+    expect(labels.indexOf('Selesai')).toBeGreaterThan(-1)
+    expect(labels.indexOf('Selesai')).toBeLessThan(labels.indexOf('Lihat Pesanan Saya'))
+  })
 })

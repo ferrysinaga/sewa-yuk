@@ -113,9 +113,10 @@ export default function CheckoutModal({
         role="dialog"
         aria-modal="true"
         aria-labelledby="checkout-title"
+        style={{ maxHeight: '92dvh' }}
         className="relative z-10 flex max-h-[92vh] w-full max-w-lg flex-col overflow-hidden rounded-t-[10px] border border-line bg-surface sm:rounded-[10px]"
       >
-        <div className="flex items-start justify-between gap-4 border-b border-line px-5 py-4 sm:px-6">
+        <div className="flex shrink-0 items-start justify-between gap-4 border-b border-line px-5 py-4 sm:px-6">
           <div>
             <div className="flex items-center gap-2">
               <span aria-hidden="true" className="h-1.5 w-1.5 bg-clay" />
@@ -147,7 +148,7 @@ export default function CheckoutModal({
           </button>
         </div>
 
-        <div className="overflow-y-auto px-5 py-5 sm:px-6">
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 py-5 sm:px-6">
           {reserved ? (
             <div className="text-center">
               <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-[10px] bg-pine-soft text-pine">
@@ -318,31 +319,34 @@ export default function CheckoutModal({
           )}
         </div>
 
-        <div className="border-t border-line px-5 py-4 sm:px-6">
+        <div
+          className="shrink-0 border-t border-line px-5 pt-4 sm:px-6"
+          style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}
+        >
           {reserved ? (
-            <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+            <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
               <button
                 type="button"
                 onClick={onClose}
-                className="inline-flex items-center justify-center rounded-[6px] border border-line bg-surface px-5 py-3 text-sm font-semibold text-ink transition-colors hover:bg-canvas focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 focus-visible:ring-offset-surface motion-reduce:transition-none"
+                className="inline-flex min-h-11 items-center justify-center rounded-[6px] border border-line bg-surface px-5 py-3 text-sm font-semibold text-ink transition-colors hover:bg-canvas focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 focus-visible:ring-offset-surface motion-reduce:transition-none"
               >
                 Selesai
               </button>
               <button
                 type="button"
                 onClick={onViewBookings}
-                className="inline-flex items-center justify-center gap-2 rounded-[6px] bg-pine px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-pine-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 focus-visible:ring-offset-surface motion-reduce:transition-none"
+                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-[6px] bg-pine px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-pine-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 focus-visible:ring-offset-surface motion-reduce:transition-none"
               >
                 Lihat Pesanan Saya
               </button>
             </div>
           ) : (
-            <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+            <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
               <button
                 type="button"
                 onClick={onClose}
                 disabled={confirming}
-                className="inline-flex items-center justify-center rounded-[6px] border border-line bg-surface px-5 py-3 text-sm font-semibold text-ink transition-colors hover:bg-canvas focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 focus-visible:ring-offset-surface disabled:cursor-not-allowed disabled:opacity-60 motion-reduce:transition-none"
+                className="inline-flex min-h-11 items-center justify-center rounded-[6px] border border-line bg-surface px-5 py-3 text-sm font-semibold text-ink transition-colors hover:bg-canvas focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 focus-visible:ring-offset-surface disabled:cursor-not-allowed disabled:opacity-60 motion-reduce:transition-none"
               >
                 Batal
               </button>
@@ -356,7 +360,7 @@ export default function CheckoutModal({
                   }
                 }}
                 disabled={confirming}
-                className="inline-flex items-center justify-center gap-2 rounded-[6px] bg-pine px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-pine-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 focus-visible:ring-offset-surface disabled:cursor-not-allowed disabled:opacity-60 motion-reduce:transition-none"
+                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-[6px] bg-pine px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-pine-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 focus-visible:ring-offset-surface disabled:cursor-not-allowed disabled:opacity-60 motion-reduce:transition-none"
               >
                 {confirming ? (
                   <>
