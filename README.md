@@ -375,6 +375,11 @@ Audit aksesibilitas mencakup:
   pengguna melihat fallback untuk muat ulang manual tanpa loop reload. Penanda
   sesi disimpan di `sessionStorage` (`sewa-yuk:chunk-reload-attempted`) dan
   dihapus setelah halaman berhasil dirender.
+- Realtime memakai `useOnlineStatus` dan refetch saat channel `SUBSCRIBED`
+  kembali atau browser online. Status `live` tidak ditampilkan saat offline.
+  Perubahan status optimistis di dashboard admin dan reservasi tenant
+  di-rollback bila request gagal tanpa menimpa perubahan yang sudah diterima
+  dari Realtime. Privasi payload Realtime tetap menunggu BE-04.
 
 ### 12.1 Dokumen produk dan rilis
 

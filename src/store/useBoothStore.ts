@@ -32,6 +32,7 @@ interface BoothStore {
   updateBoothPosition: (id: string, x: number, y: number) => void
   updateBoothDetails: (id: string, patch: BoothDetailsPatch) => void
   updateBoothStatus: (id: string, status: BoothStatus) => void
+  replaceRealtimeBooths: (booths: Booth[]) => void
   upsertRealtimeBooth: (booth: Booth) => void
   removeRealtimeBooth: (id: string) => void
   markDirty: () => void
@@ -115,6 +116,17 @@ export const useBoothStore = create<BoothStore>((set) => ({
   updateBoothStatus: (id, status) =>
     set((state) => ({
       booths: state.booths.map((booth) => (booth.id === id ? { ...booth, status } : booth)),
+    })),
+
+  // Dipakai saat reconnect untuk mengganti seluruh daftar tanpa menandai denah
+  // sebagai "belum disimpan" dan tanpa kehilangan pilihan booth yang masih ada.
+  replaceRealtimeBooths: (booths) =>
+    set((state) => ({
+      booths,
+      activeBoothId:
+        state.activeBoothId && booths.some((booth) => booth.id === state.activeBoothId)
+          ? state.activeBoothId
+          : null,
     })),
 
   // Dipakai oleh kanvas tenant saat menerima event Realtime. Booth baru atau

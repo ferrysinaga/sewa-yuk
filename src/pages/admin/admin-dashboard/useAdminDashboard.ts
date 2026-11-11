@@ -1,10 +1,11 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useToast } from '../../../components/ui/Toast'
 import {
   BOOTH_CATEGORY_LABEL as categoryLabel,
   BOOTH_STATUS_META as statusMeta,
   formatPrice,
 } from '../../../lib/boothDisplay'
+import { rollbackRowStatus, setRowStatus } from '../../../lib/boothStatus'
 import { getErrorMessage } from '../../../lib/errors'
 import { createChannelName } from '../../../lib/id'
 import type { BoothRow } from '../../../lib/boothRow'
@@ -13,6 +14,7 @@ import { useAuthStore } from '../../../store/useAuthStore'
 import { useBoothStore } from '../../../store/useBoothStore'
 import type { BlueprintStatus } from '../../../types/blueprint'
 import type { BoothCategory, BoothStatus } from '../../../types/booth'
+import { useOnlineStatus } from '../../../hooks/useOnlineStatus'
 
 interface BlueprintRow {
   id: string
@@ -75,6 +77,9 @@ export function useAdminDashboard() {
   const [reloadToken, setReloadToken] = useState(0)
   const [isLive, setIsLive] = useState(false)
   const [updatingIds, setUpdatingIds] = useState<string[]>([])
+  const hasSubscribedRef = useRef(false)
+  const isOnline = useOnlineStatus()
+  const wasOnlineRef = useRef(isOnline)
 
   const [blueprintFilter, setBlueprintFilter] = useState<string>('all')
   const [categoryFilter, setCategoryFilter] = useState<BoothCategory | 'all'>('all')
@@ -131,6 +136,8 @@ export function useAdminDashboard() {
   useEffect(() => {
     if (!isSupabaseConfigured) return
 
+    hasSubscribedRef.current = false
+
     const channel = supabase
       .channel(createChannelName('admin-booths'))
       .on('postgres_changes', { event: '*', schema: 'public', table: 'booths' }, (payload) => {
@@ -138,6 +145,15 @@ export function useAdminDashboard() {
       })
       .subscribe((status) => {
         setIsLive(status === 'SUBSCRIBED')
+
+        if (status === 'SUBSCRIBED') {
+          // Reconnect: muat ulang data karena event selama offline bisa hilang.
+          if (hasSubscribedRef.current) {
+            setReloadToken((token) => token + 1)
+          }
+          hasSubscribedRef.current = true
+        }
+
         if (status === 'CHANNEL_ERROR') {
           console.warn('Koneksi realtime dashboard gagal. Perubahan status mungkin tertunda.')
         }
@@ -145,9 +161,18 @@ export function useAdminDashboard() {
 
     return () => {
       setIsLive(false)
+      hasSubscribedRef.current = false
       void supabase.removeChannel(channel)
     }
   }, [])
+
+  useEffect(() => {
+    if (isOnline && !wasOnlineRef.current && hasSubscribedRef.current) {
+      setReloadToken((token) => token + 1)
+    }
+
+    wasOnlineRef.current = isOnline
+  }, [isOnline])
 
   const blueprintNameById = useMemo(
     () => new Map(blueprints.map((blueprint) => [blueprint.id, blueprint.name])),
@@ -239,6 +264,11 @@ export function useAdminDashboard() {
 
     setUpdatingIds((current) => [...current, booth.id])
 
+    // Optimistic: tampilkan status baru segera, lalu rollback bila server
+    // menolak. Realtime yang lebih dulu mengubah status tidak ditimpa rollback.
+    setBooths((current) => setRowStatus(current, booth.id, nextStatus))
+    useBoothStore.getState().updateBoothStatus(booth.id, nextStatus)
+
     try {
       const { data, error: updateError } = await supabase
         .from('booths')
@@ -257,6 +287,13 @@ export function useAdminDashboard() {
         'success',
       )
     } catch (updateError) {
+      setBooths((current) => rollbackRowStatus(current, booth.id, nextStatus, booth.status))
+
+      const storeBooth = useBoothStore.getState().booths.find((row) => row.id === booth.id)
+      if (storeBooth?.status === nextStatus) {
+        useBoothStore.getState().updateBoothStatus(booth.id, booth.status)
+      }
+
       const message = getErrorMessage(updateError, 'Terjadi kesalahan.')
       showToast(`Gagal mengubah status booth: ${message}`, 'error')
     } finally {
@@ -306,7 +343,7 @@ export function useAdminDashboard() {
     loading,
     error,
     reload,
-    isLive,
+    isLive: isOnline && isLive,
     updatingIds,
     blueprintFilter,
     setBlueprintFilter,

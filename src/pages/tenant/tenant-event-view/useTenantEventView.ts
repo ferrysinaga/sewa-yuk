@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useToast } from '../../../components/ui/Toast'
 import { getBookingErrorMessage } from '../../../lib/booking'
@@ -14,6 +14,7 @@ import { useBoothStore } from '../../../store/useBoothStore'
 import type { BlueprintStatus } from '../../../types/blueprint'
 import type { BookingRow, PaymentMethod } from '../../../types/booking'
 import type { BoothCategory } from '../../../types/booth'
+import { useOnlineStatus } from '../../../hooks/useOnlineStatus'
 
 interface BlueprintRow {
   id: string
@@ -56,6 +57,36 @@ export function useTenantEventView() {
   const [syncStatus, setSyncStatus] = useState<RealtimeStatus>('connecting')
   const [lastSyncedAt, setLastSyncedAt] = useState<number | null>(null)
   const locallyReservedRef = useRef<Set<string>>(new Set())
+  const hasSubscribedRef = useRef(false)
+  const isOnline = useOnlineStatus()
+  const wasOnlineRef = useRef(isOnline)
+  const mountedRef = useRef(true)
+
+  useEffect(() => {
+    mountedRef.current = true
+
+    return () => {
+      mountedRef.current = false
+    }
+  }, [])
+
+  /**
+   * Ambil ulang booth tanpa mengosongkan peta atau menghilangkan pilihan aktif.
+   * Dipakai setelah reconnect karena event realtime selama offline bisa hilang.
+   */
+  const refreshBooths = useCallback(async () => {
+    if (!eventId || !isSupabaseConfigured) return
+
+    const { data, error: boothsError } = await supabase
+      .from('booths')
+      .select('*')
+      .eq('blueprint_id', eventId)
+
+    if (boothsError || !mountedRef.current) return
+
+    useBoothStore.getState().replaceRealtimeBooths(((data ?? []) as BoothRow[]).map(mapRowToBooth))
+    setLastSyncedAt(Date.now())
+  }, [eventId])
 
   useEffect(() => {
     if (!eventId) {
@@ -139,6 +170,7 @@ export function useTenantEventView() {
 
     setSyncStatus('connecting')
     setLastSyncedAt(null)
+    hasSubscribedRef.current = false
 
     const channel = supabase
       .channel(createChannelName(`tenant-booths-${eventId}`))
@@ -192,6 +224,13 @@ export function useTenantEventView() {
 
         if (status === 'SUBSCRIBED') {
           setLastSyncedAt(Date.now())
+
+          // Reconnect: refetch sekali agar perubahan selama offline tidak
+          // hilang. Koneksi pertama sudah ditangani pemuatan halaman.
+          if (hasSubscribedRef.current) {
+            void refreshBooths()
+          }
+          hasSubscribedRef.current = true
         }
 
         if (status === 'CHANNEL_ERROR') {
@@ -201,9 +240,20 @@ export function useTenantEventView() {
 
     return () => {
       setSyncStatus('disconnected')
+      hasSubscribedRef.current = false
       void supabase.removeChannel(channel)
     }
-  }, [eventId, showToast])
+  }, [eventId, refreshBooths, showToast])
+
+  useEffect(() => {
+    // Jika browser sempat offline tetapi channel belum melaporkan putus,
+    // refetch saat online agar data yang terlewat tetap tersinkron.
+    if (isOnline && !wasOnlineRef.current && hasSubscribedRef.current) {
+      void refreshBooths()
+    }
+
+    wasOnlineRef.current = isOnline
+  }, [isOnline, refreshBooths])
 
   const handleOpenCheckout = () => {
     const store = useBoothStore.getState()
@@ -231,6 +281,8 @@ export function useTenantEventView() {
   }
 
   const handleConfirmCheckout = async (paymentMethod: PaymentMethod) => {
+    if (reserving) return
+
     const store = useBoothStore.getState()
     const activeBooth = store.booths.find((booth) => booth.id === store.activeBoothId)
 
@@ -248,8 +300,13 @@ export function useTenantEventView() {
       return
     }
 
+    const previousStatus = activeBooth.status
+
     setReserving(true)
     locallyReservedRef.current.add(activeBooth.id)
+    // Tandai booth terkunci lebih dulu agar pengguna lain di tab ini tidak
+    // dapat mengirim pesanan ganda. Rollback dilakukan bila RPC gagal.
+    store.updateBoothStatus(activeBooth.id, 'Reserved')
 
     try {
       const { data, error: bookingError } = await supabase.rpc('create_booking', {
@@ -265,12 +322,19 @@ export function useTenantEventView() {
         throw new Error('Pemesanan gagal dibuat. Silakan coba lagi.')
       }
 
-      store.updateBoothStatus(activeBooth.id, 'Reserved')
       setReservedBoothId(activeBooth.id)
       setReservedBooking(booking)
       showToast(`Pesanan ${booking.booking_code} berhasil dibuat.`, 'success')
     } catch (reserveError) {
       locallyReservedRef.current.delete(activeBooth.id)
+
+      // Jangan menimpa status yang sudah diubah server/realtime (misalnya booth
+      // diambil penyewa lain) — rollback hanya untuk perubahan optimistis kita.
+      const latest = useBoothStore.getState().booths.find((booth) => booth.id === activeBooth.id)
+      if (latest?.status === 'Reserved') {
+        useBoothStore.getState().updateBoothStatus(activeBooth.id, previousStatus)
+      }
+
       showToast(`Gagal membuat pesanan: ${getBookingErrorMessage(reserveError)}`, 'error')
     } finally {
       setReserving(false)
@@ -304,7 +368,7 @@ export function useTenantEventView() {
     reservedBoothId,
     reservedBooking,
     checkoutOpen,
-    syncStatus,
+    syncStatus: isOnline ? syncStatus : 'disconnected',
     lastSyncedAt,
     handleOpenCheckout,
     handleCloseCheckout,

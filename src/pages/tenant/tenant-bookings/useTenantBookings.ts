@@ -37,7 +37,12 @@ export function useTenantBookings() {
   const hasPendingBooking = bookings.some((booking) => booking.status === 'pending')
   const now = useBookingClock(hasPendingBooking)
 
-  const feed = useBookingFeed({ userId: user?.id ?? null, setBookings, enabled: Boolean(user) })
+  const feed = useBookingFeed({
+    userId: user?.id ?? null,
+    setBookings,
+    enabled: Boolean(user),
+    onResync: () => setReloadToken((token) => token + 1),
+  })
   const lastUpdatedAt = Math.max(feed.lastEventAt ?? 0, lastLoadedAt ?? 0) || null
 
   useEffect(() => {

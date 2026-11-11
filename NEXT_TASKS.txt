@@ -350,7 +350,7 @@ FRONTEND DEVELOPER
       dijalankan otomatis karena environment E2E/.env.e2e belum tersedia;
       fallback telah diuji lewat unit test dan keyboard manual.
 
-[ ] FE-02. Perkuat realtime reconnect dan rollback optimistic update [P1]
+[x] FE-02. Perkuat realtime reconnect dan rollback optimistic update [P1]
     Pemilik: Frontend Developer
     Kolaborator: BE, QA
     Konteks: Realtime sudah membersihkan channel, tetapi perilaku saat koneksi
@@ -369,6 +369,43 @@ FRONTEND DEVELOPER
     Verifikasi:
     - Unit test store/hook + uji manual dua tab dengan jaringan dimatikan.
     Dependensi: BE-04, UX-02
+    STATUS: SELESAI (11 November 2026) — bagian frontend; BE-04 masih terbuka
+    Hasil:
+    - src/hooks/useOnlineStatus.ts: status online/offline perangkat dengan
+      listener `online`/`offline` dan cleanup.
+    - src/hooks/useBookingFeed.ts: opsi `onResync` dipanggil saat channel
+      SUBSCRIBED kembali setelah putus dan saat browser kembali online;
+      koneksi pertama tidak memicu refetch. Status `live` tidak ditampilkan
+      saat offline. Channel tetap di-remove saat unmount.
+    - useTenantBookings dan useAdminBookings memakai `onResync` untuk memuat
+      ulang data yang terlewat setelah reconnect.
+    - src/pages/tenant/tenant-event-view/useTenantEventView.ts: refetch booth
+      khusus saat reconnect/online tanpa mengosongkan peta atau pilihan aktif;
+      status sync dipaksa `disconnected` saat offline; pemesanan memakai
+      optimistic update `Reserved` dan rollback ke status sebelumnya bila RPC
+      gagal, dengan penjagaan agar tidak menimpa status dari Realtime.
+    - src/store/useBoothStore.ts: aksi `replaceRealtimeBooths` mengganti daftar
+      hasil refetch tanpa menandai `isDirty` dan mempertahankan pilihan aktif
+      yang masih ada.
+    - src/pages/admin/admin-dashboard/useAdminDashboard.ts: refetch saat
+      reconnect/online, status live dipaksa mati saat offline, dan perubahan
+      status booth memakai optimistic update + rollback.
+    - src/lib/boothStatus.ts: helper set/rollback status yang tidak menimpa
+      perubahan server; dipakai dashboard admin.
+    - Catatan: BE-04 (privasi payload Realtime) belum selesai, sehingga
+      verifikasi bahwa tenant tidak menerima payload tenant lain tetap menjadi
+      tanggung jawab BE-04/QA-03.
+    Verifikasi:
+    - `npx vitest run src/hooks/useBookingFeed.test.tsx
+      src/hooks/useOnlineStatus.test.tsx src/lib/boothStatus.test.ts
+      src/store/useBoothStore.test.ts`: 28 test lulus (resync hanya setelah
+      reconnect, resync saat online, status offline, cleanup channel,
+      optimistic rollback, replaceRealtimeBooths).
+    - `npm run verify` lulus (lint, format, typecheck, seluruh unit test, build).
+    - Catatan: uji manual dua tab dengan jaringan dimatikan belum dijalankan
+      otomatis karena staging/.env.e2e belum tersedia; perilaku reconnect
+      diverifikasi lewat unit test dan audit kode. Jalankan CONN-02/CONN-04
+      setelah OPS-04.
 
 [ ] FE-03. Implementasikan panel detail dan checkout mobile sesuai UX-01 [P1]
     Pemilik: Frontend Developer

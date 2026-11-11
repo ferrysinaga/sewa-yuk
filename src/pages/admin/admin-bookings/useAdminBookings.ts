@@ -366,6 +366,7 @@ export function useAdminBookings() {
     setBookings,
     transform: handleFeedTransform,
     onPayload: handleFeedPayload,
+    onResync: () => setReloadToken((token) => token + 1),
   })
   const lastUpdatedAt = Math.max(feed.lastEventAt ?? 0, lastLoadedAt ?? 0) || null
 

@@ -7,6 +7,7 @@ import { resolveRealtimeStatus } from '../lib/realtimeStatus'
 import type { RealtimeStatus } from '../lib/realtimeStatus'
 import { isSupabaseConfigured, supabase } from '../lib/supabase'
 import type { BookingRow } from '../types/booking'
+import { useOnlineStatus } from './useOnlineStatus'
 
 interface UseBookingFeedOptions {
   /** null untuk feed organizer (semua booking); string untuk feed tenant. */
@@ -17,6 +18,13 @@ interface UseBookingFeedOptions {
   transform?: (current: BookingRow[], payload: BookingRealtimePayload) => BookingRow[]
   /** Dipanggil untuk setiap payload, misalnya untuk memperbarui total count. */
   onPayload?: (payload: BookingRealtimePayload) => void
+  /**
+   * Dipanggil setelah channel tersambung kembali (reconnect) atau browser
+   * kembali online. Halaman memakai ini untuk refetch data yang terlewat.
+   * Tidak dipanggil pada koneksi pertama karena pemuatan awal sudah dilakukan
+   * oleh halaman.
+   */
+  onResync?: () => void
 }
 
 interface BookingFeedState {
@@ -35,9 +43,11 @@ export function useBookingFeed({
   enabled = true,
   transform,
   onPayload,
+  onResync,
 }: UseBookingFeedOptions): BookingFeedState {
   const [status, setStatus] = useState<RealtimeStatus>('connecting')
   const [lastEventAt, setLastEventAt] = useState<number | null>(null)
+  const isOnline = useOnlineStatus()
 
   // Simpan callback terbaru di ref agar perubahan filter atau halaman tidak
   // memutus dan membuat ulang channel realtime.
@@ -45,6 +55,10 @@ export function useBookingFeed({
   transformRef.current = transform
   const onPayloadRef = useRef(onPayload)
   onPayloadRef.current = onPayload
+  const onResyncRef = useRef(onResync)
+  onResyncRef.current = onResync
+  const hasSubscribedRef = useRef(false)
+  const wasOnlineRef = useRef(isOnline)
 
   useEffect(() => {
     if (!enabled || !isSupabaseConfigured) {
@@ -54,6 +68,7 @@ export function useBookingFeed({
 
     setStatus('connecting')
     setLastEventAt(null)
+    hasSubscribedRef.current = false
 
     const isTenantFeed = userId !== null
     const channel = supabase
@@ -84,6 +99,13 @@ export function useBookingFeed({
 
         if (channelStatus === 'SUBSCRIBED') {
           setLastEventAt(Date.now())
+
+          // Reconnect: event selama offline mungkin hilang, jadi minta halaman
+          // melakukan refetch sekali. Koneksi pertama tidak memicu refetch.
+          if (hasSubscribedRef.current) {
+            onResyncRef.current?.()
+          }
+          hasSubscribedRef.current = true
         }
 
         if (channelStatus === 'CHANNEL_ERROR') {
@@ -93,9 +115,18 @@ export function useBookingFeed({
 
     return () => {
       setStatus('disconnected')
+      hasSubscribedRef.current = false
       void supabase.removeChannel(channel)
     }
   }, [enabled, setBookings, userId])
 
-  return { status, lastEventAt }
+  useEffect(() => {
+    if (isOnline && !wasOnlineRef.current && hasSubscribedRef.current) {
+      onResyncRef.current?.()
+    }
+
+    wasOnlineRef.current = isOnline
+  }, [isOnline])
+
+  return { status: isOnline ? status : 'disconnected', lastEventAt }
 }

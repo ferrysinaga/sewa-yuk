@@ -206,6 +206,38 @@ describe('upsertRealtimeBooth', () => {
   })
 })
 
+describe('replaceRealtimeBooths', () => {
+  it('mengganti daftar tanpa menandai denah berubah dan mempertahankan pilihan aktif', () => {
+    const first = createBooth({ id: 'booth-1' })
+    const second = createBooth({ id: 'booth-2', status: 'Reserved' })
+
+    useBoothStore.getState().addBooth(first)
+    useBoothStore.getState().addBooth(second)
+    useBoothStore.getState().markSaved()
+    useBoothStore.setState({ activeBoothId: 'booth-2' })
+
+    useBoothStore.getState().replaceRealtimeBooths([first, { ...second, status: 'Booked' }])
+
+    const state = useBoothStore.getState()
+    expect(state.booths[1].status).toBe('Booked')
+    expect(state.activeBoothId).toBe('booth-2')
+    expect(state.isDirty).toBe(false)
+    expect(state.deletedBoothIds).toEqual([])
+  })
+
+  it('melepas pilihan aktif bila booth sudah tidak ada di server', () => {
+    const first = createBooth({ id: 'booth-1' })
+
+    useBoothStore.getState().addBooth(first)
+    useBoothStore.getState().markSaved()
+
+    useBoothStore.getState().replaceRealtimeBooths([])
+
+    expect(useBoothStore.getState().activeBoothId).toBeNull()
+    expect(useBoothStore.getState().isDirty).toBe(false)
+  })
+})
+
 describe('removeRealtimeBooth', () => {
   it('menghapus booth tanpa menandai denah berubah atau mencatat id terhapus', () => {
     const booth = createBooth()
