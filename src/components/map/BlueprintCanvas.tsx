@@ -29,11 +29,21 @@ const BoothRect = memo(function BoothRect({ booth }: BoothRectProps) {
 
   const handleKeyDown = useCallback(
     (event: ReactKeyboardEvent<SVGGElement>) => {
-      if (event.key === 'Enter' || event.key === ' ') {
-        // Tetap teruskan event ke sensor keyboard dnd-kit agar drag-and-drop
-        // via keyboard tidak hilang, tetapi booth juga langsung terpilih.
+      if (event.key === 'Enter') {
+        // Enter hanya memilih booth. Jangan teruskan ke sensor keyboard
+        // dnd-kit agar satu tekanan tidak memilih sekaligus memulai drag.
+        event.preventDefault()
         setActiveBooth(booth.id)
-      } else if (event.key === 'Escape') {
+        return
+      }
+
+      if (event.key === ' ') {
+        // Space khusus untuk memindahkan booth lewat sensor keyboard dnd-kit.
+        listeners?.onKeyDown?.(event)
+        return
+      }
+
+      if (event.key === 'Escape') {
         setActiveBooth(null)
       }
 
@@ -57,7 +67,7 @@ const BoothRect = memo(function BoothRect({ booth }: BoothRectProps) {
       {...attributes}
       onKeyDown={handleKeyDown}
       onClick={() => setActiveBooth(booth.id)}
-      aria-pressed={isSelected}
+      aria-current={isSelected ? 'true' : undefined}
       aria-label={`Booth ${booth.category}, ${booth.width} × ${booth.height} px · ${statusLabel[booth.status]}, ${formatPrice(booth.price)}`}
       className={`group touch-none focus-visible:outline-none ${isDragging ? 'opacity-80' : ''} ${
         isSelected ? 'cursor-grabbing' : 'cursor-grab'
@@ -163,9 +173,16 @@ export default function BlueprintCanvas({ svgRef }: BlueprintCanvasProps) {
             <span className="inline-flex items-center gap-1.5">
               <span
                 aria-hidden="true"
-                className="h-2.5 w-2.5 rounded-[2px] border border-muted bg-unavailable"
+                className="h-2.5 w-2.5 rounded-[2px] border border-dashed border-muted bg-unavailable"
               />
-              Tidak tersedia
+              Dipesan
+            </span>
+            <span className="inline-flex items-center gap-1.5">
+              <span
+                aria-hidden="true"
+                className="h-2.5 w-2.5 rounded-[2px] border border-muted bg-unavailable-deep"
+              />
+              Terisi
             </span>
           </div>
         </div>
@@ -295,7 +312,8 @@ export default function BlueprintCanvas({ svgRef }: BlueprintCanvasProps) {
           </div>
 
           <p className="mt-3 text-center text-xs leading-relaxed text-muted">
-            Geser booth untuk mengubah posisi. Posisi otomatis menempel pada grid {GRID_SIZE} px.
+            Geser booth untuk mengubah posisi. Keyboard: Enter memilih, Space memindahkan, Escape
+            melepas pilihan. Posisi otomatis menempel pada grid {GRID_SIZE} px.
           </p>
         </div>
       </div>

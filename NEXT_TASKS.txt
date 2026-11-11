@@ -469,7 +469,7 @@ FRONTEND DEVELOPER
       dan data uji belum tersedia; verifikasi layout dilakukan lewat kode,
       unit test, dan audit axe halaman publik. Ulangi QA-02 di staging.
 
-[ ] FE-04. Tambah regression test keyboard dan fokus [P1]
+[x] FE-04. Tambah regression test keyboard dan fokus [P1]
     Pemilik: Frontend Developer
     Kolaborator: QA
     Konteks: Aksesibilitas sudah menjadi Definition of Done, tetapi regresi
@@ -486,6 +486,37 @@ FRONTEND DEVELOPER
     Verifikasi:
     - npm test + npm run test:e2e -- e2e/a11y.spec.ts.
     Dependensi: FE-03, UX-03
+    STATUS: SELESAI (11 November 2026) — runtime organizer menunggu kredensial
+    Hasil:
+    - src/components/map/BlueprintCanvas.tsx: Enter kini hanya memilih booth
+      dan tidak diteruskan ke sensor keyboard dnd-kit; Space memindahkan booth
+      lewat dnd-kit; Escape melepas pilihan dan diteruskan sebagai cancel.
+      Satu tekanan tidak lagi memilih sekaligus memulai drag.
+    - Booth admin memakai `aria-current` (konsisten dengan kanvas tenant) dan
+      legenda admin menampilkan empat status terpisah: Tersedia, Dipilih,
+      Dipesan, Terisi. Petunjuk keyboard ditambahkan di bawah kanvas.
+    - src/components/map/BlueprintCanvas.test.tsx: mock dnd-kit membuktikan
+      Enter memilih tanpa memanggil sensor drag, Space memanggil sensor drag,
+      Escape melepas pilihan, dan `aria-current` konsisten.
+    - src/components/map/InteractiveMap.test.tsx: tambahan test Enter/Space
+      memilih booth (sudah ada test Escape global dan aria-current dari FE-03).
+    - src/components/checkout/CheckoutModal.test.tsx: test fokus kembali ke
+      pemicu setelah dialog di-unmount, di samping test fokus awal, Escape,
+      focus trap, dan urutan tombol yang sudah ada.
+    - InlineConfirm sudah memiliki test fokus awal ke Batal, focus trap,
+      Escape, dan fokus kembali ke pemicu; tidak diubah.
+    Verifikasi:
+    - `npx vitest run src/components/map/BlueprintCanvas.test.tsx
+      src/components/map/InteractiveMap.test.tsx
+      src/components/checkout/CheckoutModal.test.tsx
+      src/components/ui/InlineConfirm.test.tsx`: 23 test lulus.
+    - `npm run verify` lulus (lint, format, typecheck, 177 unit test, build).
+    - `E2E_EVENT_ID=hall-a npm run test:e2e -- e2e/a11y.spec.ts
+      e2e/smoke.spec.ts`: 4 lulus, 3 skip karena `.env.e2e` tidak tersedia.
+    - Catatan: uji runtime kanvas admin dengan akun organizer belum dijalankan
+      karena kredensial `.env.e2e` belum tersedia; perilaku keyboard admin
+      diverifikasi lewat unit test dengan mock dnd-kit. Jalankan A11Y-04/05
+      dan uji drag keyboard di staging setelah OPS-04.
 
 [ ] FE-05. Jaga budget bundle dan chunk vendor [P2]
     Pemilik: Frontend Developer

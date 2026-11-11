@@ -387,6 +387,12 @@ Audit aksesibilitas mencakup:
   dapat digeser dengan tombol panah setelah diperbesar. Checkout mobile
   menaruh `Batal` sebelum aksi utama, memakai safe-area, dan tinggi `92dvh`
   dengan fallback `92vh`.
+- Kanvas blueprint admin memisahkan seleksi dan drag keyboard: `Enter` memilih,
+  `Space` memindahkan lewat sensor dnd-kit, dan `Escape` melepas pilihan.
+  Legenda admin menampilkan empat status (Tersedia, Dipilih, Dipesan, Terisi)
+  dan pilihan memakai `aria-current`. Regression test keyboard/fokus ada di
+  `BlueprintCanvas.test.tsx`, `InteractiveMap.test.tsx`, dan
+  `CheckoutModal.test.tsx`.
 
 ### 12.1 Dokumen produk dan rilis
 

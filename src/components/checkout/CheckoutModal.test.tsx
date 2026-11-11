@@ -30,7 +30,7 @@ function renderModal(
   const onConfirm = vi.fn()
   const onViewBookings = vi.fn()
 
-  render(
+  const { unmount } = render(
     <CheckoutModal
       booth={overrides.booth ?? makeBooth()}
       eventName="Pameran Teknologi"
@@ -43,7 +43,7 @@ function renderModal(
     />,
   )
 
-  return { onClose, onConfirm, onViewBookings }
+  return { onClose, onConfirm, onViewBookings, unmount }
 }
 
 describe('CheckoutModal', () => {
@@ -145,5 +145,21 @@ describe('CheckoutModal', () => {
 
     expect(labels.indexOf('Selesai')).toBeGreaterThan(-1)
     expect(labels.indexOf('Selesai')).toBeLessThan(labels.indexOf('Lihat Pesanan Saya'))
+  })
+
+  it('mengembalikan fokus ke pemicu setelah dialog ditutup', () => {
+    const trigger = document.createElement('button')
+    trigger.textContent = 'Buka checkout'
+    document.body.appendChild(trigger)
+    trigger.focus()
+
+    const { unmount } = renderModal()
+
+    expect(screen.getByRole('button', { name: 'Tutup dialog pemesanan' })).toHaveFocus()
+
+    unmount()
+
+    expect(trigger).toHaveFocus()
+    trigger.remove()
   })
 })

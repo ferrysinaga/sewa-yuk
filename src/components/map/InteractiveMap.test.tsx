@@ -40,6 +40,21 @@ describe('InteractiveMap', () => {
     expect(useBoothStore.getState().activeBoothId).toBe(booth.id)
   })
 
+  it('memilih booth dengan Enter dan Space', () => {
+    render(<InteractiveMap activeCategory="all" />)
+
+    const boothButton = screen.getByRole('button', { name: /Booth Teknologi/ })
+
+    fireEvent.keyDown(boothButton, { key: 'Enter' })
+    expect(useBoothStore.getState().activeBoothId).toBe(booth.id)
+
+    fireEvent.keyDown(document, { key: 'Escape' })
+    expect(useBoothStore.getState().activeBoothId).toBeNull()
+
+    fireEvent.keyDown(boothButton, { key: ' ' })
+    expect(useBoothStore.getState().activeBoothId).toBe(booth.id)
+  })
+
   it('melepas pilihan dengan Escape dari luar booth', () => {
     render(<InteractiveMap activeCategory="all" />)
 
