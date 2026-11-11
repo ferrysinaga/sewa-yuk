@@ -374,6 +374,14 @@ Audit aksesibilitas mencakup:
   sebagai panel error di tiap halaman; error render yang tidak tertangani
   masih berpotensi menghasilkan layar kosong.
 
+### 12.1 Dokumen produk dan rilis
+
+- `docs/product/PM-01-release-scope.md` — ruang lingkup, non-goal, risiko, dan
+  kriteria sukses rilis berikutnya.
+- `supabase/ERROR_CONTRACT.md` — kontrak error RPC dan matriks idempotensi.
+- `supabase/DOUBLE_BOOKING.md` — jaminan satu booking aktif per booth.
+- `qa_checklist_test_plan.md` — test plan, skenario UAT, dan status eksekusi.
+
 ## 13. Alur kontribusi
 
 - Satu task dari `NEXT_TASKS.txt` dikerjakan pada satu branch dengan awalan

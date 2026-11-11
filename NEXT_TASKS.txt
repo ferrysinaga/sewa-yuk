@@ -26,7 +26,7 @@ kecuali error boundary global yang sekarang dipindahkan menjadi FE-01.
 PRODUCT MANAGER
 ===============================================================================
 
-[ ] PM-01. Tetapkan ruang lingkup dan non-goal rilis berikutnya [P1]
+[x] PM-01. Tetapkan ruang lingkup dan non-goal rilis berikutnya [P1]
     Pemilik: Product Manager
     Kolaborator: UI/UX, FE, BE, QA, DevOps
     Konteks: Backlog perlu satu rilis kecil yang bisa diuji dan diumumkan,
@@ -41,7 +41,18 @@ PRODUCT MANAGER
     - Setiap task rilis punya pemilik dan prioritas.
     - Tidak ada task tanpa acceptance criteria.
     Verifikasi:
-    - Review bersama FE, BE, QA, dan DevOps sebelum eksekusi.
+    - docs/product/PM-01-release-scope.md menetapkan "Rilis Keandalan
+      Pemesanan" dengan 5 outcome: integritas booking, ketahanan UI, keamanan
+      akses data, kesiapan operasi, dan gerbang rilis/UAT.
+    - Tabel ruang lingkup mencantumkan task, pemilik, prioritas, dependensi,
+      dan ringkasan acceptance criteria; seluruh task yang masuk scope sudah
+      punya acceptance criteria di NEXT_TASKS.txt.
+    - Non-goal eksplisit: FE-03/FE-04, UX-04, QA-02/QA-04, BE-05, OPS-05/06,
+      PM-04/PM-05, FE-05/FE-06, QA-05/QA-06, dan analytics baru.
+    - Risiko, ketergantungan lintas role, kriteria sukses, dan decision log
+      tercatat. Checklist review UI/UX, FE, BE, QA, DevOps tersedia; sign-off
+      manual masih menunggu.
+    - Tautan dokumen dicatat di bagian 8 dokumen dan di README bila diperlukan.
     Dependensi: -
 
 [ ] PM-02. Finalkan acceptance criteria dan skenario UAT alur kritis [P1]
