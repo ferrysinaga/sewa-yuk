@@ -163,7 +163,7 @@ export default function EventExplorer() {
           <div className="max-w-2xl">
             <div className="flex items-center gap-2.5">
               <span aria-hidden="true" className="h-px w-6 bg-clay" />
-              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted">
+              <p className="text-compact font-semibold uppercase tracking-[0.18em] text-muted">
                 Penjelajahan event
               </p>
             </div>
@@ -177,7 +177,7 @@ export default function EventExplorer() {
           </div>
 
           <div className="border-t border-line pt-4 sm:border-l sm:border-t-0 sm:pl-6 sm:pt-0 sm:text-right">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted">
+            <p className="text-tiny font-semibold uppercase tracking-[0.14em] text-muted">
               Acara tersedia
             </p>
             <p className="mt-1 text-2xl font-semibold tabular-nums text-ink">
@@ -198,10 +198,10 @@ export default function EventExplorer() {
               value={search}
               onChange={(event) => setSearch(event.target.value)}
               placeholder="Cari nama event atau venue…"
-              className="min-h-[38px] w-full rounded-[6px] border border-line bg-surface px-3 py-1.5 text-xs text-ink placeholder:text-muted focus:border-pine focus:outline-none focus:ring-2 focus:ring-pine-soft sm:w-64"
+              className="min-h-[38px] w-full rounded-control border border-line bg-surface px-3 py-1.5 text-xs text-ink placeholder:text-muted focus:border-pine focus:outline-none focus:ring-2 focus:ring-pine-soft sm:w-64"
             />
           </div>
-          <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted">
+          <span className="text-tiny font-semibold uppercase tracking-[0.14em] text-muted">
             Kategori
           </span>
           <div className="flex flex-wrap items-center gap-1.5">
@@ -214,9 +214,9 @@ export default function EventExplorer() {
                   type="button"
                   aria-pressed={isActive}
                   onClick={() => setActiveCategory(item)}
-                  className={`inline-flex min-h-[38px] items-center rounded-[6px] border px-3 py-1.5 text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 focus-visible:ring-offset-canvas motion-reduce:transition-none ${
+                  className={`inline-flex min-h-[38px] items-center rounded-control border px-3 py-1.5 text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 focus-visible:ring-offset-canvas motion-reduce:transition-none ${
                     isActive
-                      ? 'border-pine bg-pine text-white'
+                      ? 'border-pine bg-pine text-on-accent'
                       : 'border-line bg-surface text-muted hover:border-pine hover:text-pine'
                   }`}
                 >
@@ -272,7 +272,7 @@ export default function EventExplorer() {
                   setActiveCategory('all')
                   setSearch('')
                 }}
-                className="inline-flex items-center justify-center rounded-[6px] bg-pine px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-pine-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 focus-visible:ring-offset-surface motion-reduce:transition-none"
+                className="inline-flex items-center justify-center rounded-control bg-pine px-4 py-2.5 text-sm font-semibold text-on-accent transition-colors hover:bg-pine-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 focus-visible:ring-offset-surface motion-reduce:transition-none"
               >
                 Tampilkan semua acara
               </button>
@@ -299,7 +299,7 @@ export default function EventExplorer() {
                   to={`/event/${event.id}`}
                   className="group grid gap-4 px-1 py-6 transition-colors hover:bg-pine-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-pine sm:grid-cols-[112px_minmax(0,1fr)_200px] sm:items-center sm:gap-6 sm:px-4 motion-reduce:transition-none"
                 >
-                  <div className="relative h-24 overflow-hidden rounded-[6px] border border-line bg-map sm:h-20">
+                  <div className="relative h-24 overflow-hidden rounded-control border border-line bg-map sm:h-20">
                     {event.image_url ? (
                       <img
                         src={event.image_url}
@@ -356,7 +356,7 @@ export default function EventExplorer() {
                       </svg>
                     )}
                     {event.image_url && (
-                      <span className="absolute left-1.5 top-1.5 rounded-[3px] bg-ink/75 px-1.5 py-0.5 text-[9px] font-semibold text-white">
+                      <span className="absolute left-1.5 top-1.5 rounded-chip bg-ink-overlay px-1.5 py-0.5 text-micro font-semibold text-on-accent">
                         Gambar denah
                       </span>
                     )}
@@ -365,7 +365,7 @@ export default function EventExplorer() {
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
                       <h2 className="text-base font-semibold text-ink sm:text-lg">{event.name}</h2>
-                      <span className="rounded-[4px] border border-line bg-surface px-1.5 py-0.5 text-[10px] font-medium text-muted">
+                      <span className="rounded-chip border border-line bg-surface px-1.5 py-0.5 text-tiny font-medium text-muted">
                         {categoryText}
                       </span>
                     </div>
@@ -379,13 +379,13 @@ export default function EventExplorer() {
                       </p>
                     )}
                     <div className="mt-3 flex items-center gap-3">
-                      <div className="h-1.5 w-full max-w-[220px] overflow-hidden rounded-[2px] bg-unavailable">
+                      <div className="h-1.5 w-full max-w-[220px] overflow-hidden rounded-micro bg-unavailable">
                         <div
-                          className="h-full rounded-[2px] bg-pine"
+                          className="h-full rounded-micro bg-pine"
                           style={{ width: `${occupancy}%` }}
                         />
                       </div>
-                      <span className="shrink-0 text-[11px] tabular-nums text-muted">
+                      <span className="shrink-0 text-compact tabular-nums text-muted">
                         {occupancy}% terisi
                       </span>
                     </div>
@@ -397,7 +397,7 @@ export default function EventExplorer() {
                         {event.availableBooths}{' '}
                         <span className="font-normal text-muted">dari {event.totalBooths}</span>
                       </p>
-                      <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted">
+                      <p className="text-tiny font-semibold uppercase tracking-[0.12em] text-muted">
                         booth tersedia
                       </p>
                     </div>

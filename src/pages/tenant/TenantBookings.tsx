@@ -57,7 +57,7 @@ export default function TenantBookings() {
             )}
 
             {state.bookings.length > 0 && (
-              <p className="mt-6 text-center text-[11px] text-muted">
+              <p className="mt-6 text-center text-compact text-muted">
                 Pembayaran pada aplikasi ini masih berupa simulasi. Organizer memverifikasi pesanan
                 secara manual.
               </p>

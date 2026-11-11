@@ -63,12 +63,12 @@ export default function BoothMap() {
   }
 
   return (
-    <div className="min-w-0 overflow-hidden rounded-[10px] border border-line bg-surface">
+    <div className="min-w-0 overflow-hidden rounded-card border border-line bg-surface">
       <div className="flex flex-wrap items-start justify-between gap-4 border-b border-line px-4 py-4 sm:px-5">
         <div className="min-w-0">
           <div className="flex items-center gap-2">
             <span aria-hidden="true" className="h-1.5 w-1.5 bg-clay" />
-            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted">
+            <p className="text-tiny font-semibold uppercase tracking-[0.18em] text-muted">
               Pratinjau denah
             </p>
           </div>
@@ -80,7 +80,7 @@ export default function BoothMap() {
           </p>
         </div>
         <div className="text-right">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted">
+          <p className="text-tiny font-semibold uppercase tracking-[0.14em] text-muted">
             Booth contoh
           </p>
           <p className="mt-1 text-lg font-semibold tabular-nums text-ink">
@@ -92,7 +92,7 @@ export default function BoothMap() {
 
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line px-4 py-3 sm:px-5">
         <div className="flex flex-wrap items-center gap-1.5">
-          <span className="mr-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-muted">
+          <span className="mr-1 text-tiny font-semibold uppercase tracking-[0.14em] text-muted">
             Sorot
           </span>
           {categoryFilters.map((item) => {
@@ -103,9 +103,9 @@ export default function BoothMap() {
                 type="button"
                 aria-pressed={isActive}
                 onClick={() => handleCategoryChange(item.value)}
-                className={`inline-flex min-h-[34px] items-center rounded-[6px] border px-3 py-1.5 text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 focus-visible:ring-offset-surface motion-reduce:transition-none ${
+                className={`inline-flex min-h-[34px] items-center rounded-control border px-3 py-1.5 text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 focus-visible:ring-offset-surface motion-reduce:transition-none ${
                   isActive
-                    ? 'border-pine bg-pine text-white'
+                    ? 'border-pine bg-pine text-on-accent'
                     : 'border-line bg-surface text-muted hover:border-pine hover:text-pine'
                 }`}
               >
@@ -118,20 +118,20 @@ export default function BoothMap() {
         <div
           role="group"
           aria-label="Kontrol zoom denah"
-          className="flex items-center gap-0.5 rounded-[6px] border border-line bg-surface p-0.5"
+          className="flex items-center gap-0.5 rounded-control border border-line bg-surface p-0.5"
         >
           <button
             type="button"
             onClick={() => zoomBy(1.25)}
             disabled={!canZoomIn}
             aria-label="Perbesar denah"
-            className="flex h-11 w-11 items-center justify-center rounded-[5px] text-ink transition-colors hover:bg-pine-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine disabled:cursor-not-allowed disabled:opacity-40 motion-reduce:transition-none"
+            className="flex h-11 w-11 items-center justify-center rounded-control text-ink transition-colors hover:bg-pine-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine disabled:cursor-not-allowed disabled:opacity-40 motion-reduce:transition-none"
           >
             <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true" className="h-4 w-4">
               <path d="M10.75 4.75a.75.75 0 0 0-1.5 0v4.5h-4.5a.75.75 0 0 0 0 1.5h4.5v4.5a.75.75 0 0 0 1.5 0v-4.5h4.5a.75.75 0 0 0 0-1.5h-4.5v-4.5Z" />
             </svg>
           </button>
-          <span className="px-1 text-[10px] font-semibold tabular-nums text-muted">
+          <span className="px-1 text-tiny font-semibold tabular-nums text-muted">
             {zoomPercent}%
           </span>
           <button
@@ -139,7 +139,7 @@ export default function BoothMap() {
             onClick={() => zoomBy(0.8)}
             disabled={!isZoomed}
             aria-label="Perkecil denah"
-            className="flex h-11 w-11 items-center justify-center rounded-[5px] text-ink transition-colors hover:bg-pine-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine disabled:cursor-not-allowed disabled:opacity-40 motion-reduce:transition-none"
+            className="flex h-11 w-11 items-center justify-center rounded-control text-ink transition-colors hover:bg-pine-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine disabled:cursor-not-allowed disabled:opacity-40 motion-reduce:transition-none"
           >
             <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true" className="h-4 w-4">
               <path d="M4 10a.75.75 0 0 1 .75-.75h10.5a.75.75 0 0 1 0 1.5H4.75A.75.75 0 0 1 4 10Z" />
@@ -150,7 +150,7 @@ export default function BoothMap() {
             onClick={() => setZoom(MIN_ZOOM)}
             disabled={!isZoomed}
             aria-label="Reset zoom denah ke 1×"
-            className="flex h-11 w-11 items-center justify-center rounded-[5px] text-[10px] font-bold text-muted transition-colors hover:bg-pine-soft hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine disabled:cursor-not-allowed disabled:opacity-40 motion-reduce:transition-none"
+            className="flex h-11 w-11 items-center justify-center rounded-control text-tiny font-bold text-muted transition-colors hover:bg-pine-soft hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine disabled:cursor-not-allowed disabled:opacity-40 motion-reduce:transition-none"
           >
             1×
           </button>

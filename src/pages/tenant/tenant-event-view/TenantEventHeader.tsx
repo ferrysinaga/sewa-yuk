@@ -35,7 +35,7 @@ export default function TenantEventHeader({ state }: { state: TenantEventViewSta
     <>
       <Link
         to="/event"
-        className="inline-flex items-center gap-1.5 rounded-[4px] text-sm font-medium text-muted transition-colors hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 focus-visible:ring-offset-canvas motion-reduce:transition-none"
+        className="inline-flex items-center gap-1.5 rounded-chip text-sm font-medium text-muted transition-colors hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 focus-visible:ring-offset-canvas motion-reduce:transition-none"
       >
         <ArrowLeft />
         Kembali ke daftar event
@@ -45,7 +45,7 @@ export default function TenantEventHeader({ state }: { state: TenantEventViewSta
         <div className="min-w-0">
           <div className="flex items-center gap-2.5">
             <span aria-hidden="true" className="h-px w-6 bg-clay" />
-            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted">
+            <p className="text-compact font-semibold uppercase tracking-[0.18em] text-muted">
               Denah acara
             </p>
           </div>
@@ -81,7 +81,7 @@ export default function TenantEventHeader({ state }: { state: TenantEventViewSta
               {[blueprint.venue, blueprint.event_date].filter(Boolean).join(' · ')}
             </p>
           ) : (
-            <div aria-hidden="true" className="mt-2 h-4 w-64 rounded-[3px] bg-unavailable" />
+            <div aria-hidden="true" className="mt-2 h-4 w-64 rounded-chip bg-unavailable" />
           )}
 
           {blueprint?.description && (
@@ -92,15 +92,15 @@ export default function TenantEventHeader({ state }: { state: TenantEventViewSta
         </div>
 
         {blueprint && !loading && !error && (
-          <div className="w-full shrink-0 rounded-[10px] border border-line bg-surface px-5 py-4 sm:w-auto sm:min-w-[220px]">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted">
+          <div className="w-full shrink-0 rounded-card border border-line bg-surface px-5 py-4 sm:w-auto sm:min-w-[220px]">
+            <p className="text-tiny font-semibold uppercase tracking-[0.14em] text-muted">
               Ketersediaan
             </p>
             <p className="mt-1 text-2xl font-semibold tabular-nums text-ink">
               {availableCount}
               <span className="ml-1 text-sm font-medium text-muted">/ {totalBooths} booth</span>
             </p>
-            <p className="mt-1 text-[11px] leading-relaxed text-muted">
+            <p className="mt-1 text-compact leading-relaxed text-muted">
               {reservedCount > 0
                 ? `${reservedCount} booth sedang dipesan penyewa lain.`
                 : 'Semua booth tersedia untuk dipilih.'}

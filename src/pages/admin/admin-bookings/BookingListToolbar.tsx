@@ -20,7 +20,7 @@ export default function BookingListToolbar({ state }: { state: AdminBookingsStat
           <button
             type="button"
             onClick={state.handleResetFilters}
-            className="inline-flex items-center gap-1.5 rounded-[8px] border border-line bg-surface px-3 py-2 text-xs font-semibold text-ink transition-colors hover:bg-canvas focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2"
+            className="inline-flex items-center gap-1.5 rounded-card-sm border border-line bg-surface px-3 py-2 text-xs font-semibold text-ink transition-colors hover:bg-canvas focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2"
           >
             Reset filter
           </button>
@@ -29,7 +29,7 @@ export default function BookingListToolbar({ state }: { state: AdminBookingsStat
           type="button"
           onClick={() => void state.handleRefresh()}
           disabled={state.refreshing}
-          className="inline-flex items-center gap-1.5 rounded-[8px] border border-line bg-surface px-3 py-2 text-xs font-semibold text-ink transition-colors hover:bg-canvas focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+          className="inline-flex items-center gap-1.5 rounded-card-sm border border-line bg-surface px-3 py-2 text-xs font-semibold text-ink transition-colors hover:bg-canvas focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
         >
           {state.refreshing ? 'Memperbarui…' : 'Perbarui status'}
         </button>

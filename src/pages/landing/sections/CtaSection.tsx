@@ -9,11 +9,11 @@ export default function CtaSection() {
           <div>
             <div className="flex items-center gap-2.5">
               <span aria-hidden="true" className="h-2 w-2 bg-clay" />
-              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-pine-soft">
+              <p className="text-compact font-semibold uppercase tracking-[0.18em] text-pine-soft">
                 Mulai dari denah
               </p>
             </div>
-            <h2 className="mt-4 max-w-2xl text-3xl font-semibold tracking-tight text-white sm:text-4xl">
+            <h2 className="mt-4 max-w-2xl text-3xl font-semibold tracking-tight text-on-accent sm:text-4xl">
               Booth yang tepat biasanya diambil lebih dulu.
             </h2>
             <p className="mt-4 max-w-xl text-sm leading-relaxed text-pine-soft">
@@ -23,14 +23,14 @@ export default function CtaSection() {
           <div className="flex flex-col gap-3 sm:flex-row lg:justify-end">
             <Link
               to="/event"
-              className="inline-flex items-center justify-center gap-2 rounded-[6px] bg-white px-5 py-3 text-sm font-semibold text-pine transition-colors hover:bg-pine-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-pine motion-reduce:transition-none"
+              className="inline-flex items-center justify-center gap-2 rounded-control bg-surface px-5 py-3 text-sm font-semibold text-pine transition-colors hover:bg-pine-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-surface focus-visible:ring-offset-2 focus-visible:ring-offset-pine motion-reduce:transition-none"
             >
               Cari booth
               <ArrowRight />
             </Link>
             <Link
               to="/admin"
-              className="inline-flex items-center justify-center rounded-[6px] border border-pine-soft px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-pine-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-pine motion-reduce:transition-none"
+              className="inline-flex items-center justify-center rounded-control border border-pine-soft px-5 py-3 text-sm font-semibold text-on-accent transition-colors hover:bg-pine-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-surface focus-visible:ring-offset-2 focus-visible:ring-offset-pine motion-reduce:transition-none"
             >
               Buka dashboard
             </Link>

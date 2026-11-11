@@ -26,7 +26,7 @@ export default function BoothMapDetail({ activeBooth, onClearSelection }: BoothM
         <div>
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div className="flex min-w-0 items-start gap-3">
-              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[6px] border border-line bg-canvas text-xs font-semibold tabular-nums text-pine">
+              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-control border border-line bg-canvas text-xs font-semibold tabular-nums text-pine">
                 {activeBooth.id}
               </span>
               <div className="min-w-0">
@@ -43,7 +43,7 @@ export default function BoothMapDetail({ activeBooth, onClearSelection }: BoothM
 
             <div className="flex flex-wrap items-end justify-between gap-3 sm:justify-end">
               <div className="sm:text-right">
-                <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted">
+                <p className="text-tiny font-semibold uppercase tracking-[0.14em] text-muted">
                   Harga sewa
                 </p>
                 <p className="mt-0.5 text-base font-semibold tabular-nums text-ink">
@@ -53,13 +53,13 @@ export default function BoothMapDetail({ activeBooth, onClearSelection }: BoothM
               {activeBooth.status === 'Available' ? (
                 <Link
                   to="/event"
-                  className="inline-flex items-center justify-center gap-2 rounded-[6px] bg-pine px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-pine-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 focus-visible:ring-offset-surface motion-reduce:transition-none"
+                  className="inline-flex items-center justify-center gap-2 rounded-control bg-pine px-4 py-2.5 text-sm font-semibold text-on-accent transition-colors hover:bg-pine-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 focus-visible:ring-offset-surface motion-reduce:transition-none"
                 >
                   Pesan booth
                   <ArrowRight />
                 </Link>
               ) : (
-                <span className="inline-flex items-center rounded-[6px] border border-line bg-canvas px-3 py-2 text-xs font-medium text-muted">
+                <span className="inline-flex items-center rounded-control border border-line bg-canvas px-3 py-2 text-xs font-medium text-muted">
                   Tidak dapat dipesan
                 </span>
               )}

@@ -27,7 +27,7 @@ export default function BoothMapCanvas({
         tabIndex={0}
         role="group"
         aria-label="Area denah yang dapat digeser"
-        className="overflow-x-auto overscroll-x-contain rounded-[8px] border border-line focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine"
+        className="overflow-x-auto overscroll-x-contain rounded-card-sm border border-line focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine"
       >
         <div className="min-w-[520px]">
           <svg
@@ -78,7 +78,7 @@ export default function BoothMapCanvas({
               x={MAP_WIDTH / 2}
               y="34"
               textAnchor="middle"
-              className="pointer-events-none fill-muted text-[10px] font-semibold tracking-[0.28em]"
+              className="pointer-events-none fill-muted text-tiny font-semibold tracking-[0.28em]"
             >
               HALL A
             </text>
@@ -87,7 +87,7 @@ export default function BoothMapCanvas({
               y="200"
               textAnchor="middle"
               transform="rotate(-90 222 200)"
-              className="pointer-events-none fill-muted text-[10px] font-medium tracking-[0.3em] opacity-60"
+              className="pointer-events-none fill-muted text-tiny font-medium tracking-[0.3em] opacity-60"
             >
               LORONG UTAMA
             </text>
@@ -109,11 +109,11 @@ export default function BoothMapCanvas({
                   ? 'fill-pine stroke-pine-dark'
                   : 'fill-surface stroke-pine hover:fill-pine-soft hover:stroke-pine-dark'
 
-              const titleTone = isSelected && !isUnavailable ? 'fill-white' : 'fill-ink'
+              const titleTone = isSelected && !isUnavailable ? 'fill-on-accent' : 'fill-ink'
               const metaTone = isSelected && !isUnavailable ? 'fill-pine-soft' : 'fill-muted'
               const priceTone =
                 isSelected && !isUnavailable
-                  ? 'fill-white'
+                  ? 'fill-on-accent'
                   : isUnavailable
                     ? 'fill-muted'
                     : 'fill-ink'
@@ -167,21 +167,21 @@ export default function BoothMapCanvas({
                   <text
                     x={booth.x + 12}
                     y={booth.y + 24}
-                    className={`pointer-events-none text-[11px] font-semibold ${titleTone}`}
+                    className={`pointer-events-none text-compact font-semibold ${titleTone}`}
                   >
                     {booth.id}
                   </text>{' '}
                   <text
                     x={booth.x + 12}
                     y={booth.y + 40}
-                    className={`pointer-events-none text-[9px] font-medium ${metaTone}`}
+                    className={`pointer-events-none text-micro font-medium ${metaTone}`}
                   >
                     {categoryLabel[booth.category]} · {statusLabel[booth.status]}
                   </text>{' '}
                   <text
                     x={booth.x + 12}
                     y={booth.y + booth.height - 12}
-                    className={`pointer-events-none text-[10px] font-medium tabular-nums ${priceTone}`}
+                    className={`pointer-events-none text-tiny font-medium tabular-nums ${priceTone}`}
                   >
                     {formatPrice(booth.price)}
                   </text>
@@ -221,7 +221,7 @@ export default function BoothMapCanvas({
               x="260"
               y="368"
               textAnchor="middle"
-              className="pointer-events-none fill-muted text-[9px] font-semibold tracking-[0.2em]"
+              className="pointer-events-none fill-muted text-micro font-semibold tracking-[0.2em]"
             >
               PINTU MASUK
             </text>
@@ -229,39 +229,39 @@ export default function BoothMapCanvas({
         </div>
       </div>
 
-      <p className="mt-2 text-[11px] text-muted sm:hidden">
+      <p className="mt-2 text-compact text-muted sm:hidden">
         Geser denah ke samping untuk melihat seluruh area.
       </p>
 
       <div className="mt-3 flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
-        <ul className="flex flex-wrap items-center gap-x-4 gap-y-2 text-[11px] font-medium text-muted">
+        <ul className="flex flex-wrap items-center gap-x-4 gap-y-2 text-compact font-medium text-muted">
           <li className="inline-flex items-center gap-1.5">
             <span
               aria-hidden="true"
-              className="h-2.5 w-2.5 rounded-[2px] border border-pine bg-surface"
+              className="h-2.5 w-2.5 rounded-micro border border-pine bg-surface"
             />
             Tersedia
           </li>
           <li className="inline-flex items-center gap-1.5">
-            <span aria-hidden="true" className="h-2.5 w-2.5 rounded-[2px] bg-pine" />
+            <span aria-hidden="true" className="h-2.5 w-2.5 rounded-micro bg-pine" />
             Dipilih
           </li>
           <li className="inline-flex items-center gap-1.5">
             <span
               aria-hidden="true"
-              className="h-2.5 w-2.5 rounded-[2px] border border-dashed border-muted bg-unavailable"
+              className="h-2.5 w-2.5 rounded-micro border border-dashed border-muted bg-unavailable"
             />
             Dipesan
           </li>
           <li className="inline-flex items-center gap-1.5">
             <span
               aria-hidden="true"
-              className="h-2.5 w-2.5 rounded-[2px] border border-muted bg-unavailable-deep"
+              className="h-2.5 w-2.5 rounded-micro border border-muted bg-unavailable-deep"
             />
             Terisi
           </li>
         </ul>
-        <p id="peta-hint" className="text-[11px] text-muted">
+        <p id="peta-hint" className="text-compact text-muted">
           Pilih booth untuk melihat detail.
         </p>
       </div>

@@ -7,7 +7,7 @@ export default function ValuesSection() {
         <div className="max-w-2xl">
           <div className="flex items-center gap-2.5">
             <span aria-hidden="true" className="h-px w-6 bg-clay" />
-            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted">
+            <p className="text-compact font-semibold uppercase tracking-[0.18em] text-muted">
               Kerja di atas denah
             </p>
           </div>
@@ -23,7 +23,7 @@ export default function ValuesSection() {
         <div className="mt-10 grid gap-x-8 gap-y-8 md:grid-cols-3">
           {values.map((value, index) => (
             <div key={value.title} className="border-t border-line pt-5">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-clay-dark">
+              <p className="text-compact font-semibold uppercase tracking-[0.16em] text-clay-dark">
                 {String(index + 1).padStart(2, '0')}
               </p>
               <h3 className="mt-4 text-lg font-semibold text-ink">{value.title}</h3>

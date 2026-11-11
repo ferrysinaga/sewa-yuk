@@ -35,7 +35,7 @@ export default function BlueprintEditor() {
 
         {loading && (
           <LoadingPanel
-            title="Memuat denah dari Supabase..."
+            title="Memuat denah dari Supabase…"
             titleClassName="text-sm text-muted"
             minHeightClassName="min-h-[360px]"
           />
@@ -50,7 +50,7 @@ export default function BlueprintEditor() {
             secondaryAction={
               <Link
                 to="/admin/blueprint"
-                className="inline-flex shrink-0 items-center justify-center rounded-[6px] border border-danger bg-surface px-4 py-2 text-sm font-semibold text-danger-dark transition-colors hover:bg-danger-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-danger focus-visible:ring-offset-2"
+                className="inline-flex shrink-0 items-center justify-center rounded-control border border-danger bg-surface px-4 py-2 text-sm font-semibold text-danger-dark transition-colors hover:bg-danger-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-danger focus-visible:ring-offset-2"
               >
                 Daftar denah
               </Link>

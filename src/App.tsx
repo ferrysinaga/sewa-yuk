@@ -24,7 +24,7 @@ function RouteFallback() {
       <div
         role="status"
         aria-live="polite"
-        className="w-full max-w-xs rounded-[10px] border border-line bg-surface px-6 py-8 text-center"
+        className="w-full max-w-xs rounded-card border border-line bg-surface px-6 py-8 text-center"
       >
         <span aria-hidden="true" className="mx-auto block h-1 w-10 bg-clay" />
         <p className="mt-4 text-sm font-medium text-ink">Memuat halaman…</p>

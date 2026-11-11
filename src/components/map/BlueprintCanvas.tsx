@@ -98,8 +98,8 @@ const BoothRect = memo(function BoothRect({ booth }: BoothRectProps) {
       <text
         x={booth.positionX + 12}
         y={booth.positionY + 22}
-        className={`pointer-events-none text-[11px] font-semibold ${
-          isSelected ? 'fill-white' : 'fill-ink'
+        className={`pointer-events-none text-compact font-semibold ${
+          isSelected ? 'fill-on-accent' : 'fill-ink'
         }`}
       >
         {booth.category}
@@ -107,7 +107,7 @@ const BoothRect = memo(function BoothRect({ booth }: BoothRectProps) {
       <text
         x={booth.positionX + 12}
         y={booth.positionY + 38}
-        className={`pointer-events-none text-[9px] font-medium ${
+        className={`pointer-events-none text-micro font-medium ${
           isSelected ? 'fill-pine-soft' : 'fill-muted'
         }`}
       >
@@ -116,8 +116,8 @@ const BoothRect = memo(function BoothRect({ booth }: BoothRectProps) {
       <text
         x={booth.positionX + 12}
         y={booth.positionY + booth.height - 12}
-        className={`pointer-events-none text-[9px] font-medium tabular-nums ${
-          isSelected ? 'fill-white' : isUnavailable ? 'fill-muted' : 'fill-ink'
+        className={`pointer-events-none text-micro font-medium tabular-nums ${
+          isSelected ? 'fill-on-accent' : isUnavailable ? 'fill-muted' : 'fill-ink'
         }`}
       >
         {formatPrice(booth.price)}
@@ -141,7 +141,7 @@ export default function BlueprintCanvas({ svgRef }: BlueprintCanvasProps) {
 
   return (
     <div className="min-w-0 flex-1">
-      <div className="overflow-hidden rounded-[10px] border border-line bg-surface">
+      <div className="overflow-hidden rounded-card border border-line bg-surface">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line px-4 py-3 sm:px-5">
           <div>
             <h2 className="text-sm font-semibold text-ink">Kanvas blueprint</h2>
@@ -149,12 +149,12 @@ export default function BlueprintCanvas({ svgRef }: BlueprintCanvasProps) {
               Hall A · {booths.length} booth · grid {GRID_SIZE} px
             </p>
           </div>
-          <div className="flex flex-wrap items-center gap-4 text-[11px] text-muted">
+          <div className="flex flex-wrap items-center gap-4 text-compact text-muted">
             {blueprintImageUrl && (
               <span className="inline-flex items-center gap-1.5 text-pine">
                 <span
                   aria-hidden="true"
-                  className="h-2.5 w-2.5 rounded-[2px] border border-pine bg-pine-soft"
+                  className="h-2.5 w-2.5 rounded-micro border border-pine bg-pine-soft"
                 />
                 Gambar latar aktif
               </span>
@@ -162,25 +162,25 @@ export default function BlueprintCanvas({ svgRef }: BlueprintCanvasProps) {
             <span className="inline-flex items-center gap-1.5">
               <span
                 aria-hidden="true"
-                className="h-2.5 w-2.5 rounded-[2px] border border-pine bg-surface"
+                className="h-2.5 w-2.5 rounded-micro border border-pine bg-surface"
               />
               Tersedia
             </span>
             <span className="inline-flex items-center gap-1.5">
-              <span aria-hidden="true" className="h-2.5 w-2.5 rounded-[2px] bg-pine" />
+              <span aria-hidden="true" className="h-2.5 w-2.5 rounded-micro bg-pine" />
               Dipilih
             </span>
             <span className="inline-flex items-center gap-1.5">
               <span
                 aria-hidden="true"
-                className="h-2.5 w-2.5 rounded-[2px] border border-dashed border-muted bg-unavailable"
+                className="h-2.5 w-2.5 rounded-micro border border-dashed border-muted bg-unavailable"
               />
               Dipesan
             </span>
             <span className="inline-flex items-center gap-1.5">
               <span
                 aria-hidden="true"
-                className="h-2.5 w-2.5 rounded-[2px] border border-muted bg-unavailable-deep"
+                className="h-2.5 w-2.5 rounded-micro border border-muted bg-unavailable-deep"
               />
               Terisi
             </span>
@@ -194,7 +194,7 @@ export default function BlueprintCanvas({ svgRef }: BlueprintCanvasProps) {
           }`}
         >
           <div
-            className={`relative overflow-hidden rounded-[8px] border bg-map transition-colors motion-reduce:transition-none ${
+            className={`relative overflow-hidden rounded-card-sm border bg-map transition-colors motion-reduce:transition-none ${
               isOver ? 'border-pine' : 'border-line'
             }`}
           >
@@ -261,7 +261,7 @@ export default function BlueprintCanvas({ svgRef }: BlueprintCanvasProps) {
                   x={CANVAS_WIDTH / 2}
                   y="32"
                   textAnchor="middle"
-                  className="pointer-events-none fill-muted text-[11px] font-semibold tracking-[0.3em]"
+                  className="pointer-events-none fill-muted text-compact font-semibold tracking-[0.3em]"
                 >
                   AREA PAMERAN
                 </text>
@@ -272,7 +272,7 @@ export default function BlueprintCanvas({ svgRef }: BlueprintCanvasProps) {
                   x={CANVAS_WIDTH / 2}
                   y={CANVAS_HEIGHT - 20}
                   textAnchor="middle"
-                  className="pointer-events-none fill-muted text-[11px] font-semibold tracking-[0.3em]"
+                  className="pointer-events-none fill-muted text-compact font-semibold tracking-[0.3em]"
                 >
                   PINTU MASUK
                 </text>
@@ -285,8 +285,8 @@ export default function BlueprintCanvas({ svgRef }: BlueprintCanvasProps) {
 
             {booths.length === 0 && (
               <div className="pointer-events-none absolute inset-0 flex items-center justify-center p-6">
-                <div className="rounded-[8px] border border-line bg-surface px-6 py-5 text-center">
-                  <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-[6px] bg-pine-soft text-pine">
+                <div className="rounded-card-sm border border-line bg-surface px-6 py-5 text-center">
+                  <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-control bg-pine-soft text-pine">
                     <svg
                       viewBox="0 0 24 24"
                       fill="none"

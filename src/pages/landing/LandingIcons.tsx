@@ -51,7 +51,7 @@ export function CheckIcon() {
 export function BrandMark({ className = 'h-9 w-9' }: { className?: string }) {
   return (
     <span
-      className={`flex shrink-0 items-center justify-center rounded-[7px] bg-pine text-white ${className}`}
+      className={`flex shrink-0 items-center justify-center rounded-card-sm bg-pine text-on-accent ${className}`}
     >
       <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" className="h-5 w-5">
         <rect x="4" y="4" width="7" height="6" rx="1" stroke="currentColor" strokeWidth="1.6" />
@@ -73,7 +73,7 @@ export function StatusBadge({ status }: { status: BoothStatus }) {
 
   return (
     <span
-      className={`inline-flex items-center rounded-[4px] px-2 py-0.5 text-[11px] font-semibold ${tone}`}
+      className={`inline-flex items-center rounded-chip px-2 py-0.5 text-compact font-semibold ${tone}`}
     >
       {statusLabel[status]}
     </span>

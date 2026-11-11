@@ -4,7 +4,7 @@ export default function StatusDistribution({ dashboard }: { dashboard: AdminDash
   const { statusDistribution, activeEventLabel, statusMeta } = dashboard
 
   return (
-    <section className="rounded-[10px] border border-line bg-surface p-5">
+    <section className="rounded-card border border-line bg-surface p-5">
       <h2 className="text-base font-semibold text-ink">Distribusi status</h2>
       <p className="mt-1 text-xs text-muted">{activeEventLabel}</p>
 
@@ -24,9 +24,9 @@ export default function StatusDistribution({ dashboard }: { dashboard: AdminDash
                 <span className="ml-1 font-normal text-muted">({item.percentage}%)</span>
               </dd>
             </div>
-            <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-[2px] bg-unavailable">
+            <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-micro bg-unavailable">
               <div
-                className={`h-full rounded-[2px] ${statusMeta[item.status].bar}`}
+                className={`h-full rounded-micro ${statusMeta[item.status].bar}`}
                 style={{ width: `${item.percentage}%` }}
               />
             </div>

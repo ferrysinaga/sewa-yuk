@@ -9,7 +9,7 @@ export default function RolesSection() {
         <div className="max-w-2xl">
           <div className="flex items-center gap-2.5">
             <span aria-hidden="true" className="h-px w-6 bg-clay" />
-            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted">
+            <p className="text-compact font-semibold uppercase tracking-[0.18em] text-muted">
               Dua peran, satu denah
             </p>
           </div>
@@ -24,10 +24,10 @@ export default function RolesSection() {
         <div className="mt-10 grid gap-10 lg:grid-cols-2 lg:gap-14">
           <article className="border-t border-line pt-6">
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-pine">
+              <p className="text-compact font-semibold uppercase tracking-[0.18em] text-pine">
                 Penyelenggara
               </p>
-              <span className="text-[11px] text-muted">Dashboard admin</span>
+              <span className="text-compact text-muted">Dashboard admin</span>
             </div>
             <h3 className="mt-3 text-2xl font-semibold tracking-tight text-ink">
               Susun denah, publikasikan sekali.
@@ -46,7 +46,7 @@ export default function RolesSection() {
             </ul>
             <Link
               to="/admin"
-              className="mt-7 inline-flex items-center gap-2 rounded-[6px] text-sm font-semibold text-pine transition-colors hover:text-pine-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 focus-visible:ring-offset-surface motion-reduce:transition-none"
+              className="mt-7 inline-flex items-center gap-2 rounded-control text-sm font-semibold text-pine transition-colors hover:text-pine-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 focus-visible:ring-offset-surface motion-reduce:transition-none"
             >
               Buka dashboard
               <ArrowRight />
@@ -55,10 +55,10 @@ export default function RolesSection() {
 
           <article className="border-t border-line pt-6 lg:border-l lg:pl-14">
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-pine">
+              <p className="text-compact font-semibold uppercase tracking-[0.18em] text-pine">
                 Penyewa
               </p>
-              <span className="text-[11px] text-muted">Halaman acara</span>
+              <span className="text-compact text-muted">Halaman acara</span>
             </div>
             <h3 className="mt-3 text-2xl font-semibold tracking-tight text-ink">
               Baca denah, kunci posisi.
@@ -77,7 +77,7 @@ export default function RolesSection() {
             </ul>
             <Link
               to="/event"
-              className="mt-7 inline-flex items-center justify-center gap-2 rounded-[6px] bg-pine px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-pine-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 focus-visible:ring-offset-surface motion-reduce:transition-none"
+              className="mt-7 inline-flex items-center justify-center gap-2 rounded-control bg-pine px-4 py-2.5 text-sm font-semibold text-on-accent transition-colors hover:bg-pine-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 focus-visible:ring-offset-surface motion-reduce:transition-none"
             >
               Jelajahi acara
               <ArrowRight />

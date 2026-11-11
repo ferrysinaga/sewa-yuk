@@ -4,7 +4,7 @@ import type { ReactNode } from 'react'
 function BrandMark({ className = 'h-9 w-9' }: { className?: string }) {
   return (
     <span
-      className={`flex shrink-0 items-center justify-center rounded-[7px] bg-pine text-white ${className}`}
+      className={`flex shrink-0 items-center justify-center rounded-card-sm bg-pine text-on-accent ${className}`}
     >
       <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" className="h-5 w-5">
         <rect x="4" y="4" width="7" height="6" rx="1" stroke="currentColor" strokeWidth="1.6" />
@@ -46,7 +46,7 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
     <div className="min-h-screen bg-canvas text-ink lg:grid lg:grid-cols-[1.05fr_1fr]">
       <a
         href="#main"
-        className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-[6px] focus:bg-ink focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-white"
+        className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-control focus:bg-ink focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-on-accent"
       >
         Lewati ke konten utama
       </a>
@@ -54,12 +54,12 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
       <aside className="relative hidden border-r border-line bg-canvas p-10 lg:flex lg:flex-col lg:justify-between xl:p-14">
         <Link
           to="/"
-          className="flex w-fit items-center gap-2.5 rounded-[6px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 focus-visible:ring-offset-canvas"
+          className="flex w-fit items-center gap-2.5 rounded-control focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 focus-visible:ring-offset-canvas"
         >
           <BrandMark />
           <span className="leading-tight">
             <span className="block text-sm font-semibold tracking-tight text-ink">sewa-yuk</span>
-            <span className="block text-[10px] uppercase tracking-[0.14em] text-muted">
+            <span className="block text-tiny uppercase tracking-[0.14em] text-muted">
               Peta booth pameran
             </span>
           </span>
@@ -68,7 +68,7 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
         <div className="max-w-md py-10">
           <div className="flex items-center gap-2.5">
             <span aria-hidden="true" className="h-1.5 w-1.5 bg-clay" />
-            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted">
+            <p className="text-compact font-semibold uppercase tracking-[0.18em] text-muted">
               Platform booking booth spasial
             </p>
           </div>
@@ -91,12 +91,12 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
         </div>
 
         <div>
-          <div className="rounded-[10px] border border-line bg-surface p-4">
+          <div className="rounded-card border border-line bg-surface p-4">
             <div className="flex items-center justify-between gap-3">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted">
+              <p className="text-tiny font-semibold uppercase tracking-[0.16em] text-muted">
                 Pratinjau denah
               </p>
-              <span className="text-[10px] tabular-nums text-muted">Hall A</span>
+              <span className="text-tiny tabular-nums text-muted">Hall A</span>
             </div>
             <svg
               viewBox="0 0 400 150"
@@ -158,7 +158,7 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
               <text x="32" y="56" fill="var(--color-muted)" fontSize="8">
                 Tersedia
               </text>
-              <text x="256" y="48" fill="#ffffff" fontSize="9" fontWeight="600">
+              <text x="256" y="48" fill="var(--color-on-accent)" fontSize="9" fontWeight="600">
                 B-02
               </text>
               <text x="256" y="62" fill="var(--color-pine-soft)" fontSize="8">
@@ -180,7 +180,7 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
               { value: '0', label: 'Double-booking' },
             ].map((stat) => (
               <div key={stat.label}>
-                <dt className="text-[11px] text-muted">{stat.label}</dt>
+                <dt className="text-compact text-muted">{stat.label}</dt>
                 <dd className="mt-1 text-xl font-semibold tabular-nums text-ink">{stat.value}</dd>
               </div>
             ))}
@@ -196,14 +196,14 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
         <div className="flex items-center justify-between border-b border-line px-4 py-4 sm:px-6 lg:hidden">
           <Link
             to="/"
-            className="flex items-center gap-2.5 rounded-[6px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+            className="flex items-center gap-2.5 rounded-control focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
           >
             <BrandMark />
             <span className="text-base font-semibold tracking-tight text-ink">sewa-yuk</span>
           </Link>
           <Link
             to="/"
-            className="rounded-[6px] text-sm font-medium text-muted transition-colors hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 focus-visible:ring-offset-surface motion-reduce:transition-none"
+            className="rounded-control text-sm font-medium text-muted transition-colors hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 focus-visible:ring-offset-surface motion-reduce:transition-none"
           >
             Beranda
           </Link>

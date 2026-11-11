@@ -98,10 +98,10 @@ export default class AppErrorBoundary extends Component<
       <div className="flex min-h-screen items-center justify-center bg-canvas px-4 py-10 sm:px-6">
         <section
           role="alert"
-          className="w-full max-w-md rounded-[10px] border border-line bg-surface p-6 sm:p-8"
+          className="w-full max-w-md rounded-card border border-line bg-surface p-6 sm:p-8"
         >
           <span aria-hidden="true" className="block h-1 w-10 bg-clay" />
-          <p className="mt-4 text-[11px] font-semibold uppercase tracking-[0.16em] text-muted">
+          <p className="mt-4 text-compact font-semibold uppercase tracking-[0.16em] text-muted">
             Pemulihan halaman
           </p>
           <h1
@@ -117,13 +117,13 @@ export default class AppErrorBoundary extends Component<
             <button
               type="button"
               onClick={this.reloadPage}
-              className="inline-flex min-h-11 items-center justify-center rounded-[6px] bg-pine px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-pine-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 focus-visible:ring-offset-surface motion-reduce:transition-none"
+              className="inline-flex min-h-11 items-center justify-center rounded-control bg-pine px-5 py-2.5 text-sm font-semibold text-on-accent transition-colors hover:bg-pine-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 focus-visible:ring-offset-surface motion-reduce:transition-none"
             >
               Muat ulang
             </button>
             <a
               href="/"
-              className="inline-flex min-h-11 items-center justify-center rounded-[6px] border border-line bg-surface px-5 py-2.5 text-sm font-semibold text-ink transition-colors hover:bg-unavailable focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 focus-visible:ring-offset-surface motion-reduce:transition-none"
+              className="inline-flex min-h-11 items-center justify-center rounded-control border border-line bg-surface px-5 py-2.5 text-sm font-semibold text-ink transition-colors hover:bg-unavailable focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 focus-visible:ring-offset-surface motion-reduce:transition-none"
             >
               Kembali ke beranda
             </a>

@@ -6,7 +6,7 @@ export default function AdminBookingsHeader() {
       <div>
         <div className="flex items-center gap-2.5">
           <span aria-hidden="true" className="h-px w-6 bg-clay" />
-          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted">
+          <p className="text-compact font-semibold uppercase tracking-[0.18em] text-muted">
             Dashboard penyelenggara
           </p>
         </div>
@@ -20,13 +20,13 @@ export default function AdminBookingsHeader() {
       <div className="flex flex-col gap-2 sm:flex-row">
         <Link
           to="/admin"
-          className="inline-flex items-center justify-center gap-2 rounded-[8px] border border-line bg-surface px-5 py-2.5 text-sm font-semibold text-ink transition-colors hover:bg-canvas focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2"
+          className="inline-flex items-center justify-center gap-2 rounded-card-sm border border-line bg-surface px-5 py-2.5 text-sm font-semibold text-ink transition-colors hover:bg-canvas focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2"
         >
           Dashboard
         </Link>
         <Link
           to="/admin/blueprint"
-          className="inline-flex items-center justify-center gap-2 rounded-[8px] border border-line bg-surface px-5 py-2.5 text-sm font-semibold text-ink transition-colors hover:bg-canvas focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2"
+          className="inline-flex items-center justify-center gap-2 rounded-card-sm border border-line bg-surface px-5 py-2.5 text-sm font-semibold text-ink transition-colors hover:bg-canvas focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2"
         >
           Kelola Denah
         </Link>

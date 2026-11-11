@@ -15,7 +15,7 @@ const SIZE_CLASS: Record<NonNullable<SpinnerProps['size']>, string> = {
 
 const TONE_CLASS: Record<NonNullable<SpinnerProps['tone']>, string> = {
   pine: 'border-line border-t-pine',
-  white: 'border-white/40 border-t-white',
+  white: 'border-on-accent-soft border-t-on-accent',
 }
 
 /**

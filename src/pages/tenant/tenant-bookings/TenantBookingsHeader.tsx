@@ -10,7 +10,7 @@ export default function TenantBookingsHeader({ state }: { state: TenantBookingsS
       <div>
         <div className="flex items-center gap-2.5">
           <span aria-hidden="true" className="h-px w-6 bg-clay" />
-          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted">
+          <p className="text-compact font-semibold uppercase tracking-[0.18em] text-muted">
             Riwayat penyewaan
           </p>
         </div>
@@ -34,13 +34,13 @@ export default function TenantBookingsHeader({ state }: { state: TenantBookingsS
           type="button"
           onClick={() => void handleRefresh()}
           disabled={refreshing || loading}
-          className="inline-flex items-center justify-center gap-2 rounded-[8px] border border-line bg-surface px-5 py-2.5 text-sm font-semibold text-ink transition-colors hover:bg-canvas focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+          className="inline-flex items-center justify-center gap-2 rounded-card-sm border border-line bg-surface px-5 py-2.5 text-sm font-semibold text-ink transition-colors hover:bg-canvas focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
         >
           {refreshing ? 'Memperbarui…' : 'Perbarui status'}
         </button>
         <Link
           to="/event"
-          className="inline-flex items-center justify-center gap-2 rounded-[8px] bg-pine px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-pine-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2"
+          className="inline-flex items-center justify-center gap-2 rounded-card-sm bg-pine px-5 py-2.5 text-sm font-semibold text-on-accent transition-colors hover:bg-pine-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2"
         >
           Jelajahi Event
         </Link>

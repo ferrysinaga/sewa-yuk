@@ -46,7 +46,7 @@ export default function SyncStatusBadge({
   return (
     <span className="inline-flex flex-wrap items-center gap-2" role="status" aria-live="polite">
       <span
-        className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-medium ring-1 ring-inset ring-line ${meta.badge}`}
+        className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-compact font-medium ring-1 ring-inset ring-line ${meta.badge}`}
       >
         <span aria-hidden="true" className={`h-1.5 w-1.5 rounded-full ${meta.dot}`} />
         {meta.label}
@@ -54,7 +54,7 @@ export default function SyncStatusBadge({
 
       {status === 'disconnected' && (
         <>
-          <span className="text-[11px] text-muted">
+          <span className="text-compact text-muted">
             {updatedAt ? `Terakhir diperbarui ${updatedAt}` : 'Belum ada pembaruan'}
           </span>
           {onRefresh && (
@@ -62,7 +62,7 @@ export default function SyncStatusBadge({
               type="button"
               onClick={onRefresh}
               disabled={refreshing}
-              className="rounded-[6px] border border-line bg-surface px-2.5 py-1 text-[11px] font-semibold text-ink transition-colors hover:bg-canvas focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60 motion-reduce:transition-none"
+              className="rounded-control border border-line bg-surface px-2.5 py-1 text-compact font-semibold text-ink transition-colors hover:bg-canvas focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60 motion-reduce:transition-none"
             >
               {refreshing ? 'Memuat…' : 'Muat ulang data'}
             </button>

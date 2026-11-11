@@ -4,7 +4,7 @@ import { useAuthStore } from '../../store/useAuthStore'
 import type { UserRole } from '../../types/auth'
 
 const navLinkClass = ({ isActive }: { isActive: boolean }) =>
-  `shrink-0 rounded-[6px] px-3 py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 focus-visible:ring-offset-canvas motion-reduce:transition-none ${
+  `shrink-0 rounded-control px-3 py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 focus-visible:ring-offset-canvas motion-reduce:transition-none ${
     isActive ? 'bg-pine-soft text-pine' : 'text-muted hover:bg-pine-soft hover:text-ink'
   }`
 
@@ -61,7 +61,7 @@ export default function AppHeader() {
     <header className="sticky top-0 z-50 border-b border-line bg-canvas">
       <a
         href="#main"
-        className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-[6px] focus:bg-ink focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-white"
+        className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-control focus:bg-ink focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-on-accent"
       >
         Lewati ke konten utama
       </a>
@@ -70,9 +70,9 @@ export default function AppHeader() {
         <div className="flex items-center gap-6">
           <Link
             to="/"
-            className="flex items-center gap-2.5 rounded-[6px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 focus-visible:ring-offset-canvas"
+            className="flex items-center gap-2.5 rounded-control focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 focus-visible:ring-offset-canvas"
           >
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[7px] bg-pine text-white">
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-card-sm bg-pine text-on-accent">
               <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" className="h-5 w-5">
                 <rect
                   x="4"
@@ -114,7 +114,7 @@ export default function AppHeader() {
             </span>
             <span className="leading-tight">
               <span className="block text-sm font-semibold tracking-tight text-ink">sewa-yuk</span>
-              <span className="hidden text-[10px] uppercase tracking-[0.14em] text-muted sm:block">
+              <span className="hidden text-tiny uppercase tracking-[0.14em] text-muted sm:block">
                 Peta booth pameran
               </span>
             </span>
@@ -138,7 +138,7 @@ export default function AppHeader() {
               </p>
             </div>
             <span
-              className={`hidden items-center rounded-[4px] border px-2.5 py-1 text-[11px] font-semibold sm:inline-flex ${
+              className={`hidden items-center rounded-chip border px-2.5 py-1 text-compact font-semibold sm:inline-flex ${
                 role === 'organizer'
                   ? 'border-line bg-pine-soft text-pine'
                   : 'border-line bg-canvas text-muted'
@@ -150,7 +150,7 @@ export default function AppHeader() {
               type="button"
               onClick={handleSignOut}
               disabled={signingOut}
-              className="inline-flex items-center justify-center rounded-[6px] border border-line bg-surface px-4 py-2 text-sm font-semibold text-ink transition-colors hover:bg-canvas focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 focus-visible:ring-offset-canvas disabled:cursor-not-allowed disabled:opacity-60 motion-reduce:transition-none"
+              className="inline-flex items-center justify-center rounded-control border border-line bg-surface px-4 py-2 text-sm font-semibold text-ink transition-colors hover:bg-canvas focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 focus-visible:ring-offset-canvas disabled:cursor-not-allowed disabled:opacity-60 motion-reduce:transition-none"
             >
               {signingOut ? 'Keluar…' : 'Keluar'}
             </button>
@@ -159,13 +159,13 @@ export default function AppHeader() {
           <div className="flex items-center gap-2">
             <Link
               to="/login"
-              className="inline-flex items-center justify-center rounded-[6px] px-4 py-2 text-sm font-semibold text-ink transition-colors hover:bg-pine-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 focus-visible:ring-offset-canvas motion-reduce:transition-none"
+              className="inline-flex items-center justify-center rounded-control px-4 py-2 text-sm font-semibold text-ink transition-colors hover:bg-pine-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 focus-visible:ring-offset-canvas motion-reduce:transition-none"
             >
               Masuk
             </Link>
             <Link
               to="/register"
-              className="inline-flex items-center justify-center rounded-[6px] bg-pine px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-pine-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 focus-visible:ring-offset-canvas motion-reduce:transition-none"
+              className="inline-flex items-center justify-center rounded-control bg-pine px-4 py-2 text-sm font-semibold text-on-accent transition-colors hover:bg-pine-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 focus-visible:ring-offset-canvas motion-reduce:transition-none"
             >
               Daftar
             </Link>

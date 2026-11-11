@@ -26,7 +26,7 @@ const variantStyles: Record<ToastVariant, string> = {
 
 const variantIcon: Record<ToastVariant, ReactNode> = {
   success: (
-    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[6px] bg-pine-soft text-pine">
+    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-control bg-pine-soft text-pine">
       <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true" className="h-4 w-4">
         <path
           fillRule="evenodd"
@@ -37,7 +37,7 @@ const variantIcon: Record<ToastVariant, ReactNode> = {
     </span>
   ),
   error: (
-    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[6px] bg-danger-soft text-danger">
+    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-control bg-danger-soft text-danger">
       <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true" className="h-4 w-4">
         <path
           fillRule="evenodd"
@@ -48,7 +48,7 @@ const variantIcon: Record<ToastVariant, ReactNode> = {
     </span>
   ),
   info: (
-    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[6px] bg-clay-soft text-clay-dark">
+    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-control bg-clay-soft text-clay-dark">
       <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true" className="h-4 w-4">
         <path
           fillRule="evenodd"
@@ -135,7 +135,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
           <div
             key={toast.id}
             role={toast.variant === 'error' ? 'alert' : 'status'}
-            className={`pointer-events-auto flex items-start gap-3 rounded-[8px] border p-3.5 ${variantStyles[toast.variant]}`}
+            className={`pointer-events-auto flex items-start gap-3 rounded-card-sm border p-3.5 ${variantStyles[toast.variant]}`}
           >
             {variantIcon[toast.variant]}
             <p className="flex-1 pt-1 text-sm leading-snug text-ink">{toast.message}</p>
@@ -143,7 +143,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
               type="button"
               onClick={() => removeToast(toast.id)}
               aria-label="Tutup notifikasi"
-              className="-m-2.5 inline-flex h-11 w-11 items-center justify-center rounded-[4px] text-muted transition-colors hover:bg-canvas hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine motion-reduce:transition-none"
+              className="-m-2.5 inline-flex h-11 w-11 items-center justify-center rounded-chip text-muted transition-colors hover:bg-canvas hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine motion-reduce:transition-none"
             >
               <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true" className="h-4 w-4">
                 <path d="M6.28 5.22a.75.75 0 0 0-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 1 0 1.06 1.06L10 11.06l3.72 3.72a.75.75 0 1 0 1.06-1.06L11.06 10l3.72-3.72a.75.75 0 0 0-1.06-1.06L10 8.94 6.28 5.22Z" />

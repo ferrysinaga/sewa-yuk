@@ -114,13 +114,13 @@ export default function CheckoutModal({
         aria-modal="true"
         aria-labelledby="checkout-title"
         style={{ maxHeight: '92dvh' }}
-        className="relative z-10 flex max-h-[92vh] w-full max-w-lg flex-col overflow-hidden rounded-t-[10px] border border-line bg-surface sm:rounded-[10px]"
+        className="relative z-10 flex max-h-[92vh] w-full max-w-lg flex-col overflow-hidden rounded-t-card border border-line bg-surface sm:rounded-card"
       >
         <div className="flex shrink-0 items-start justify-between gap-4 border-b border-line px-5 py-4 sm:px-6">
           <div>
             <div className="flex items-center gap-2">
               <span aria-hidden="true" className="h-1.5 w-1.5 bg-clay" />
-              <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted">
+              <p className="text-tiny font-semibold uppercase tracking-[0.16em] text-muted">
                 {reserved ? 'Booth terkunci' : 'Konfirmasi'}
               </p>
             </div>
@@ -140,7 +140,7 @@ export default function CheckoutModal({
             }}
             disabled={confirming}
             aria-label="Tutup dialog pemesanan"
-            className="-m-1.5 inline-flex h-11 w-11 items-center justify-center rounded-[4px] text-muted transition-colors hover:bg-canvas hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 focus-visible:ring-offset-surface disabled:cursor-not-allowed disabled:opacity-50 motion-reduce:transition-none"
+            className="-m-1.5 inline-flex h-11 w-11 items-center justify-center rounded-chip text-muted transition-colors hover:bg-canvas hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 focus-visible:ring-offset-surface disabled:cursor-not-allowed disabled:opacity-50 motion-reduce:transition-none"
           >
             <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true" className="h-5 w-5">
               <path d="M6.28 5.22a.75.75 0 0 0-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 1 0 1.06 1.06L10 11.06l3.72 3.72a.75.75 0 1 0 1.06-1.06L11.06 10l3.72-3.72a.75.75 0 0 0-1.06-1.06L10 8.94 6.28 5.22Z" />
@@ -151,7 +151,7 @@ export default function CheckoutModal({
         <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 py-5 sm:px-6">
           {reserved ? (
             <div className="text-center">
-              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-[10px] bg-pine-soft text-pine">
+              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-card bg-pine-soft text-pine">
                 <svg
                   viewBox="0 0 24 24"
                   fill="none"
@@ -173,7 +173,7 @@ export default function CheckoutModal({
                 tersedia untuk penyewa lain di peta.
               </p>
 
-              <dl className="mt-5 space-y-2 rounded-[6px] border border-line bg-canvas p-4 text-left text-sm">
+              <dl className="mt-5 space-y-2 rounded-control border border-line bg-canvas p-4 text-left text-sm">
                 {bookingCode && (
                   <div className="flex items-center justify-between gap-3">
                     <dt className="text-muted">Kode pesanan</dt>
@@ -207,9 +207,9 @@ export default function CheckoutModal({
             </div>
           ) : (
             <>
-              <div className="flex items-start justify-between gap-3 rounded-[6px] border border-line bg-canvas p-4">
+              <div className="flex items-start justify-between gap-3 rounded-control border border-line bg-canvas p-4">
                 <div>
-                  <p className="text-[10px] uppercase tracking-[0.12em] text-muted">{eventName}</p>
+                  <p className="text-tiny uppercase tracking-[0.12em] text-muted">{eventName}</p>
                   <p className="mt-1 text-base font-semibold text-ink">
                     {categoryLabel[booth.category]}
                   </p>
@@ -218,7 +218,7 @@ export default function CheckoutModal({
                   </p>
                 </div>
                 <span
-                  className={`shrink-0 rounded-[4px] px-2.5 py-1 text-[11px] font-semibold ${
+                  className={`shrink-0 rounded-chip px-2.5 py-1 text-compact font-semibold ${
                     isAvailable
                       ? 'border border-line bg-pine-soft text-pine'
                       : 'border border-line bg-unavailable-deep text-ink'
@@ -229,7 +229,7 @@ export default function CheckoutModal({
               </div>
 
               {!isAvailable && (
-                <div className="mt-4 rounded-[6px] border border-line bg-unavailable p-4 text-sm leading-relaxed text-ink">
+                <div className="mt-4 rounded-control border border-line bg-unavailable p-4 text-sm leading-relaxed text-ink">
                   Booth ini baru saja diamankan oleh penyewa lain. Pilih booth lain yang masih
                   bertanda tersedia pada peta.
                 </div>
@@ -263,7 +263,7 @@ export default function CheckoutModal({
                     return (
                       <label
                         key={method}
-                        className={`cursor-pointer rounded-[6px] border p-3 transition-colors focus-within:ring-2 focus-within:ring-pine focus-within:ring-offset-2 focus-within:ring-offset-surface motion-reduce:transition-none ${
+                        className={`cursor-pointer rounded-control border p-3 transition-colors focus-within:ring-2 focus-within:ring-pine focus-within:ring-offset-2 focus-within:ring-offset-surface motion-reduce:transition-none ${
                           isSelected
                             ? 'border-pine bg-pine-soft'
                             : 'border-line bg-surface hover:border-pine'
@@ -287,10 +287,10 @@ export default function CheckoutModal({
                               isSelected ? 'border-pine bg-pine' : 'border-line bg-surface'
                             }`}
                           >
-                            {isSelected && <span className="h-1.5 w-1.5 rounded-full bg-white" />}
+                            {isSelected && <span className="h-1.5 w-1.5 rounded-full bg-surface" />}
                           </span>
                         </span>
-                        <span className="mt-1 block text-[11px] leading-snug text-muted">
+                        <span className="mt-1 block text-compact leading-snug text-muted">
                           {PAYMENT_METHOD_DESCRIPTION[method]}
                         </span>
                       </label>
@@ -299,7 +299,7 @@ export default function CheckoutModal({
                 </div>
               </fieldset>
 
-              <p className="mt-4 flex items-start gap-2 text-[11px] leading-relaxed text-muted">
+              <p className="mt-4 flex items-start gap-2 text-compact leading-relaxed text-muted">
                 <svg
                   viewBox="0 0 20 20"
                   fill="currentColor"
@@ -328,14 +328,14 @@ export default function CheckoutModal({
               <button
                 type="button"
                 onClick={onClose}
-                className="inline-flex min-h-11 items-center justify-center rounded-[6px] border border-line bg-surface px-5 py-3 text-sm font-semibold text-ink transition-colors hover:bg-canvas focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 focus-visible:ring-offset-surface motion-reduce:transition-none"
+                className="inline-flex min-h-11 items-center justify-center rounded-control border border-line bg-surface px-5 py-3 text-sm font-semibold text-ink transition-colors hover:bg-canvas focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 focus-visible:ring-offset-surface motion-reduce:transition-none"
               >
                 Selesai
               </button>
               <button
                 type="button"
                 onClick={onViewBookings}
-                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-[6px] bg-pine px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-pine-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 focus-visible:ring-offset-surface motion-reduce:transition-none"
+                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-control bg-pine px-5 py-3 text-sm font-semibold text-on-accent transition-colors hover:bg-pine-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 focus-visible:ring-offset-surface motion-reduce:transition-none"
               >
                 Lihat Pesanan Saya
               </button>
@@ -346,7 +346,7 @@ export default function CheckoutModal({
                 type="button"
                 onClick={onClose}
                 disabled={confirming}
-                className="inline-flex min-h-11 items-center justify-center rounded-[6px] border border-line bg-surface px-5 py-3 text-sm font-semibold text-ink transition-colors hover:bg-canvas focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 focus-visible:ring-offset-surface disabled:cursor-not-allowed disabled:opacity-60 motion-reduce:transition-none"
+                className="inline-flex min-h-11 items-center justify-center rounded-control border border-line bg-surface px-5 py-3 text-sm font-semibold text-ink transition-colors hover:bg-canvas focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 focus-visible:ring-offset-surface disabled:cursor-not-allowed disabled:opacity-60 motion-reduce:transition-none"
               >
                 Batal
               </button>
@@ -360,7 +360,7 @@ export default function CheckoutModal({
                   }
                 }}
                 disabled={confirming}
-                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-[6px] bg-pine px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-pine-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 focus-visible:ring-offset-surface disabled:cursor-not-allowed disabled:opacity-60 motion-reduce:transition-none"
+                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-control bg-pine px-5 py-3 text-sm font-semibold text-on-accent transition-colors hover:bg-pine-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 focus-visible:ring-offset-surface disabled:cursor-not-allowed disabled:opacity-60 motion-reduce:transition-none"
               >
                 {confirming ? (
                   <>

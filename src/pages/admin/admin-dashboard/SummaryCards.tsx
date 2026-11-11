@@ -17,7 +17,7 @@ export default function SummaryCards({ summaryCards }: { summaryCards: SummaryCa
             index === 3 ? 'border-t border-line sm:border-l xl:border-t-0' : ''
           }`}
         >
-          <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted">
+          <p className="text-tiny font-semibold uppercase tracking-[0.14em] text-muted">
             {stat.label}
           </p>
           <p

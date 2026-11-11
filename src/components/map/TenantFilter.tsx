@@ -24,7 +24,7 @@ export default function TenantFilter({ activeCategory, onCategoryChange }: Tenan
   return (
     <section
       aria-labelledby="filter-kategori-heading"
-      className="rounded-[10px] border border-line bg-surface p-4"
+      className="rounded-card border border-line bg-surface p-4"
     >
       <div className="flex items-center justify-between gap-3">
         <h2 id="filter-kategori-heading" className="text-sm font-semibold text-ink">
@@ -47,16 +47,16 @@ export default function TenantFilter({ activeCategory, onCategoryChange }: Tenan
               type="button"
               onClick={() => onCategoryChange(filter.value)}
               aria-pressed={isActive}
-              className={`inline-flex min-h-11 items-center gap-1.5 rounded-[6px] border px-3 py-2 text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 focus-visible:ring-offset-surface motion-reduce:transition-none ${
+              className={`inline-flex min-h-11 items-center gap-1.5 rounded-control border px-3 py-2 text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 focus-visible:ring-offset-surface motion-reduce:transition-none ${
                 isActive
-                  ? 'border-pine bg-pine text-white'
+                  ? 'border-pine bg-pine text-on-accent'
                   : 'border-line bg-surface text-muted hover:border-pine hover:text-pine'
               }`}
             >
               {filter.label}
               <span
-                className={`rounded-[3px] px-1.5 py-0.5 text-[10px] font-semibold tabular-nums ${
-                  isActive ? 'bg-pine-dark text-white' : 'bg-canvas text-muted'
+                className={`rounded-chip px-1.5 py-0.5 text-tiny font-semibold tabular-nums ${
+                  isActive ? 'bg-pine-dark text-on-accent' : 'bg-canvas text-muted'
                 }`}
               >
                 {count}

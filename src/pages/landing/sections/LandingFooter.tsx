@@ -11,7 +11,7 @@ export default function LandingFooter() {
             <BrandMark className="h-8 w-8" />
             <div>
               <p className="text-sm font-semibold text-ink">sewa-yuk</p>
-              <p className="text-[11px] text-muted">Peta booth untuk acara yang lebih rapi.</p>
+              <p className="text-compact text-muted">Peta booth untuk acara yang lebih rapi.</p>
             </div>
           </div>
 
@@ -20,14 +20,14 @@ export default function LandingFooter() {
               <a
                 key={item.href}
                 href={item.href}
-                className="rounded-[4px] text-sm text-muted transition-colors hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 focus-visible:ring-offset-canvas motion-reduce:transition-none"
+                className="rounded-chip text-sm text-muted transition-colors hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 focus-visible:ring-offset-canvas motion-reduce:transition-none"
               >
                 {item.label}
               </a>
             ))}
             <Link
               to="/login"
-              className="rounded-[4px] text-sm text-muted transition-colors hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 focus-visible:ring-offset-canvas motion-reduce:transition-none"
+              className="rounded-chip text-sm text-muted transition-colors hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 focus-visible:ring-offset-canvas motion-reduce:transition-none"
             >
               Masuk
             </Link>

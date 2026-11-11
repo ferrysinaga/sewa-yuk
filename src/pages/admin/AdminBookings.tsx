@@ -47,7 +47,7 @@ export default function AdminBookings() {
             <BookingMetricsCards state={state} />
 
             <section
-              className="mt-6 overflow-hidden rounded-[10px] border border-line bg-surface "
+              className="mt-6 overflow-hidden rounded-card border border-line bg-surface "
               aria-busy={state.listLoading}
             >
               <BookingListToolbar state={state} />
@@ -74,7 +74,7 @@ export default function AdminBookings() {
               <BookingPagination state={state} />
             </section>
 
-            <p className="mt-6 text-center text-[11px] text-muted">
+            <p className="mt-6 text-center text-compact text-muted">
               Verifikasi pembayaran akan mengubah status booth menjadi Booked secara otomatis.
             </p>
           </>

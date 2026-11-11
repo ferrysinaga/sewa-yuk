@@ -16,7 +16,7 @@ export default function BookingPagination({ state }: { state: AdminBookingsState
           onClick={() => state.goToPage(state.page - 1)}
           disabled={state.page <= 1 || state.listLoading}
           aria-label="Halaman sebelumnya"
-          className="inline-flex items-center gap-1.5 rounded-[8px] border border-line bg-surface px-3 py-2 text-xs font-semibold text-ink transition-colors hover:bg-canvas focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+          className="inline-flex items-center gap-1.5 rounded-card-sm border border-line bg-surface px-3 py-2 text-xs font-semibold text-ink transition-colors hover:bg-canvas focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
         >
           Sebelumnya
         </button>
@@ -28,7 +28,7 @@ export default function BookingPagination({ state }: { state: AdminBookingsState
           onClick={() => state.goToPage(state.page + 1)}
           disabled={state.page >= state.totalPages || state.listLoading}
           aria-label="Halaman berikutnya"
-          className="inline-flex items-center gap-1.5 rounded-[8px] border border-line bg-surface px-3 py-2 text-xs font-semibold text-ink transition-colors hover:bg-canvas focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+          className="inline-flex items-center gap-1.5 rounded-card-sm border border-line bg-surface px-3 py-2 text-xs font-semibold text-ink transition-colors hover:bg-canvas focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
         >
           Berikutnya
         </button>

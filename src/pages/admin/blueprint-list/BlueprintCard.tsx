@@ -43,10 +43,10 @@ export default function BlueprintCard({
   const isPublished = blueprint.status === 'published'
 
   return (
-    <article className="flex flex-col rounded-[10px] border border-line bg-surface p-5 transition-colors">
+    <article className="flex flex-col rounded-card border border-line bg-surface p-5 transition-colors">
       <div className="flex items-center justify-between gap-3">
         <span
-          className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold ring-1 ring-inset ${BLUEPRINT_STATUS_BADGE[blueprint.status]}`}
+          className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-compact font-semibold ring-1 ring-inset ${BLUEPRINT_STATUS_BADGE[blueprint.status]}`}
         >
           <span
             className={`h-1.5 w-1.5 rounded-full ${
@@ -55,11 +55,11 @@ export default function BlueprintCard({
           />
           {BLUEPRINT_STATUS_LABEL[blueprint.status]}
         </span>
-        <span className="text-[11px] text-muted">{blueprint.totalBooths} booth</span>
+        <span className="text-compact text-muted">{blueprint.totalBooths} booth</span>
       </div>
 
       {blueprint.image_url && (
-        <div className="mt-3 overflow-hidden rounded-[8px] border border-line bg-canvas">
+        <div className="mt-3 overflow-hidden rounded-card-sm border border-line bg-canvas">
           <img
             src={blueprint.image_url}
             alt={`Gambar denah ${blueprint.name}`}
@@ -72,10 +72,10 @@ export default function BlueprintCard({
       {editing ? (
         <div
           id={`edit-form-${blueprint.id}`}
-          className="mt-3 rounded-[8px] border border-line bg-canvas p-3"
+          className="mt-3 rounded-card-sm border border-line bg-canvas p-3"
         >
           <p className="text-xs font-semibold text-ink">Edit detail denah</p>
-          <p className="mt-1 text-[11px] leading-relaxed text-muted">
+          <p className="mt-1 text-compact leading-relaxed text-muted">
             ID denah tetap <span className="font-mono">{blueprint.id}</span> agar tautan event tidak
             berubah.
           </p>
@@ -84,7 +84,7 @@ export default function BlueprintCard({
             <div>
               <label
                 htmlFor={`edit-name-${blueprint.id}`}
-                className="text-[11px] font-medium text-ink"
+                className="text-compact font-medium text-ink"
               >
                 Nama denah
               </label>
@@ -98,13 +98,13 @@ export default function BlueprintCard({
                     name: event.target.value,
                   }))
                 }
-                className="mt-1 w-full rounded-[6px] border border-line bg-surface px-2.5 py-1.5 text-xs text-ink placeholder:text-muted focus:border-pine focus:outline-none focus:ring-2 focus:ring-pine-soft"
+                className="mt-1 w-full rounded-control border border-line bg-surface px-2.5 py-1.5 text-xs text-ink placeholder:text-muted focus:border-pine focus:outline-none focus:ring-2 focus:ring-pine-soft"
               />
             </div>
             <div>
               <label
                 htmlFor={`edit-venue-${blueprint.id}`}
-                className="text-[11px] font-medium text-ink"
+                className="text-compact font-medium text-ink"
               >
                 Venue
               </label>
@@ -119,13 +119,13 @@ export default function BlueprintCard({
                   }))
                 }
                 placeholder="Nama venue"
-                className="mt-1 w-full rounded-[6px] border border-line bg-surface px-2.5 py-1.5 text-xs text-ink placeholder:text-muted focus:border-pine focus:outline-none focus:ring-2 focus:ring-pine-soft"
+                className="mt-1 w-full rounded-control border border-line bg-surface px-2.5 py-1.5 text-xs text-ink placeholder:text-muted focus:border-pine focus:outline-none focus:ring-2 focus:ring-pine-soft"
               />
             </div>
             <div>
               <label
                 htmlFor={`edit-date-${blueprint.id}`}
-                className="text-[11px] font-medium text-ink"
+                className="text-compact font-medium text-ink"
               >
                 Tanggal event
               </label>
@@ -140,7 +140,7 @@ export default function BlueprintCard({
                   }))
                 }
                 placeholder="12 - 15 Maret 2026"
-                className="mt-1 w-full rounded-[6px] border border-line bg-surface px-2.5 py-1.5 text-xs text-ink placeholder:text-muted focus:border-pine focus:outline-none focus:ring-2 focus:ring-pine-soft"
+                className="mt-1 w-full rounded-control border border-line bg-surface px-2.5 py-1.5 text-xs text-ink placeholder:text-muted focus:border-pine focus:outline-none focus:ring-2 focus:ring-pine-soft"
               />
             </div>
           </div>
@@ -148,7 +148,7 @@ export default function BlueprintCard({
           {editError && (
             <p
               role="alert"
-              className="mt-3 rounded-[6px] border border-danger bg-danger-soft px-2.5 py-2 text-[11px] leading-relaxed text-danger-dark"
+              className="mt-3 rounded-control border border-danger bg-danger-soft px-2.5 py-2 text-compact leading-relaxed text-danger-dark"
             >
               {editError}
             </p>
@@ -159,14 +159,14 @@ export default function BlueprintCard({
               type="button"
               onClick={onSaveEdit}
               disabled={savingEdit}
-              className="inline-flex flex-1 items-center justify-center rounded-[6px] bg-pine px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-pine-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+              className="inline-flex flex-1 items-center justify-center rounded-control bg-pine px-3 py-2 text-xs font-semibold text-on-accent transition-colors hover:bg-pine-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {savingEdit ? 'Menyimpan...' : 'Simpan Detail'}
+              {savingEdit ? 'Menyimpan…' : 'Simpan Detail'}
             </button>
             <button
               type="button"
               onClick={onCancelEdit}
-              className="inline-flex flex-1 items-center justify-center rounded-[6px] border border-line bg-surface px-3 py-2 text-xs font-semibold text-ink transition-colors hover:bg-canvas focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2"
+              className="inline-flex flex-1 items-center justify-center rounded-control border border-line bg-surface px-3 py-2 text-xs font-semibold text-ink transition-colors hover:bg-canvas focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2"
             >
               Batal
             </button>
@@ -189,16 +189,16 @@ export default function BlueprintCard({
       )}
 
       <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
-        <div className="rounded-[8px] bg-canvas p-2.5">
-          <p className="text-[11px] text-muted">Tersedia</p>
+        <div className="rounded-card-sm bg-canvas p-2.5">
+          <p className="text-compact text-muted">Tersedia</p>
           <p className="mt-0.5 font-semibold text-ink">
             {blueprint.availableBooths} / {blueprint.totalBooths}
           </p>
         </div>
-        <div className="rounded-[8px] bg-canvas p-2.5">
-          <p className="text-[11px] text-muted">ID denah</p>
+        <div className="rounded-card-sm bg-canvas p-2.5">
+          <p className="text-compact text-muted">ID denah</p>
           <p
-            className="mt-0.5 truncate font-mono text-[11px] font-semibold text-ink"
+            className="mt-0.5 truncate font-mono text-compact font-semibold text-ink"
             title={blueprint.id}
           >
             {blueprint.id}
@@ -209,7 +209,7 @@ export default function BlueprintCard({
       <div className="mt-auto flex flex-col gap-2 pt-4">
         <Link
           to={`/admin/blueprint/${blueprint.id}`}
-          className="inline-flex items-center justify-center gap-2 rounded-[8px] bg-pine px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-pine-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2"
+          className="inline-flex items-center justify-center gap-2 rounded-card-sm bg-pine px-4 py-2.5 text-sm font-semibold text-on-accent transition-colors hover:bg-pine-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2"
         >
           Atur Denah & Booth
         </Link>
@@ -219,7 +219,7 @@ export default function BlueprintCard({
             to={`/event/${blueprint.id}`}
             target="_blank"
             rel="noreferrer"
-            className="inline-flex items-center justify-center rounded-[8px] border border-line bg-surface px-3 py-2 text-xs font-semibold text-ink transition-colors hover:bg-canvas focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2"
+            className="inline-flex items-center justify-center rounded-card-sm border border-line bg-surface px-3 py-2 text-xs font-semibold text-ink transition-colors hover:bg-canvas focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2"
           >
             Pratinjau
           </Link>
@@ -227,13 +227,13 @@ export default function BlueprintCard({
             type="button"
             onClick={onPublishToggle}
             disabled={isUpdating}
-            className={`inline-flex items-center justify-center rounded-[8px] px-3 py-2 text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60 ${
+            className={`inline-flex items-center justify-center rounded-card-sm px-3 py-2 text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60 ${
               isPublished
                 ? 'border border-line bg-surface text-ink hover:bg-canvas'
-                : 'bg-pine text-white hover:bg-pine-dark'
+                : 'bg-pine text-on-accent hover:bg-pine-dark'
             }`}
           >
-            {isUpdating ? 'Menyimpan...' : isPublished ? 'Jadikan Draft' : 'Publikasikan'}
+            {isUpdating ? 'Menyimpan…' : isPublished ? 'Jadikan Draft' : 'Publikasikan'}
           </button>
         </div>
 
@@ -243,7 +243,7 @@ export default function BlueprintCard({
             onClick={editing ? onCancelEdit : onStartEdit}
             aria-expanded={editing}
             aria-controls={editing ? `edit-form-${blueprint.id}` : undefined}
-            className="inline-flex items-center justify-center rounded-[8px] border border-line bg-surface px-3 py-2 text-xs font-semibold text-ink transition-colors hover:bg-canvas focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2"
+            className="inline-flex items-center justify-center rounded-card-sm border border-line bg-surface px-3 py-2 text-xs font-semibold text-ink transition-colors hover:bg-canvas focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2"
           >
             {editing ? 'Tutup Edit' : 'Edit Detail'}
           </button>
@@ -253,9 +253,9 @@ export default function BlueprintCard({
             aria-expanded={confirmingDelete}
             aria-controls={confirmingDelete ? `delete-blueprint-${blueprint.id}` : undefined}
             disabled={deleting}
-            className="inline-flex items-center justify-center rounded-[8px] border border-danger bg-surface px-3 py-2 text-xs font-semibold text-danger-dark transition-colors hover:bg-danger-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-danger focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+            className="inline-flex items-center justify-center rounded-card-sm border border-danger bg-surface px-3 py-2 text-xs font-semibold text-danger-dark transition-colors hover:bg-danger-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-danger focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {deleting ? 'Menghapus...' : 'Hapus'}
+            {deleting ? 'Menghapus…' : 'Hapus'}
           </button>
         </div>
 
@@ -270,7 +270,7 @@ export default function BlueprintCard({
                   ? `Denah dan ${blueprint.totalBooths} booth di dalamnya akan dihapus permanen. ${blueprint.totalBookings} booking terkait tetap tersimpan sebagai riwayat.`
                   : `Denah akan dihapus permanen. ${blueprint.totalBookings} booking terkait tetap tersimpan sebagai riwayat.`
             }
-            confirmLabel={deleting ? 'Menghapus...' : 'Hapus denah'}
+            confirmLabel={deleting ? 'Menghapus…' : 'Hapus denah'}
             onConfirm={onConfirmDelete}
             onCancel={onCancelDelete}
           />

@@ -203,9 +203,9 @@ export default function BlueprintWorkspace() {
 
       <DragOverlay dropAnimation={null}>
         {activePalette ? (
-          <div className="pointer-events-none w-44 rounded-[8px] border border-pine-dark bg-pine px-3 py-2.5 text-white">
+          <div className="pointer-events-none w-44 rounded-card-sm border border-pine-dark bg-pine px-3 py-2.5 text-on-accent">
             <p className="text-sm font-semibold">{activePalette.template.category}</p>
-            <p className="text-[11px] text-pine-soft">
+            <p className="text-compact text-pine-soft">
               {activePalette.template.width} × {activePalette.template.height} px
             </p>
           </div>

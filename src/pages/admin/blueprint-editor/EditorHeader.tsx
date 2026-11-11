@@ -12,7 +12,7 @@ export default function EditorHeader({ state }: { state: BlueprintEditorState })
       <div className="max-w-2xl">
         <Link
           to="/admin"
-          className="inline-flex items-center gap-1.5 rounded-[4px] text-sm font-medium text-muted transition-colors hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 focus-visible:ring-offset-canvas motion-reduce:transition-none"
+          className="inline-flex items-center gap-1.5 rounded-chip text-sm font-medium text-muted transition-colors hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 focus-visible:ring-offset-canvas motion-reduce:transition-none"
         >
           <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" className="h-4 w-4">
             <path
@@ -28,7 +28,7 @@ export default function EditorHeader({ state }: { state: BlueprintEditorState })
 
         <div className="mt-3 flex items-center gap-2.5">
           <span aria-hidden="true" className="h-px w-6 bg-clay" />
-          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted">
+          <p className="text-compact font-semibold uppercase tracking-[0.18em] text-muted">
             Editor denah
           </p>
         </div>
@@ -54,7 +54,7 @@ export default function EditorHeader({ state }: { state: BlueprintEditorState })
             </span>
           )}
           {isDirty && (
-            <span className="inline-flex items-center gap-2 rounded-[4px] border border-line bg-clay-soft px-2.5 py-1 text-[11px] font-medium text-clay-dark">
+            <span className="inline-flex items-center gap-2 rounded-chip border border-line bg-clay-soft px-2.5 py-1 text-compact font-medium text-clay-dark">
               <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-clay" />
               Perubahan belum disimpan
             </span>
@@ -71,9 +71,9 @@ export default function EditorHeader({ state }: { state: BlueprintEditorState })
         </p>
         <p className="mt-1 text-sm text-muted">
           {[draft?.venue, draft?.eventDate].filter(Boolean).join(' · ') ||
-            (loading ? 'Memuat informasi event...' : 'Lengkapi informasi denah di bawah.')}
+            (loading ? 'Memuat informasi event…' : 'Lengkapi informasi denah di bawah.')}
         </p>
-        <p className="mt-1 font-mono text-[11px] text-muted">/event/{blueprintId}</p>
+        <p className="mt-1 font-mono text-compact text-muted">/event/{blueprintId}</p>
       </div>
 
       <div className="flex flex-col gap-2 sm:flex-row">
@@ -82,7 +82,7 @@ export default function EditorHeader({ state }: { state: BlueprintEditorState })
             to={`/event/${blueprintId}`}
             target="_blank"
             rel="noreferrer"
-            className="inline-flex items-center justify-center gap-2 rounded-[6px] border border-line bg-surface px-5 py-2.5 text-sm font-semibold text-ink transition-colors hover:bg-canvas focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 focus-visible:ring-offset-canvas motion-reduce:transition-none"
+            className="inline-flex items-center justify-center gap-2 rounded-control border border-line bg-surface px-5 py-2.5 text-sm font-semibold text-ink transition-colors hover:bg-canvas focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 focus-visible:ring-offset-canvas motion-reduce:transition-none"
           >
             <svg viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4">
               <path d="M10 12.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z" />
@@ -99,7 +99,7 @@ export default function EditorHeader({ state }: { state: BlueprintEditorState })
           type="button"
           onClick={() => void state.handleSave()}
           disabled={saving || loading || Boolean(loadError) || !draft}
-          className="inline-flex items-center justify-center gap-2 rounded-[6px] bg-pine px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-pine-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 focus-visible:ring-offset-canvas disabled:cursor-not-allowed disabled:opacity-60 motion-reduce:transition-none"
+          className="inline-flex items-center justify-center gap-2 rounded-control bg-pine px-5 py-2.5 text-sm font-semibold text-on-accent transition-colors hover:bg-pine-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 focus-visible:ring-offset-canvas disabled:cursor-not-allowed disabled:opacity-60 motion-reduce:transition-none"
         >
           {saving ? (
             <>

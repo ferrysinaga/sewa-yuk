@@ -20,16 +20,16 @@ export default function BookingStatusFilters({ state }: { state: TenantBookingsS
             type="button"
             onClick={() => setStatusFilter(status)}
             aria-pressed={isActive}
-            className={`inline-flex items-center gap-1.5 rounded-[8px] px-3 py-1.5 text-xs font-medium ring-1 ring-inset transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 ${
+            className={`inline-flex items-center gap-1.5 rounded-card-sm px-3 py-1.5 text-xs font-medium ring-1 ring-inset transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 ${
               isActive
-                ? 'bg-pine text-white ring-pine'
+                ? 'bg-pine text-on-accent ring-pine'
                 : 'bg-surface text-muted ring-line hover:bg-canvas'
             }`}
           >
             {status === 'all' ? 'Semua' : BOOKING_STATUS_LABEL[status]}
             <span
-              className={`rounded-full px-1.5 py-0.5 text-[10px] font-semibold ${
-                isActive ? 'bg-pine-dark text-white' : 'bg-unavailable text-muted'
+              className={`rounded-full px-1.5 py-0.5 text-tiny font-semibold ${
+                isActive ? 'bg-pine-dark text-on-accent' : 'bg-unavailable text-muted'
               }`}
             >
               {count}

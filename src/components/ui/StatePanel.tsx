@@ -27,7 +27,7 @@ export function LoadingPanel({
 }: LoadingPanelProps) {
   const shellClassName =
     variant === 'panel'
-      ? `${minHeightClassName} flex items-center justify-center rounded-[10px] border border-line bg-surface px-6`
+      ? `${minHeightClassName} flex items-center justify-center rounded-card border border-line bg-surface px-6`
       : 'flex flex-col items-center justify-center'
 
   return (
@@ -61,7 +61,7 @@ function AlertIcon({ tone }: { tone: 'danger' | 'clay' }) {
 
   return (
     <div
-      className={`mx-auto flex h-12 w-12 items-center justify-center rounded-[10px] ${toneClassName}`}
+      className={`mx-auto flex h-12 w-12 items-center justify-center rounded-card ${toneClassName}`}
     >
       <svg
         viewBox="0 0 24 24"
@@ -100,7 +100,7 @@ export function ErrorPanel({
     return (
       <div
         role="alert"
-        className={`${className} flex flex-col gap-3 rounded-[10px] border border-danger bg-danger-soft px-4 py-4 text-sm text-danger-dark sm:flex-row sm:items-center sm:justify-between`}
+        className={`${className} flex flex-col gap-3 rounded-card border border-danger bg-danger-soft px-4 py-4 text-sm text-danger-dark sm:flex-row sm:items-center sm:justify-between`}
       >
         <p className="leading-relaxed">
           {title}: {description}
@@ -110,7 +110,7 @@ export function ErrorPanel({
             <button
               type="button"
               onClick={onRetry}
-              className="inline-flex shrink-0 items-center justify-center rounded-[6px] border border-danger bg-surface px-4 py-2 text-sm font-semibold text-danger-dark transition-colors hover:bg-danger-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-danger focus-visible:ring-offset-2 motion-reduce:transition-none"
+              className="inline-flex shrink-0 items-center justify-center rounded-control border border-danger bg-surface px-4 py-2 text-sm font-semibold text-danger-dark transition-colors hover:bg-danger-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-danger focus-visible:ring-offset-2 motion-reduce:transition-none"
             >
               {retryLabel}
             </button>
@@ -124,7 +124,7 @@ export function ErrorPanel({
   return (
     <div
       role="alert"
-      className={`${className} rounded-[10px] border border-line bg-surface p-8 text-center`}
+      className={`${className} rounded-card border border-line bg-surface p-8 text-center`}
     >
       {showIcon && <AlertIcon tone={iconTone} />}
       <h2 className="mt-4 text-lg font-semibold text-ink">{title}</h2>
@@ -135,7 +135,7 @@ export function ErrorPanel({
             <button
               type="button"
               onClick={onRetry}
-              className="inline-flex items-center justify-center rounded-[8px] bg-pine px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-pine-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 focus-visible:ring-offset-surface motion-reduce:transition-none"
+              className="inline-flex items-center justify-center rounded-card-sm bg-pine px-5 py-2.5 text-sm font-semibold text-on-accent transition-colors hover:bg-pine-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 focus-visible:ring-offset-surface motion-reduce:transition-none"
             >
               {retryLabel}
             </button>
@@ -160,7 +160,7 @@ interface EmptyPanelProps {
 
 function EmptyListIcon() {
   return (
-    <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-[10px] bg-pine-soft text-pine">
+    <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-card bg-pine-soft text-pine">
       <svg
         viewBox="0 0 24 24"
         fill="none"
@@ -201,7 +201,7 @@ export function EmptyPanel({
 
   return (
     <div
-      className={`${className} rounded-[10px] border border-dashed border-line bg-surface text-center ${paddingClassName}`}
+      className={`${className} rounded-card border border-dashed border-line bg-surface text-center ${paddingClassName}`}
     >
       {hasIcon && <EmptyListIcon />}
       <Title className={titleClassName}>{title}</Title>

@@ -75,19 +75,19 @@ export default function InlineConfirm({
       aria-labelledby={`${id}-title`}
       aria-describedby={`${id}-description`}
       onKeyDown={handleKeyDown}
-      className={className ?? 'rounded-[6px] border border-danger bg-danger-soft p-3'}
+      className={className ?? 'rounded-control border border-danger bg-danger-soft p-3'}
     >
       <p id={`${id}-title`} className="text-xs font-semibold text-danger-dark">
         {title}
       </p>
-      <p id={`${id}-description`} className="mt-1 text-[11px] leading-relaxed text-danger-dark">
+      <p id={`${id}-description`} className="mt-1 text-compact leading-relaxed text-danger-dark">
         {description}
       </p>
       <div className="mt-3 flex flex-wrap gap-2">
         <button
           type="button"
           onClick={onConfirm}
-          className="inline-flex items-center justify-center rounded-[4px] bg-danger px-3 py-1.5 text-[11px] font-semibold text-white transition-colors hover:bg-danger-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-danger focus-visible:ring-offset-2 motion-reduce:transition-none"
+          className="inline-flex items-center justify-center rounded-chip bg-danger px-3 py-1.5 text-compact font-semibold text-on-accent transition-colors hover:bg-danger-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-danger focus-visible:ring-offset-2 motion-reduce:transition-none"
         >
           {confirmLabel}
         </button>
@@ -95,7 +95,7 @@ export default function InlineConfirm({
           ref={cancelRef}
           type="button"
           onClick={onCancel}
-          className="inline-flex items-center justify-center rounded-[4px] border border-line bg-surface px-3 py-1.5 text-[11px] font-semibold text-ink transition-colors hover:bg-canvas focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 motion-reduce:transition-none"
+          className="inline-flex items-center justify-center rounded-chip border border-line bg-surface px-3 py-1.5 text-compact font-semibold text-ink transition-colors hover:bg-canvas focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 motion-reduce:transition-none"
         >
           {cancelLabel}
         </button>

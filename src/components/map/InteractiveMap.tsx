@@ -95,10 +95,10 @@ const TenantBooth = memo(function TenantBooth({
       ? 'fill-pine stroke-pine-dark'
       : 'fill-surface stroke-pine hover:fill-pine-soft hover:stroke-pine-dark'
 
-  const titleTone = isSelected && !isUnavailable ? 'fill-white' : 'fill-ink'
+  const titleTone = isSelected && !isUnavailable ? 'fill-on-accent' : 'fill-ink'
   const metaTone = isSelected && !isUnavailable ? 'fill-pine-soft' : 'fill-muted'
   const priceTone =
-    isSelected && !isUnavailable ? 'fill-white' : isUnavailable ? 'fill-muted' : 'fill-ink'
+    isSelected && !isUnavailable ? 'fill-on-accent' : isUnavailable ? 'fill-muted' : 'fill-ink'
 
   const handleSelect = useCallback(() => onSelect(booth.id), [booth.id, onSelect])
 
@@ -170,21 +170,21 @@ const TenantBooth = memo(function TenantBooth({
       <text
         x={booth.positionX + 12}
         y={booth.positionY + 22}
-        className={`pointer-events-none text-[11px] font-semibold ${titleTone}`}
+        className={`pointer-events-none text-compact font-semibold ${titleTone}`}
       >
         {categoryLabel[booth.category]}
       </text>{' '}
       <text
         x={booth.positionX + 12}
         y={booth.positionY + 38}
-        className={`pointer-events-none text-[9px] font-medium ${metaTone}`}
+        className={`pointer-events-none text-micro font-medium ${metaTone}`}
       >
         {statusLabel[booth.status]}
       </text>{' '}
       <text
         x={booth.positionX + 12}
         y={booth.positionY + booth.height - 12}
-        className={`pointer-events-none text-[9px] font-medium tabular-nums ${priceTone}`}
+        className={`pointer-events-none text-micro font-medium tabular-nums ${priceTone}`}
       >
         {formatPrice(booth.price)}
       </text>
@@ -524,12 +524,12 @@ export default function InteractiveMap({ activeCategory }: InteractiveMapProps) 
   const activeBooth = booths.find((booth) => booth.id === activeBoothId) ?? null
 
   return (
-    <div className="min-w-0 overflow-hidden rounded-[10px] border border-line bg-surface">
+    <div className="min-w-0 overflow-hidden rounded-card border border-line bg-surface">
       <div className="flex flex-wrap items-start justify-between gap-4 border-b border-line px-4 py-4 sm:px-5">
         <div className="min-w-0">
           <div className="flex items-center gap-2">
             <span aria-hidden="true" className="h-1.5 w-1.5 bg-clay" />
-            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted">
+            <p className="text-tiny font-semibold uppercase tracking-[0.18em] text-muted">
               Peta booth
             </p>
           </div>
@@ -551,20 +551,20 @@ export default function InteractiveMap({ activeCategory }: InteractiveMapProps) 
           <div
             role="group"
             aria-label="Kontrol zoom peta"
-            className="flex items-center gap-0.5 rounded-[6px] border border-line bg-surface p-0.5"
+            className="flex items-center gap-0.5 rounded-control border border-line bg-surface p-0.5"
           >
             <button
               type="button"
               onClick={() => zoomBy(1.25)}
               disabled={!canZoomIn}
               aria-label="Perbesar peta"
-              className="flex h-11 w-11 items-center justify-center rounded-[4px] text-ink transition-colors hover:bg-pine-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine disabled:cursor-not-allowed disabled:opacity-40 motion-reduce:transition-none"
+              className="flex h-11 w-11 items-center justify-center rounded-chip text-ink transition-colors hover:bg-pine-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine disabled:cursor-not-allowed disabled:opacity-40 motion-reduce:transition-none"
             >
               <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true" className="h-4 w-4">
                 <path d="M10.75 4.75a.75.75 0 0 0-1.5 0v4.5h-4.5a.75.75 0 0 0 0 1.5h4.5v4.5a.75.75 0 0 0 1.5 0v-4.5h4.5a.75.75 0 0 0 0-1.5h-4.5v-4.5Z" />
               </svg>
             </button>
-            <span className="px-1 text-[10px] font-semibold tabular-nums text-muted">
+            <span className="px-1 text-tiny font-semibold tabular-nums text-muted">
               {Math.round(view.scale * 100)}%
             </span>
             <button
@@ -572,7 +572,7 @@ export default function InteractiveMap({ activeCategory }: InteractiveMapProps) 
               onClick={() => zoomBy(0.8)}
               disabled={!isZoomed}
               aria-label="Perkecil peta"
-              className="flex h-11 w-11 items-center justify-center rounded-[4px] text-ink transition-colors hover:bg-pine-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine disabled:cursor-not-allowed disabled:opacity-40 motion-reduce:transition-none"
+              className="flex h-11 w-11 items-center justify-center rounded-chip text-ink transition-colors hover:bg-pine-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine disabled:cursor-not-allowed disabled:opacity-40 motion-reduce:transition-none"
             >
               <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true" className="h-4 w-4">
                 <path d="M4 10a.75.75 0 0 1 .75-.75h10.5a.75.75 0 0 1 0 1.5H4.75A.75.75 0 0 1 4 10Z" />
@@ -583,7 +583,7 @@ export default function InteractiveMap({ activeCategory }: InteractiveMapProps) 
               onClick={resetView}
               disabled={!isZoomed}
               aria-label="Reset zoom peta ke 1×"
-              className="flex h-11 w-11 items-center justify-center rounded-[4px] text-[10px] font-bold text-muted transition-colors hover:bg-pine-soft hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine disabled:cursor-not-allowed disabled:opacity-40 motion-reduce:transition-none"
+              className="flex h-11 w-11 items-center justify-center rounded-chip text-tiny font-bold text-muted transition-colors hover:bg-pine-soft hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine disabled:cursor-not-allowed disabled:opacity-40 motion-reduce:transition-none"
             >
               1×
             </button>
@@ -610,7 +610,7 @@ export default function InteractiveMap({ activeCategory }: InteractiveMapProps) 
               suppressClickRef.current = false
             }
           }}
-          className={`relative overflow-hidden rounded-[8px] border border-line bg-map outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-pine ${
+          className={`relative overflow-hidden rounded-card-sm border border-line bg-map outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-pine ${
             isZoomed ? 'touch-none cursor-grab active:cursor-grabbing' : 'touch-pan-y'
           }`}
         >
@@ -681,7 +681,7 @@ export default function InteractiveMap({ activeCategory }: InteractiveMapProps) 
                   x={CANVAS_WIDTH / 2}
                   y="32"
                   textAnchor="middle"
-                  className="pointer-events-none fill-muted text-[11px] font-semibold tracking-[0.3em]"
+                  className="pointer-events-none fill-muted text-compact font-semibold tracking-[0.3em]"
                 >
                   AREA PAMERAN
                 </text>
@@ -692,7 +692,7 @@ export default function InteractiveMap({ activeCategory }: InteractiveMapProps) 
                   x={CANVAS_WIDTH / 2}
                   y={CANVAS_HEIGHT - 20}
                   textAnchor="middle"
-                  className="pointer-events-none fill-muted text-[11px] font-semibold tracking-[0.3em]"
+                  className="pointer-events-none fill-muted text-compact font-semibold tracking-[0.3em]"
                 >
                   PINTU MASUK
                 </text>
@@ -710,7 +710,7 @@ export default function InteractiveMap({ activeCategory }: InteractiveMapProps) 
           </div>
 
           <div className="pointer-events-none absolute inset-x-0 bottom-2 flex justify-center px-3">
-            <span className="rounded-[4px] border border-line bg-surface px-3 py-1 text-[10px] font-medium text-muted">
+            <span className="rounded-chip border border-line bg-surface px-3 py-1 text-tiny font-medium text-muted">
               {isZoomed
                 ? 'Seret peta atau gunakan tombol panah untuk menggeser'
                 : 'Cubit atau Ctrl + scroll untuk zoom'}
@@ -719,8 +719,8 @@ export default function InteractiveMap({ activeCategory }: InteractiveMapProps) 
 
           {booths.length === 0 && (
             <div className="pointer-events-none absolute inset-0 flex items-center justify-center p-6">
-              <div className="rounded-[8px] border border-line bg-surface px-6 py-5 text-center">
-                <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-[6px] bg-canvas text-muted">
+              <div className="rounded-card-sm border border-line bg-surface px-6 py-5 text-center">
+                <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-control bg-canvas text-muted">
                   <svg
                     viewBox="0 0 24 24"
                     fill="none"
@@ -746,34 +746,34 @@ export default function InteractiveMap({ activeCategory }: InteractiveMapProps) 
         </div>
 
         <div className="mt-3 flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
-          <ul className="flex flex-wrap items-center gap-x-4 gap-y-2 text-[11px] font-medium text-muted">
+          <ul className="flex flex-wrap items-center gap-x-4 gap-y-2 text-compact font-medium text-muted">
             <li className="inline-flex items-center gap-1.5">
               <span
                 aria-hidden="true"
-                className="h-2.5 w-2.5 rounded-[2px] border border-pine bg-surface"
+                className="h-2.5 w-2.5 rounded-micro border border-pine bg-surface"
               />
               Tersedia
             </li>
             <li className="inline-flex items-center gap-1.5">
-              <span aria-hidden="true" className="h-2.5 w-2.5 rounded-[2px] bg-pine" />
+              <span aria-hidden="true" className="h-2.5 w-2.5 rounded-micro bg-pine" />
               Dipilih
             </li>
             <li className="inline-flex items-center gap-1.5">
               <span
                 aria-hidden="true"
-                className="h-2.5 w-2.5 rounded-[2px] border border-dashed border-muted bg-unavailable"
+                className="h-2.5 w-2.5 rounded-micro border border-dashed border-muted bg-unavailable"
               />
               Dipesan
             </li>
             <li className="inline-flex items-center gap-1.5">
               <span
                 aria-hidden="true"
-                className="h-2.5 w-2.5 rounded-[2px] border border-muted bg-unavailable-deep"
+                className="h-2.5 w-2.5 rounded-micro border border-muted bg-unavailable-deep"
               />
               Terisi
             </li>
           </ul>
-          <p id="peta-hint" className="text-[11px] text-muted">
+          <p id="peta-hint" className="text-compact text-muted">
             Pilih booth untuk melihat detail. Booth terisi tetap bisa diperiksa statusnya.
           </p>
           <p id="peta-pan-hint" className="sr-only">
@@ -787,7 +787,7 @@ export default function InteractiveMap({ activeCategory }: InteractiveMapProps) 
           <div className="flex min-w-0 items-center gap-3" aria-live="polite" aria-atomic="true">
             {activeBooth ? (
               <>
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[6px] border border-line bg-canvas text-[10px] font-semibold tabular-nums text-pine">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-control border border-line bg-canvas text-tiny font-semibold tabular-nums text-pine">
                   {activeBooth.category}
                 </span>
                 <div className="min-w-0">
@@ -812,7 +812,7 @@ export default function InteractiveMap({ activeCategory }: InteractiveMapProps) 
             <button
               type="button"
               onClick={() => setActiveBooth(null)}
-              className="inline-flex min-h-11 items-center rounded-[4px] px-2 text-xs font-semibold text-muted underline decoration-line underline-offset-4 transition-colors hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 focus-visible:ring-offset-surface motion-reduce:transition-none"
+              className="inline-flex min-h-11 items-center rounded-chip px-2 text-xs font-semibold text-muted underline decoration-line underline-offset-4 transition-colors hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 focus-visible:ring-offset-surface motion-reduce:transition-none"
             >
               Tutup pilihan
             </button>

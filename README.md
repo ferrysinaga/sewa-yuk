@@ -362,6 +362,16 @@ Audit aksesibilitas mencakup:
   sudah berjalan tanpa alasan kuat.
 - Ikuti `frontend.md`: token warna warm, radius 6–10px, border tipis, tanpa
   gradient/blur/shadow tebal/emoji.
+- Skala desain ada di `src/style.css` dan dipetakan di `tailwind.config.ts`.
+  Gunakan `rounded-micro/chip/control/card-sm/card` (2/4/6/8/10 px),
+  `text-micro/tiny/compact/body-lg/display-sm/display`, serta
+  `text-on-accent`/`fill-on-accent` untuk foreground di atas pine, clay, atau
+  danger. Jangan menambah `rounded-[...]`, `text-[...px]`, `bg-white`,
+  `text-white`, atau hex mentah di komponen; detail inventaris dan pengecualian
+  yang disengaja ada di `docs/product/UX-04-design-token-audit.md`. Jangan pula
+  memakai opacity modifier (`/40`) pada warna token karena Tailwind 3 tidak
+  menghasilkannya untuk warna `var(...)`; tambahkan token alpha eksplisit
+  seperti `on-accent-soft` atau `ink-overlay`.
 - Route sudah di-lazy-load per halaman. `vite.config.ts` juga memisahkan
   vendor React, React Router, Supabase, dan `@dnd-kit` lewat
   `build.rollupOptions.output.codeSplitting` (API rolldown di Vite 8), sehingga

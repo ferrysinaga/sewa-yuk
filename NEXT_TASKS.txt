@@ -275,7 +275,7 @@ UI/UX DESIGNER
     - Playwright manual: ukuran target, urutan Tab, focus ring, Enter/Space,
       Escape, dan axe pada state terpilih di tiga viewport.
 
-[ ] UX-04. Audit konsistensi token, radius, tipografi, dan copy [P2]
+[x] UX-04. Audit konsistensi token, radius, tipografi, dan copy [P2]
     Pemilik: UI/UX Designer
     Kolaborator: FE
     Konteks: frontend.md menetapkan token warm, radius 6-10 px, border tipis,
@@ -291,6 +291,36 @@ UI/UX DESIGNER
     Verifikasi:
     - Review visual pada landing, tenant, dan admin.
     Dependensi: UX-01
+    STATUS: SELESAI (11 November 2026)
+    Hasil:
+    - docs/product/UX-04-design-token-audit.md: inventaris sebelum/sesudah,
+      skala token, pengecualian yang disengaja, temuan copy, dan tindak lanjut.
+    - src/style.css + tailwind.config.ts: token baru `on-accent`, radius
+      `micro/chip/control/card-sm/card` (2/4/6/8/10 px), dan font-size
+      `micro/tiny/compact/body-lg/display-sm/display` (9/10/11/17 px,
+      2.5/3.4 rem).
+    - 258 radius arbitrer diganti token; outlier 3/5/7 px dinormalkan ke
+      skala terdekat. 161 ukuran teks arbitrer diganti token tanpa mengubah
+      line-height.
+    - 57 utilitas putih non-token diganti `on-accent`/`surface`; hex mentah
+      `fill="#ffffff"` di AuthLayout diganti `var(--color-on-accent)`.
+    - Dua opacity modifier pada warna token (`bg-ink/75`,
+      `border-on-accent/40`) ternyata tidak menghasilkan CSS di Tailwind 3;
+      diganti token alpha eksplisit `ink-overlay` dan `on-accent-soft`.
+    - Copy loading/tombol menormalkan `...` menjadi `…`; tidak ada placeholder
+      generik. Harga tetap memakai `tabular-nums`, judul tetap satu `h1` per
+      halaman.
+    - Pengecualian didokumentasikan: `92dvh` dan safe-area checkout, transform
+      peta, lebar progress bar runtime, `fontSize` SVG, dan skala tracking.
+    Verifikasi:
+    - `npm run verify` lulus: lint, format, typecheck, 198 unit test (27 file),
+      build, budget bundle.
+    - `npm run check:bundle`: JS 790,09 kB (budget 850 kB), CSS 28,77 kB
+      (budget 60 kB).
+    - Inventaris ulang: 0 radius arbitrer, 0 ukuran teks arbitrer, 0 utilitas
+      putih/hitam, 0 hex mentah di luar style.css.
+    - Smoke + a11y publik: 4 lulus, 3 skip karena `.env.e2e` belum tersedia;
+      review visual halaman terautentikasi menunggu staging.
 
 
 ===============================================================================

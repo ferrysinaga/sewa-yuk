@@ -10,7 +10,7 @@ export default function EventsSection() {
           <div className="max-w-2xl">
             <div className="flex items-center gap-2.5">
               <span aria-hidden="true" className="h-px w-6 bg-clay" />
-              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted">
+              <p className="text-compact font-semibold uppercase tracking-[0.18em] text-muted">
                 Agenda
               </p>
             </div>
@@ -23,7 +23,7 @@ export default function EventsSection() {
           </div>
           <Link
             to="/event"
-            className="inline-flex items-center gap-2 rounded-[6px] text-sm font-semibold text-pine transition-colors hover:text-pine-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 focus-visible:ring-offset-surface motion-reduce:transition-none"
+            className="inline-flex items-center gap-2 rounded-control text-sm font-semibold text-pine transition-colors hover:text-pine-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 focus-visible:ring-offset-surface motion-reduce:transition-none"
           >
             Lihat semua acara
             <ArrowRight />
@@ -41,7 +41,7 @@ export default function EventsSection() {
                 <p className="text-xl font-semibold tabular-nums tracking-tight text-ink sm:text-2xl">
                   {event.day}
                 </p>
-                <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted">
+                <p className="text-tiny font-semibold uppercase tracking-[0.16em] text-muted">
                   {event.month}
                 </p>
               </div>
@@ -49,7 +49,7 @@ export default function EventsSection() {
               <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-2">
                   <h3 className="text-base font-semibold text-ink">{event.title}</h3>
-                  <span className="rounded-[4px] border border-line bg-surface px-1.5 py-0.5 text-[10px] font-medium text-muted">
+                  <span className="rounded-chip border border-line bg-surface px-1.5 py-0.5 text-tiny font-medium text-muted">
                     {event.category}
                   </span>
                 </div>
@@ -62,7 +62,7 @@ export default function EventsSection() {
                     {event.available}{' '}
                     <span className="font-normal text-muted">dari {event.total}</span>
                   </p>
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted">
+                  <p className="text-tiny font-semibold uppercase tracking-[0.12em] text-muted">
                     booth tersedia
                   </p>
                 </div>

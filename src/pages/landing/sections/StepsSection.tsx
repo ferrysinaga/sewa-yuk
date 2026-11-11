@@ -8,7 +8,7 @@ export default function StepsSection() {
           <div className="max-w-2xl">
             <div className="flex items-center gap-2.5">
               <span aria-hidden="true" className="h-px w-6 bg-clay" />
-              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted">
+              <p className="text-compact font-semibold uppercase tracking-[0.18em] text-muted">
                 Alur kerja
               </p>
             </div>
@@ -24,7 +24,7 @@ export default function StepsSection() {
         <ol className="mt-10 grid gap-8 md:grid-cols-3">
           {steps.map((step, index) => (
             <li key={step.title} className="border-t border-line pt-5">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-clay-dark">
+              <p className="text-compact font-semibold uppercase tracking-[0.16em] text-clay-dark">
                 Langkah {String(index + 1).padStart(2, '0')}
               </p>
               <h3 className="mt-3 text-lg font-semibold text-ink">{step.title}</h3>

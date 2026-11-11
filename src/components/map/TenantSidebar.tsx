@@ -41,14 +41,14 @@ export default function TenantSidebar({
   return (
     <section
       aria-labelledby="detail-booth-heading"
-      className="w-full rounded-[10px] border border-line bg-surface p-5"
+      className="w-full rounded-card border border-line bg-surface p-5"
     >
       <div className="flex items-center justify-between gap-3">
         <h2 id="detail-booth-heading" className="text-sm font-semibold text-ink">
           Detail booth
         </h2>
         {activeBooth && (
-          <span className="text-[10px] uppercase tracking-[0.14em] text-muted">Pilihan Anda</span>
+          <span className="text-tiny uppercase tracking-[0.14em] text-muted">Pilihan Anda</span>
         )}
       </div>
 
@@ -62,14 +62,14 @@ export default function TenantSidebar({
               <p className="text-xs tabular-nums text-muted">Booth {activeBooth.id.slice(0, 8)}</p>
             </div>
             <span
-              className={`shrink-0 rounded-[4px] px-2.5 py-1 text-[11px] font-semibold ${statusBadgeClass[activeBooth.status]}`}
+              className={`shrink-0 rounded-chip px-2.5 py-1 text-compact font-semibold ${statusBadgeClass[activeBooth.status]}`}
             >
               {statusLabel[activeBooth.status]}
             </span>
           </div>
 
-          <div className="mt-4 rounded-[6px] border border-line bg-canvas p-3">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted">
+          <div className="mt-4 rounded-control border border-line bg-canvas p-3">
+            <p className="text-tiny font-semibold uppercase tracking-[0.14em] text-muted">
               Harga sewa
             </p>
             <p className="mt-0.5 text-xl font-semibold tabular-nums tracking-tight text-ink">
@@ -78,26 +78,26 @@ export default function TenantSidebar({
           </div>
 
           <dl className="mt-3 grid grid-cols-2 gap-2 text-xs">
-            <div className="rounded-[6px] border border-line p-2.5">
-              <dt className="text-[10px] uppercase tracking-[0.1em] text-muted">Dimensi</dt>
+            <div className="rounded-control border border-line p-2.5">
+              <dt className="text-tiny uppercase tracking-[0.1em] text-muted">Dimensi</dt>
               <dd className="mt-0.5 font-semibold tabular-nums text-ink">
                 {activeBooth.width} × {activeBooth.height} px
               </dd>
             </div>
-            <div className="rounded-[6px] border border-line p-2.5">
-              <dt className="text-[10px] uppercase tracking-[0.1em] text-muted">Kategori</dt>
+            <div className="rounded-control border border-line p-2.5">
+              <dt className="text-tiny uppercase tracking-[0.1em] text-muted">Kategori</dt>
               <dd className="mt-0.5 font-semibold text-ink">
                 {categoryLabel[activeBooth.category]}
               </dd>
             </div>
-            <div className="rounded-[6px] border border-line p-2.5">
-              <dt className="text-[10px] uppercase tracking-[0.1em] text-muted">Posisi X</dt>
+            <div className="rounded-control border border-line p-2.5">
+              <dt className="text-tiny uppercase tracking-[0.1em] text-muted">Posisi X</dt>
               <dd className="mt-0.5 font-semibold tabular-nums text-ink">
                 {Math.round(activeBooth.positionX)} px
               </dd>
             </div>
-            <div className="rounded-[6px] border border-line p-2.5">
-              <dt className="text-[10px] uppercase tracking-[0.1em] text-muted">Posisi Y</dt>
+            <div className="rounded-control border border-line p-2.5">
+              <dt className="text-tiny uppercase tracking-[0.1em] text-muted">Posisi Y</dt>
               <dd className="mt-0.5 font-semibold tabular-nums text-ink">
                 {Math.round(activeBooth.positionY)} px
               </dd>
@@ -105,7 +105,7 @@ export default function TenantSidebar({
           </dl>
 
           {!isAvailable && (
-            <p className="mt-3 rounded-[6px] border border-line bg-unavailable px-3 py-2 text-xs leading-relaxed text-ink">
+            <p className="mt-3 rounded-control border border-line bg-unavailable px-3 py-2 text-xs leading-relaxed text-ink">
               {statusExplanation[activeBooth.status as Exclude<BoothStatus, 'Available'>]}
             </p>
           )}
@@ -114,9 +114,9 @@ export default function TenantSidebar({
             type="button"
             onClick={onReserve}
             disabled={!isAvailable || reserving || isReservedByUser}
-            className={`mt-4 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-[6px] px-5 py-3 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 focus-visible:ring-offset-surface disabled:cursor-not-allowed motion-reduce:transition-none ${
+            className={`mt-4 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-control px-5 py-3 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 focus-visible:ring-offset-surface disabled:cursor-not-allowed motion-reduce:transition-none ${
               isAvailable && !isReservedByUser
-                ? 'bg-pine text-white hover:bg-pine-dark disabled:opacity-70'
+                ? 'bg-pine text-on-accent hover:bg-pine-dark disabled:opacity-70'
                 : 'border border-line bg-canvas text-muted'
             } ${isReservedByUser ? 'border-pine bg-pine-soft text-pine' : ''}`}
           >
@@ -134,7 +134,7 @@ export default function TenantSidebar({
             )}
           </button>
 
-          <p className="mt-3 flex items-start gap-2 text-[11px] leading-relaxed text-muted">
+          <p className="mt-3 flex items-start gap-2 text-compact leading-relaxed text-muted">
             <svg
               viewBox="0 0 20 20"
               fill="currentColor"
@@ -152,7 +152,7 @@ export default function TenantSidebar({
           </p>
         </div>
       ) : (
-        <div className="mt-3 rounded-[8px] border border-dashed border-line bg-canvas px-4 py-8 text-center">
+        <div className="mt-3 rounded-card-sm border border-dashed border-line bg-canvas px-4 py-8 text-center">
           <svg
             viewBox="0 0 24 24"
             fill="none"

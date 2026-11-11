@@ -85,11 +85,11 @@ export default function Login() {
 
   return (
     <AuthLayout>
-      <div className="rounded-[10px] border border-line bg-surface p-6 sm:p-8">
+      <div className="rounded-card border border-line bg-surface p-6 sm:p-8">
         <div>
           <div className="flex items-center gap-2.5">
             <span aria-hidden="true" className="h-1.5 w-1.5 bg-clay" />
-            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted">
+            <p className="text-tiny font-semibold uppercase tracking-[0.18em] text-muted">
               Masuk akun
             </p>
           </div>
@@ -102,7 +102,7 @@ export default function Login() {
         </div>
 
         {!isSupabaseConfigured && (
-          <div className="mt-6 rounded-[6px] border border-line bg-clay-soft px-4 py-3 text-xs leading-relaxed text-clay-dark">
+          <div className="mt-6 rounded-control border border-line bg-clay-soft px-4 py-3 text-xs leading-relaxed text-clay-dark">
             Supabase belum dikonfigurasi. Salin <code className="font-semibold">.env.example</code>{' '}
             menjadi <code className="font-semibold">.env</code> lalu isi kredensial proyek Anda.
           </div>
@@ -155,7 +155,7 @@ export default function Login() {
                 type="button"
                 onClick={() => setShowPassword((current) => !current)}
                 aria-label={showPassword ? 'Sembunyikan kata sandi' : 'Tampilkan kata sandi'}
-                className="absolute right-0 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-[4px] text-muted transition-colors hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine motion-reduce:transition-none"
+                className="absolute right-0 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-chip text-muted transition-colors hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine motion-reduce:transition-none"
               >
                 {showPassword ? (
                   <svg
@@ -203,7 +203,7 @@ export default function Login() {
           <button
             type="submit"
             disabled={submitting}
-            className="inline-flex w-full items-center justify-center gap-2 rounded-[6px] bg-pine px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-pine-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 focus-visible:ring-offset-surface disabled:cursor-not-allowed disabled:opacity-70 motion-reduce:transition-none"
+            className="inline-flex w-full items-center justify-center gap-2 rounded-control bg-pine px-5 py-3 text-sm font-semibold text-on-accent transition-colors hover:bg-pine-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 focus-visible:ring-offset-surface disabled:cursor-not-allowed disabled:opacity-70 motion-reduce:transition-none"
           >
             {submitting ? (
               <>
@@ -220,7 +220,7 @@ export default function Login() {
           Belum punya akun?{' '}
           <Link
             to="/register"
-            className="rounded-[4px] font-semibold text-pine transition-colors hover:text-pine-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 focus-visible:ring-offset-surface motion-reduce:transition-none"
+            className="rounded-chip font-semibold text-pine transition-colors hover:text-pine-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 focus-visible:ring-offset-surface motion-reduce:transition-none"
           >
             Daftar sekarang
           </Link>
@@ -230,7 +230,7 @@ export default function Login() {
       <p className="mt-6 text-center text-sm">
         <Link
           to="/"
-          className="inline-flex items-center gap-1.5 rounded-[4px] text-muted transition-colors hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 focus-visible:ring-offset-surface motion-reduce:transition-none"
+          className="inline-flex items-center gap-1.5 rounded-chip text-muted transition-colors hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 focus-visible:ring-offset-surface motion-reduce:transition-none"
         >
           <svg viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4" aria-hidden="true">
             <path

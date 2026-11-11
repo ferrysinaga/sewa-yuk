@@ -30,6 +30,28 @@
   --color-danger-dark: #7f2d1f;
   --color-danger-soft: #f7e7e2;
   --color-overlay: rgba(34, 41, 35, 0.45);
+  /* Foreground di atas permukaan aksen (pine, clay, danger). */
+  --color-on-accent: #ffffff;
+  --color-on-accent-soft: rgba(255, 255, 255, 0.4);
+  /* Latar badge di atas thumbnail event. */
+  --color-ink-overlay: rgba(34, 41, 35, 0.75);
+
+  /* Skala radius tunggal. Micro dan chip khusus elemen kecil (swatch,
+     badge, tombol rapat); control untuk input/tombol; card untuk panel. */
+  --radius-micro: 2px;
+  --radius-chip: 4px;
+  --radius-control: 6px;
+  --radius-card-sm: 8px;
+  --radius-card: 10px;
+
+  /* Skala tipografi mikro di luar langkah Tailwind bawaan. Nilai sengaja
+     berupa font-size saja agar line-height tetap diatur per komponen. */
+  --text-micro: 9px;
+  --text-tiny: 10px;
+  --text-compact: 11px;
+  --text-body-lg: 17px;
+  --text-display-sm: 2.5rem;
+  --text-display: 3.4rem;
 }
 
 @media (prefers-reduced-motion: reduce) {

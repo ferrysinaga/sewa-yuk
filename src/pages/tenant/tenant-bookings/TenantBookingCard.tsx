@@ -50,13 +50,13 @@ export default function TenantBookingCard({
   const statusDot = expired ? BOOKING_EXPIRED_DOT : BOOKING_STATUS_DOT[booking.status]
 
   return (
-    <li className="overflow-hidden rounded-[10px] border border-line bg-surface ">
+    <li className="overflow-hidden rounded-card border border-line bg-surface ">
       <div className="flex flex-wrap items-start justify-between gap-3 border-b border-line px-5 py-4">
         <div>
           <div className="flex flex-wrap items-center gap-2">
             <span className="font-mono text-xs font-semibold text-ink">{booking.booking_code}</span>
             <span
-              className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold ring-1 ring-inset ${statusBadge}`}
+              className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-compact font-semibold ring-1 ring-inset ${statusBadge}`}
             >
               <span className={`h-1.5 w-1.5 rounded-full ${statusDot}`} />
               {bookingStatusLabel}
@@ -106,7 +106,7 @@ export default function TenantBookingCard({
                     {formatDateTime(booking.expires_at)}
                   </span>
                   {booking.status === 'pending' && (
-                    <span className="mt-0.5 block text-[11px] tabular-nums text-clay-dark">
+                    <span className="mt-0.5 block text-compact tabular-nums text-clay-dark">
                       {expired ? 'Kedaluwarsa' : `Sisa ${formatRemaining(remainingMs)}`}
                     </span>
                   )}
@@ -131,15 +131,15 @@ export default function TenantBookingCard({
 
         <div>
           {expired && booking.status === 'pending' && (
-            <div className="rounded-[8px] border border-line bg-clay-soft p-3 text-xs leading-relaxed text-clay-dark">
+            <div className="rounded-card-sm border border-line bg-clay-soft p-3 text-xs leading-relaxed text-clay-dark">
               Batas pembayaran sudah lewat. Pesanan akan dibatalkan otomatis dan booth dilepas untuk
               penyewa lain. Tekan tombol Perbarui status untuk memperbarui sekarang.
             </div>
           )}
 
           {instruction && (
-            <div className="rounded-[8px] border border-line bg-clay-soft p-3">
-              <p className="text-[11px] font-semibold uppercase tracking-wide text-clay-dark">
+            <div className="rounded-card-sm border border-line bg-clay-soft p-3">
+              <p className="text-compact font-semibold uppercase tracking-wide text-clay-dark">
                 Instruksi pembayaran · {instruction.title}
               </p>
               <ul className="mt-2 space-y-1 text-xs text-ink">
@@ -149,25 +149,25 @@ export default function TenantBookingCard({
                   </li>
                 ))}
               </ul>
-              <p className="mt-2 text-[11px] leading-relaxed text-clay-dark">{instruction.note}</p>
+              <p className="mt-2 text-compact leading-relaxed text-clay-dark">{instruction.note}</p>
             </div>
           )}
 
           {booking.status === 'awaiting_confirmation' && (
-            <div className="rounded-[8px] border border-line bg-pine-soft p-3 text-xs leading-relaxed text-pine-dark">
+            <div className="rounded-card-sm border border-line bg-pine-soft p-3 text-xs leading-relaxed text-pine-dark">
               Konfirmasi pembayaran sudah dikirim. Organizer akan memverifikasi dan mengubah status
               booth menjadi Booked.
             </div>
           )}
 
           {booking.status === 'confirmed' && (
-            <div className="rounded-[8px] border border-line bg-pine-soft p-3 text-xs leading-relaxed text-pine-dark">
+            <div className="rounded-card-sm border border-line bg-pine-soft p-3 text-xs leading-relaxed text-pine-dark">
               Pembayaran terverifikasi. Booth sudah resmi menjadi milik Anda pada event ini.
             </div>
           )}
 
           {booking.status === 'cancelled' && (
-            <div className="rounded-[8px] border border-line bg-unavailable p-3 text-xs leading-relaxed text-muted">
+            <div className="rounded-card-sm border border-line bg-unavailable p-3 text-xs leading-relaxed text-muted">
               {booking.cancelled_reason === 'expired'
                 ? 'Pesanan kedaluwarsa karena batas pembayaran terlewat. Booth sudah dilepas dan dapat dipesan penyewa lain.'
                 : 'Pesanan dibatalkan. Booth sudah dilepas dan dapat dipesan penyewa lain.'}
@@ -186,7 +186,7 @@ export default function TenantBookingCard({
               confirmLabel="Ya, batalkan pesanan"
               onConfirm={() => void handleCancel(booking)}
               onCancel={() => setConfirmingCancelId(null)}
-              className="rounded-[8px] border border-danger bg-danger-soft p-3"
+              className="rounded-card-sm border border-danger bg-danger-soft p-3"
             />
           ) : (
             <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
@@ -196,7 +196,7 @@ export default function TenantBookingCard({
                 disabled={isUpdating}
                 aria-expanded={confirmingCancel}
                 aria-controls={`cancel-booking-${booking.id}`}
-                className="inline-flex items-center justify-center rounded-[8px] border border-line bg-surface px-4 py-2 text-xs font-semibold text-ink transition-colors hover:border-danger hover:bg-danger-soft hover:text-danger-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-danger focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+                className="inline-flex items-center justify-center rounded-card-sm border border-line bg-surface px-4 py-2 text-xs font-semibold text-ink transition-colors hover:border-danger hover:bg-danger-soft hover:text-danger-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-danger focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 Batalkan Pesanan
               </button>
@@ -205,7 +205,7 @@ export default function TenantBookingCard({
                   type="button"
                   onClick={() => void handleMarkPaid(booking)}
                   disabled={isUpdating}
-                  className="inline-flex items-center justify-center gap-2 rounded-[8px] bg-pine px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-pine-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+                  className="inline-flex items-center justify-center gap-2 rounded-card-sm bg-pine px-4 py-2 text-xs font-semibold text-on-accent transition-colors hover:bg-pine-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   {isUpdating ? 'Mengirim…' : 'Saya Sudah Bayar'}
                 </button>
