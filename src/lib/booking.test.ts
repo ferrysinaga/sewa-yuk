@@ -152,6 +152,50 @@ describe('getBookingErrorMessage', () => {
     expect(message).toBe('Anda tidak memiliki akses untuk tindakan ini.')
   })
 
+  it.each([
+    ['SWY_AUTH_REQUIRED', 'Silakan masuk terlebih dahulu untuk memesan booth.'],
+    ['SWY_INVALID_PAYMENT_METHOD', 'Metode pembayaran tidak valid.'],
+    ['SWY_BOOTH_NOT_FOUND', 'Booth tidak ditemukan. Muat ulang denah event.'],
+    ['SWY_BOOTH_UNAVAILABLE', 'Booth sudah tidak tersedia. Silakan pilih booth lain.'],
+    ['SWY_EVENT_NOT_PUBLISHED', 'Event ini belum dipublikasikan.'],
+    ['SWY_BOOKING_NOT_FOUND', 'Pemesanan tidak ditemukan. Muat ulang halaman Pesanan Saya.'],
+    ['SWY_NOT_OWNER', 'Anda tidak berhak mengubah pemesanan ini.'],
+    ['SWY_FORBIDDEN', 'Anda tidak memiliki akses untuk tindakan ini.'],
+    ['SWY_ALREADY_PAID', 'Pemesanan ini sudah dibayar dan dikonfirmasi.'],
+    ['SWY_BOOKING_EXPIRED', 'Pemesanan sudah kedaluwarsa. Booth telah dilepas untuk penyewa lain.'],
+    ['SWY_BOOKING_CANCELLED', 'Pemesanan ini sudah dibatalkan.'],
+    ['SWY_INVALID_STATE', 'Status pemesanan tidak memungkinkan tindakan ini. Muat ulang halaman.'],
+  ])('memetakan hint %s ke pesan pengguna', (hint, expected) => {
+    const message = getBookingErrorMessage({
+      code: 'P0001',
+      message: 'pesan mentah dari database',
+      hint,
+    })
+
+    expect(message).toBe(expected)
+  })
+
+  it('memakai hint sebagai sumber utama, bukan pesan mentah', () => {
+    const message = getBookingErrorMessage({
+      code: 'P0001',
+      message: 'Booth sudah tidak tersedia. Silakan pilih booth lain.',
+      hint: 'SWY_ALREADY_PAID',
+    })
+
+    expect(message).toBe('Pemesanan ini sudah dibayar dan dikonfirmasi.')
+  })
+
+  it.each([
+    ['23505', 'Booth sudah tidak tersedia. Silakan pilih booth lain.'],
+    ['42501', 'Anda tidak memiliki akses untuk tindakan ini.'],
+    ['P0002', 'Pemesanan tidak ditemukan. Muat ulang halaman Pesanan Saya.'],
+    ['22023', 'Metode pembayaran tidak valid.'],
+  ])('memetakan SQLSTATE %s saat hint tidak tersedia', (code, expected) => {
+    const message = getBookingErrorMessage({ code, message: 'raw database error' })
+
+    expect(message).toBe(expected)
+  })
+
   it('meneruskan pesan error lain apa adanya', () => {
     expect(getBookingErrorMessage(new Error('Booth sudah tidak tersedia.'))).toBe(
       'Booth sudah tidak tersedia.',

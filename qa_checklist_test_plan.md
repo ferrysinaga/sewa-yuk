@@ -130,6 +130,9 @@ diklik untuk diperiksa; hanya tombol pemesanan yang dinonaktifkan.
 | **BOOK-04** | Batalkan booking menunggu verifikasi | Batalkan booking `awaiting_confirmation` dari `/bookings`. | Booking menjadi `cancelled`, booth kembali `Available`, dan riwayat pembatalan tetap tampil. | [ ] |
 | **BOOK-05** | Booking confirmed tidak bisa dibatalkan tenant | Coba batalkan booking berstatus `confirmed`. | Aksi tidak tersedia atau ditolak dengan pesan jelas; status dan booth tidak berubah. | [ ] |
 | **BOOK-06** | Instruksi pembayaran | Buka booking `pending` untuk setiap metode (`va`, `transfer`, `qris`). | Instruksi sesuai metode tampil lengkap, termasuk kode/VA dan batas waktu; tidak ada data sensitif yang bocor ke tenant lain. | [ ] |
+| **BOOK-07** | Idempotensi buat booking (double submit) | Login tenant -> pilih booth `Available` -> klik konfirmasi pesanan dua kali cepat (atau kirim dua request `create_booking` paralel untuk booth dan pengguna yang sama). | Hanya satu baris booking dibuat; kedua respons menunjuk kode pesanan yang sama; booth tetap satu kali `Reserved`; tidak ada error mentah di UI. | [ ] |
+| **BOOK-08** | Idempotensi tandai bayar & batal | Klik **Sudah Bayar** dua kali pada booking `pending`, lalu panggil ulang aksi batal pada booking yang sudah `cancelled` (mis. dua tab). | `mark_booking_paid` kedua mengembalikan status `awaiting_confirmation` tanpa error; `cancel_booking` kedua mengembalikan booking `cancelled` yang sama; tidak ada perubahan ganda pada booth. | [ ] |
+| **BOOK-09** | Kontrak error RPC tampil spesifik | Picu kasus: booth diambil tenant lain, booking kedaluwarsa, booking sudah `confirmed`, dan booking milik tenant lain. | UI menampilkan pesan spesifik sesuai `supabase/ERROR_CONTRACT.md` (mis. "Booth sudah tidak tersedia…", "Pemesanan sudah kedaluwarsa…", "Pemesanan ini sudah dibayar…", "Anda tidak berhak…"), bukan pesan mentah PostgreSQL. | [ ] |
 
 ---
 
@@ -141,6 +144,7 @@ diklik untuk diperiksa; hanya tombol pemesanan yang dinonaktifkan.
 | **ADM-03** | Booking confirmed tidak dapat dibatalkan organizer | Coba batalkan booking `confirmed`. | Aksi ditolak dengan pesan jelas dan status tetap `confirmed` (sesuai aturan RPC `cancel_booking`). | [ ] |
 | **ADM-04** | Filter dan pencarian booking | Gunakan filter status, filter event, dan kolom pencarian kode/nama/email tenant. | Hasil hanya menampilkan booking yang cocok; kombinasi filter bekerja bersamaan; empty state tampil jelas. | [ ] |
 | **ADM-05** | Ringkasan metrik | Amati kartu ringkasan setelah verifikasi/pembatalan. | Jumlah menunggu verifikasi, pending, confirmed, dan estimasi pendapatan berubah sesuai data terbaru. | [ ] |
+| **ADM-06** | Idempotensi verifikasi organizer | Klik **Verifikasi** dua kali pada booking yang sama (atau dari dua tab organizer). | `confirm_booking` kedua mengembalikan booking `confirmed` yang sama; booth tetap `Booked`; metrik tidak bertambah ganda; toast tidak menampilkan error. | [ ] |
 
 ---
 

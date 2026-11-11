@@ -404,7 +404,7 @@ BACKEND DEVELOPER
     - Uji SQL paralel + uji dua browser context.
     Dependensi: BE-03
 
-[ ] BE-03. Perkuat idempotensi dan kontrak error RPC [P1]
+[x] BE-03. Perkuat idempotensi dan kontrak error RPC [P1]
     Pemilik: Backend Developer
     Kolaborator: FE, QA
     Konteks: create_booking, mark_booking_paid, cancel_booking,
@@ -420,7 +420,19 @@ BACKEND DEVELOPER
     - Pemanggilan ganda tidak menggandakan booking atau mengubah data ganda.
     - FE dapat menampilkan pesan spesifik tanpa membaca error mentah.
     Verifikasi:
-    - Test RPC untuk setiap transisi dan kasus gagal.
+    - Migrasi supabase/migrations/20261111000000_rpc_idempotency_error_contract.sql
+      membuat ulang lima RPC dengan perilaku idempoten, hint error stabil
+      (SWY_*), search_path kosong, dan grant eksplisit ke authenticated/anon.
+    - supabase/ERROR_CONTRACT.md memuat tabel hint + SQLSTATE, matriks
+      idempotensi, aturan keamanan, dan query verifikasi manual.
+    - src/lib/booking.ts memetakan hint lalu SQLSTATE sebagai fallback;
+      src/lib/booking.test.ts lulus 37/37 test termasuk seluruh hint dan
+      fallback.
+    - npm run verify lulus: lint, format:check, typecheck, 145 unit test, dan
+      build produksi.
+    - Catatan: eksekusi migrasi dan uji konkurensi sungguhan belum dijalankan
+      di mesin lokal karena tidak ada psql/Supabase CLI/Docker. Jalankan query
+      di ERROR_CONTRACT.md lalu QA BOOK-07..BOOK-09 dan ADM-06 di staging.
     Dependensi: -
 
 [ ] BE-04. Audit privasi realtime dan publication [P1]

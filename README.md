@@ -63,20 +63,25 @@ Catatan keamanan:
 Buka **Supabase Dashboard → SQL Editor**, lalu jalankan file berikut satu per
 satu. Urutan ini penting karena saling bergantung.
 
-| Urutan | File                                                              | Isi                                                                |
-| ------ | ----------------------------------------------------------------- | ------------------------------------------------------------------ |
-| 1      | `supabase/migrations/20261103000000_create_booths.sql`            | Tabel `booths`, index, RLS dasar                                   |
-| 2      | `supabase/migrations/20261103000100_create_blueprints.sql`        | Tabel `blueprints` + 3 event contoh (`hall-a`, `hall-b`, `hall-5`) |
-| 3      | `supabase/migrations/20261103000200_tenant_realtime_policies.sql` | Policy reservasi tenant + aktifkan Realtime `booths`               |
-| 4      | `supabase/migrations/20261103000300_blueprint_publishing.sql`     | Kolom `status`, aturan publish/draft, RLS baca booth               |
-| 5      | `supabase/migrations/20261103000400_blueprint_images.sql`         | Kolom gambar denah + bucket Storage `blueprint-assets`             |
-| 6      | `supabase/migrations/20261103000500_bookings.sql`                 | Tabel `bookings`, RPC pemesanan, Realtime `bookings`               |
-| 7      | `supabase/migrations/20261105000000_booking_expiry.sql`           | Auto-release booking kedaluwarsa + `cancelled_reason`              |
+| Urutan | File                                                                    | Isi                                                                |
+| ------ | ----------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| 1      | `supabase/migrations/20261103000000_create_booths.sql`                  | Tabel `booths`, index, RLS dasar                                   |
+| 2      | `supabase/migrations/20261103000100_create_blueprints.sql`              | Tabel `blueprints` + 3 event contoh (`hall-a`, `hall-b`, `hall-5`) |
+| 3      | `supabase/migrations/20261103000200_tenant_realtime_policies.sql`       | Policy reservasi tenant + aktifkan Realtime `booths`               |
+| 4      | `supabase/migrations/20261103000300_blueprint_publishing.sql`           | Kolom `status`, aturan publish/draft, RLS baca booth               |
+| 5      | `supabase/migrations/20261103000400_blueprint_images.sql`               | Kolom gambar denah + bucket Storage `blueprint-assets`             |
+| 6      | `supabase/migrations/20261103000500_bookings.sql`                       | Tabel `bookings`, RPC pemesanan, Realtime `bookings`               |
+| 7      | `supabase/migrations/20261105000000_booking_expiry.sql`                 | Auto-release booking kedaluwarsa + `cancelled_reason`              |
+| 8      | `supabase/migrations/20261111000000_rpc_idempotency_error_contract.sql` | Idempotensi RPC, kontrak error, dan `search_path` aman             |
 
 Semua migrasi ditulis idempoten, jadi aman dijalankan ulang bila eksekusi
 sebelumnya terputus. Bila memakai Supabase CLI dengan konfigurasi lokal,
 letakkan file di `supabase/migrations/` dan jalankan `supabase db push`
 (atau `supabase db reset` untuk database lokal).
+
+Kontrak error RPC pemesanan dan matriks idempotensi ada di
+`supabase/ERROR_CONTRACT.md`. Frontend memetakan `hint` error ke pesan pengguna
+lewat `getBookingErrorMessage` di `src/lib/booking.ts`.
 
 ### 5.2 Data seed (opsional)
 
