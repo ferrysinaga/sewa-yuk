@@ -163,6 +163,9 @@ PRODUCT MANAGER
     - Tidak ada klaim fitur yang belum terverifikasi.
     Verifikasi:
     - QA dan DevOps menyetujui isi sebelum publikasi.
+    Catatan status: BLOCKED — REL-01 belum selesai. Release note sengaja belum
+    disusun agar tidak mengklaim fitur yang belum terverifikasi. Lanjutkan
+    setelah REL-01 ditandatangani dan hasil UAT tersedia.
     Dependensi: REL-01
 
 
