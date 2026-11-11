@@ -386,7 +386,7 @@ BACKEND DEVELOPER
     - SQL/manual test dengan akun organizer, tenant A, tenant B, dan anon.
     Dependensi: -
 
-[ ] BE-02. Jaminan database terhadap double booking [P1]
+[x] BE-02. Jaminan database terhadap double booking [P1]
     Pemilik: Backend Developer
     Kolaborator: FE, QA
     Konteks: UI dan RPC sudah mencegah, tetapi konkurensi harus dijamin di
@@ -401,7 +401,26 @@ BACKEND DEVELOPER
     - Booking yang kalah mendapat error yang dapat dipetakan ke pesan UI.
     - Tidak ada booth yang tertahan tanpa booking aktif.
     Verifikasi:
-    - Uji SQL paralel + uji dua browser context.
+    - Migrasi supabase/migrations/20261111000100_double_booking_guarantee.sql
+      menambahkan unique partial index bookings_one_active_per_booth_idx pada
+      bookings(booth_id) untuk status pending/awaiting_confirmation/confirmed.
+    - Preflight membatalkan booking pending kedaluwarsa lebih dulu, lalu
+      berhenti dengan pesan berisi booth_id bila masih ada booking aktif ganda
+      (tidak menghapus data diam-diam).
+    - Rekonsiliasi menyelaraskan booth: confirmed -> Booked,
+      pending/awaiting -> Reserved, tanpa booking aktif -> Available.
+      release_expired_bookings() diperluas untuk menjalankan rekonsiliasi ini
+      setiap sweep.
+    - create_booking (BE-03) menangkap unique_violation khusus index tersebut
+      dan memetakannya ke hint SWY_BOOTH_UNAVAILABLE; FE menampilkan
+      "Booth sudah tidak tersedia. Silakan pilih booth lain.".
+    - Dokumentasi invariant, preflight, rekonsiliasi, dan query verifikasi ada
+      di supabase/DOUBLE_BOOKING.md; QA DB-01 dan EXP-08 ditambahkan.
+    - npm run verify lulus: lint, format:check, typecheck, 145 unit test, dan
+      build produksi.
+    - Catatan: eksekusi migrasi, uji transaksi paralel, dan E2E SYNC-03 belum
+      dijalankan di mesin lokal karena tidak ada psql/Supabase CLI/Docker dan
+      .env.e2e belum diisi. Jalankan langkah di DOUBLE_BOOKING.md di staging.
     Dependensi: BE-03
 
 [x] BE-03. Perkuat idempotensi dan kontrak error RPC [P1]

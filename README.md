@@ -73,6 +73,7 @@ satu. Urutan ini penting karena saling bergantung.
 | 6      | `supabase/migrations/20261103000500_bookings.sql`                       | Tabel `bookings`, RPC pemesanan, Realtime `bookings`               |
 | 7      | `supabase/migrations/20261105000000_booking_expiry.sql`                 | Auto-release booking kedaluwarsa + `cancelled_reason`              |
 | 8      | `supabase/migrations/20261111000000_rpc_idempotency_error_contract.sql` | Idempotensi RPC, kontrak error, dan `search_path` aman             |
+| 9      | `supabase/migrations/20261111000100_double_booking_guarantee.sql`       | Unique index anti double booking + rekonsiliasi booth              |
 
 Semua migrasi ditulis idempoten, jadi aman dijalankan ulang bila eksekusi
 sebelumnya terputus. Bila memakai Supabase CLI dengan konfigurasi lokal,
@@ -82,6 +83,9 @@ letakkan file di `supabase/migrations/` dan jalankan `supabase db push`
 Kontrak error RPC pemesanan dan matriks idempotensi ada di
 `supabase/ERROR_CONTRACT.md`. Frontend memetakan `hint` error ke pesan pengguna
 lewat `getBookingErrorMessage` di `src/lib/booking.ts`.
+
+Jaminan satu booking aktif per booth, preflight duplikat, dan rekonsiliasi
+status booth ada di `supabase/DOUBLE_BOOKING.md`.
 
 ### 5.2 Data seed (opsional)
 

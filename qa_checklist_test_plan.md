@@ -168,6 +168,7 @@ diklik untuk diperiksa; hanya tombol pemesanan yang dinonaktifkan.
 | **RLS-04** | Anon mencoba insert booth | Dengan anon key, panggil `POST /rest/v1/booths`. | Ditolak `401/403`; tidak ada booth baru. | [ ] |
 | **RLS-05** | Tenant mengubah booking milik orang lain | Dengan JWT tenant A, panggil RPC `cancel_booking` memakai ID booking tenant B. | Ditolak dengan pesan "Anda tidak berhak…" dan booking tenant B tidak berubah. | [ ] |
 | **RLS-06** | Anon membaca booking | Dengan anon key, panggil `GET /rest/v1/bookings`. | Ditolak atau mengembalikan array kosong; tidak ada data tenant yang bocor. | [ ] |
+| **DB-01** | Unique index anti double booking | Di SQL Editor, jalankan transaksi uji pada `supabase/DOUBLE_BOOKING.md` yang menyisipkan dua booking aktif untuk booth yang sama, lalu rollback. | Insert pertama berhasil, insert kedua gagal `23505` pada `bookings_one_active_per_booth_idx`; setelah rollback tidak ada data berubah. Uji dua browser context **SYNC-03** juga hanya menghasilkan satu pemenang. | [ ] |
 
 ---
 
@@ -181,6 +182,7 @@ diklik untuk diperiksa; hanya tombol pemesanan yang dinonaktifkan.
 | **EXP-05** | Sweep bersamaan aman | Jalankan `release_expired_bookings()` dua kali bersamaan pada data yang sama. | Tidak ada error race condition/duplikasi; hanya satu proses yang mengubah booking dan melepas booth. | [ ] |
 | **EXP-06** | Hitungan waktu berjalan tanpa reload | Buat booking `pending` dengan `expires_at` sekitar 2 menit ke depan, lalu buka `/bookings` dan amati teks **Sisa HH:MM:SS** tanpa menyentuh halaman. | Hitungan berkurang tiap detik. Saat mencapai nol, badge berubah menjadi **Kedaluwarsa**, sweep otomatis berjalan sekali, booking menjadi `cancelled` dengan `cancelled_reason='expired'`, dan booth kembali `Available` tanpa reload manual. | [ ] |
 | **EXP-07** | Hitungan berhenti setelah tandai bayar | Tandai booking `pending` sebagai **Sudah Bayar**, lalu amati batas pembayaran dan tunggu hingga `expires_at` terlewat. | Baris batas pembayaran tetap menampilkan tanggal, tetapi teks **Sisa** tidak lagi muncul. Booking tetap `awaiting_confirmation` dan tidak ikut dibatalkan oleh sweep karena menunggu verifikasi organizer. | [ ] |
+| **EXP-08** | Rekonsiliasi booth yatim | Di SQL Editor, ubah status booth tanpa booking aktif menjadi `Reserved`, lalu panggil `release_expired_bookings()` atau buka `/bookings`. | Booth kembali `Available`; query booth tertahan di `supabase/DOUBLE_BOOKING.md` tidak mengembalikan baris. Booth dengan booking aktif tetap `Reserved`/`Booked` sesuai status booking. | [ ] |
 
 ---
 
