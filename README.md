@@ -401,6 +401,12 @@ Audit aksesibilitas mencakup:
   dan pilihan memakai `aria-current`. Regression test keyboard/fokus ada di
   `BlueprintCanvas.test.tsx`, `InteractiveMap.test.tsx`, dan
   `CheckoutModal.test.tsx`.
+- Jalur gagal dan expiry dijaga unit test: `bookingExpiry.test.ts` (RPC sweep
+  error/exception), `useTenantEventView.test.tsx` (rollback optimistic),
+  `useBookingClock.test.tsx` (timer dibersihkan saat unmount), dan
+  `useExpiredBookingSweep.test.tsx` (reject, unmount, deadline berubah).
+  Ambang cakupan di `vite.config.ts` kini lines 74, branches 67, functions 83,
+  statements 74; jalankan `npm run test:coverage` untuk memeriksanya.
 
 ### 12.1 Dokumen produk dan rilis
 

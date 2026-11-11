@@ -557,7 +557,7 @@ FRONTEND DEVELOPER
     - `npm run verify` lulus (lint, format, typecheck, 177 unit test, build,
       budget bundle).
 
-[ ] FE-06. Perluas unit test jalur error dan expiry [P2]
+[x] FE-06. Perluas unit test jalur error dan expiry [P2]
     Pemilik: Frontend Developer
     Kolaborator: QA
     Konteks: Cakupan src/lib dan src/store sudah baik, tetapi jalur gagal
@@ -573,6 +573,35 @@ FRONTEND DEVELOPER
     Verifikasi:
     - npm run test:coverage.
     Dependensi: FE-02
+    STATUS: SELESAI (11 November 2026)
+    Hasil:
+    - src/lib/bookingExpiry.test.ts (baru): sweep RPC sukses (angka/string/
+      null), error RPC mengembalikan null dan `console.warn`, exception
+      ditangkap, serta Supabase belum dikonfigurasi tidak memanggil RPC.
+    - src/lib/booking.test.ts: test pesan kegagalan jaringan dan test langsung
+      `isBookingExpired` untuk tepat di deadline, setelah deadline, sisa waktu,
+      serta `expires_at` kosong/tidak valid.
+    - src/hooks/useBookingClock.test.tsx: clock nonaktif tidak membuat timer,
+      interval dibersihkan saat unmount, dan interval lama dibersihkan sebelum
+      dimulai lagi saat diaktifkan kembali.
+    - src/hooks/useExpiredBookingSweep.test.tsx: RPC reject dilaporkan sebagai
+      `onSwept(null)`, `onSwept` tidak dipanggil setelah unmount, booking
+      non-pending diabaikan, perubahan `expires_at` memicu sweep baru, dan
+      callback sweep terbaru dipakai tanpa mengulang deadline lama.
+    - src/pages/tenant/tenant-event-view/useTenantEventView.test.tsx (baru):
+      rollback status booth ke `Available` saat RPC gagal, status server
+      (`Booked`) tidak ditimpa rollback, jalur sukses mempertahankan
+      `Reserved` dan menyimpan booking, serta respons tanpa booking memicu
+      rollback dan pesan error.
+    - vite.config.ts: ambang cakupan dinaikkan dari lines 40/branches 41/
+      functions 62/statements 44 menjadi lines 74/branches 67/functions 83/
+      statements 74, sedikit di bawah baseline baru.
+    Verifikasi:
+    - `npm run test:coverage`: 27 file test, 198 test lulus. Statements 76,31%,
+      branches 69,41%, functions 85,71%, lines 75,79% — di atas ambang.
+    - `npx vitest run` pada lima file yang diubah: 64 test lulus.
+    - `npm run verify` lulus (lint, format, typecheck, 198 unit test, build,
+      budget bundle).
 
 
 ===============================================================================

@@ -6,6 +6,7 @@ import {
   formatRemaining,
   getBookingErrorMessage,
   getRemainingMs,
+  isBookingExpired,
   isExpiredBooking,
 } from './booking'
 
@@ -127,6 +128,24 @@ describe('isExpiredBooking', () => {
   })
 })
 
+describe('isBookingExpired', () => {
+  const now = new Date('2026-11-07T10:00:00.000Z').getTime()
+
+  it('menandai tepat di deadline dan setelahnya sebagai kedaluwarsa', () => {
+    expect(isBookingExpired({ expires_at: '2026-11-07T10:00:00.000Z' }, now)).toBe(true)
+    expect(isBookingExpired({ expires_at: '2026-11-07T09:59:59.000Z' }, now)).toBe(true)
+  })
+
+  it('tidak menandai deadline yang masih tersisa', () => {
+    expect(isBookingExpired({ expires_at: '2026-11-07T10:00:01.000Z' }, now)).toBe(false)
+  })
+
+  it('mengembalikan false untuk batas kosong atau tidak valid', () => {
+    expect(isBookingExpired({ expires_at: null }, now)).toBe(false)
+    expect(isBookingExpired({ expires_at: 'bukan-tanggal' }, now)).toBe(false)
+  })
+})
+
 describe('getBookingErrorMessage', () => {
   it('menjelaskan tabel yang belum tersedia', () => {
     const message = getBookingErrorMessage(new Error('relation "bookings" does not exist'))
@@ -194,6 +213,12 @@ describe('getBookingErrorMessage', () => {
     const message = getBookingErrorMessage({ code, message: 'raw database error' })
 
     expect(message).toBe(expected)
+  })
+
+  it('menjelaskan kegagalan jaringan dengan saran mencoba lagi', () => {
+    expect(getBookingErrorMessage(new Error('Failed to fetch'))).toBe(
+      'Tidak dapat terhubung ke Supabase. Periksa koneksi internet Anda lalu coba lagi.',
+    )
   })
 
   it('meneruskan pesan error lain apa adanya', () => {

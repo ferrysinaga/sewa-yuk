@@ -43,6 +43,41 @@ describe('useBookingClock', () => {
     expect(result.current).toBe(stoppedAt)
   })
 
+  it('tidak membuat interval saat clock nonaktif', () => {
+    renderHook(() => useBookingClock(false))
+
+    expect(vi.getTimerCount()).toBe(0)
+  })
+
+  it('membersihkan interval saat komponen unmount', () => {
+    const { unmount } = renderHook(() => useBookingClock(true))
+
+    expect(vi.getTimerCount()).toBe(1)
+
+    unmount()
+
+    expect(vi.getTimerCount()).toBe(0)
+  })
+
+  it('membersihkan interval lama lalu memulai lagi saat diaktifkan kembali', () => {
+    const { result, rerender } = renderHook(
+      ({ enabled }: { enabled: boolean }) => useBookingClock(enabled),
+      { initialProps: { enabled: true } },
+    )
+
+    rerender({ enabled: false })
+    expect(vi.getTimerCount()).toBe(0)
+
+    rerender({ enabled: true })
+    expect(vi.getTimerCount()).toBe(1)
+
+    act(() => {
+      vi.advanceTimersByTime(1000)
+    })
+
+    expect(result.current).toBe(START + 1000)
+  })
+
   it('mengubah status menjadi Kedaluwarsa tepat setelah deadline', () => {
     function StatusProbe() {
       const now = useBookingClock(true)

@@ -53,15 +53,15 @@ export default defineConfig({
         'src/store/**/*.ts',
       ],
       exclude: ['src/**/*.{test,spec}.{ts,tsx}'],
-      // Ambang batas ditetapkan sedikit di bawah baseline saat CI pertama
-      // dipasang (lines 42%, branches 43%, functions 66%, statements 46%)
-      // agar perubahan kecil tidak langsung memerahkan pipeline. Naikkan
-      // angka ini setiap kali cakupan bertambah.
+      // Ambang batas ditetapkan sedikit di bawah baseline saat ini
+      // (statements 76%, branches 69%, functions 86%, lines 76%) agar
+      // perubahan kecil tidak langsung memerahkan pipeline. Naikkan angka
+      // ini setiap kali cakupan bertambah.
       thresholds: {
-        lines: 40,
-        branches: 41,
-        functions: 62,
-        statements: 44,
+        lines: 74,
+        branches: 67,
+        functions: 83,
+        statements: 74,
       },
     },
   },

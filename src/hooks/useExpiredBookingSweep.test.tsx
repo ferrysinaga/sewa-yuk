@@ -85,4 +85,103 @@ describe('useExpiredBookingSweep', () => {
 
     expect(onSweep).not.toHaveBeenCalled()
   })
+
+  it('melaporkan null saat RPC sweep gagal tanpa melempar', async () => {
+    const onSweep = vi.fn().mockRejectedValue(new Error('rpc gagal'))
+    const onSwept = vi.fn()
+    const expired = makeBooking({ expires_at: '2026-11-07T09:59:00.000Z' })
+
+    renderHook(() => useExpiredBookingSweep({ bookings: [expired], now: NOW, onSweep, onSwept }))
+
+    await waitFor(() => expect(onSwept).toHaveBeenCalledWith(null))
+  })
+
+  it('tidak memanggil onSwept setelah komponen unmount', async () => {
+    let resolveSweep: (value: number | null) => void = () => {}
+    const onSweep = vi.fn(
+      () =>
+        new Promise<number | null>((resolve) => {
+          resolveSweep = resolve
+        }),
+    )
+    const onSwept = vi.fn()
+    const expired = makeBooking({ expires_at: '2026-11-07T09:59:00.000Z' })
+
+    const { unmount } = renderHook(() =>
+      useExpiredBookingSweep({ bookings: [expired], now: NOW, onSweep, onSwept }),
+    )
+
+    await waitFor(() => expect(onSweep).toHaveBeenCalledTimes(1))
+
+    unmount()
+    await act(async () => resolveSweep(1))
+
+    expect(onSwept).not.toHaveBeenCalled()
+  })
+
+  it('mengabaikan booking yang bukan pending meski batasnya lewat', async () => {
+    const onSweep = vi.fn().mockResolvedValue(0)
+    const confirmed = makeBooking({
+      id: 'booking-1',
+      status: 'confirmed',
+      expires_at: '2026-11-07T09:59:00.000Z',
+    })
+    const cancelled = makeBooking({
+      id: 'booking-2',
+      booking_code: 'BK-002',
+      status: 'cancelled',
+      cancelled_reason: 'expired',
+      expires_at: '2026-11-07T09:59:00.000Z',
+    })
+
+    renderHook(() =>
+      useExpiredBookingSweep({ bookings: [confirmed, cancelled], now: NOW, onSweep }),
+    )
+
+    await act(async () => {})
+
+    expect(onSweep).not.toHaveBeenCalled()
+  })
+
+  it('memanggil sweep lagi saat expires_at booking yang sama berubah', async () => {
+    const onSweep = vi.fn().mockResolvedValue(1)
+    const first = makeBooking({ expires_at: '2026-11-07T09:58:00.000Z' })
+    const movedDeadline = makeBooking({ expires_at: '2026-11-07T09:59:00.000Z' })
+
+    const { rerender } = renderHook(
+      ({ bookings }) => useExpiredBookingSweep({ bookings, now: NOW, onSweep }),
+      { initialProps: { bookings: [first] } },
+    )
+
+    await waitFor(() => expect(onSweep).toHaveBeenCalledTimes(1))
+
+    rerender({ bookings: [movedDeadline] })
+
+    await waitFor(() => expect(onSweep).toHaveBeenCalledTimes(2))
+  })
+
+  it('memakai callback sweep terbaru tanpa membuat ulang penanda', async () => {
+    const firstSweep = vi.fn().mockResolvedValue(1)
+    const secondSweep = vi.fn().mockResolvedValue(2)
+    const onSwept = vi.fn()
+    const first = makeBooking({ expires_at: '2026-11-07T09:58:00.000Z' })
+    const second = makeBooking({
+      id: 'booking-2',
+      booking_code: 'BK-002',
+      expires_at: '2026-11-07T09:59:00.000Z',
+    })
+
+    const { rerender } = renderHook(
+      ({ bookings, onSweep }) => useExpiredBookingSweep({ bookings, now: NOW, onSweep, onSwept }),
+      { initialProps: { bookings: [first], onSweep: firstSweep } },
+    )
+
+    await waitFor(() => expect(onSwept).toHaveBeenCalledWith(1))
+
+    rerender({ bookings: [first, second], onSweep: secondSweep })
+
+    await waitFor(() => expect(onSwept).toHaveBeenCalledWith(2))
+    expect(firstSweep).toHaveBeenCalledTimes(1)
+    expect(secondSweep).toHaveBeenCalledTimes(1)
+  })
 })
