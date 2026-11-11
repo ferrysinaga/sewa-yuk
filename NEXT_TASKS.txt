@@ -55,7 +55,7 @@ PRODUCT MANAGER
     - Tautan dokumen dicatat di bagian 8 dokumen dan di README bila diperlukan.
     Dependensi: -
 
-[ ] PM-02. Finalkan acceptance criteria dan skenario UAT alur kritis [P1]
+[x] PM-02. Finalkan acceptance criteria dan skenario UAT alur kritis [P1]
     Pemilik: Product Manager
     Kolaborator: QA, UI/UX
     Konteks: Alur booking, expiry, realtime, dan otorisasi punya banyak kasus
@@ -70,7 +70,19 @@ PRODUCT MANAGER
     - QA dapat menentukan lulus/tidak lulus tanpa menebak.
     - Setiap kasus tepi punya langkah reproduksi dan hasil yang diharapkan.
     Verifikasi:
-    - QA review dan jalankan satu putaran UAT pada environment uji.
+    - docs/product/PM-02-uat-critical-flows.md memuat AC-01..AC-12 untuk
+      menjelajah event, memilih booth, checkout, membuat booking, membayar,
+      verifikasi organizer, pembatalan, kedaluwarsa, realtime reconnect,
+      otorisasi/RLS, race dua tenant, error contract, dan hapus blueprint.
+    - Matriks UAT-01..UAT-22 mencantumkan precondition, langkah, hasil yang
+      diharapkan, dan referensi ke qa_checklist_test_plan.md (BOOK, ADM, EXP,
+      CONN, RLS, BLP, SYNC).
+    - Tabel transisi status booking/booth/blueprint dan kriteria lulus UAT
+      (skenario wajib, bug Critical/Major, konsistensi UI-RPC-DB) ditetapkan.
+    - Template hasil per skenario dan sign-off PM/QA/UI-UX tersedia.
+    - Catatan: eksekusi satu putaran UAT di environment uji belum dijalankan
+      karena staging dan .env.e2e belum tersedia (menunggu OPS-04). Hasil UAT
+      diisi pada tabel bagian 5 setelah environment siap.
     Dependensi: PM-01
 
 [ ] PM-03. Definisikan metrik funnel dan sumber datanya [P1]
