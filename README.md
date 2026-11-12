@@ -87,6 +87,18 @@ lewat `getBookingErrorMessage` di `src/lib/booking.ts`.
 Jaminan satu booking aktif per booth, preflight duplikat, dan rekonsiliasi
 status booth ada di `supabase/DOUBLE_BOOKING.md`.
 
+Matriks RLS per tabel/operasi/role, skenario negatif, dan temuan audit ada di
+`supabase/RLS_MATRIX.md`. Uji RLS staging dijalankan dengan
+`supabase/tests/rls_matrix.sql` memakai akun organizer, tenant A, tenant B, dan
+anon. Temuan kritis F1 (role di `user_metadata` dapat diubah sendiri) harus
+diperbaiki sebelum produksi; lihat dokumen tersebut untuk rencana remediasi.
+
+Project Supabase standar memberi grant default `SELECT/INSERT/UPDATE/DELETE/
+TRUNCATE` dan `EXECUTE` kepada `anon`/`authenticated` untuk objek baru di
+schema `public`. Migrasi tidak mencabut default tersebut, jadi RLS adalah
+kontrol utama. Temuan F5 dan rekomendasi pencabutan grant ada di
+`supabase/RLS_MATRIX.md`.
+
 ### 5.2 Data seed (opsional)
 
 Tiga blueprint contoh sudah dibuat oleh migrasi. Untuk menambahkan enam booth
@@ -128,6 +140,12 @@ Role disimpan di `user_metadata.role` saat pendaftaran:
 
 - **Penyelenggara / organizer** → akses `/admin*`
 - **Penyewa / tenant** → akses `/event*` dan `/bookings`
+
+> **Peringatan keamanan (BE-01 F1):** `user_metadata` dapat diubah sendiri oleh
+> pengguna melalui Supabase Auth. Sampai remediasi F1 diterapkan, role di
+> `user_metadata` belum layak dipercaya untuk produksi. Jangan menambah fitur
+> sensitif yang hanya bergantung pada nilai ini. Rencana perbaikan ada di
+> `supabase/RLS_MATRIX.md`.
 
 Cara membuat akun:
 

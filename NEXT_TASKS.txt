@@ -638,7 +638,7 @@ FRONTEND DEVELOPER
 BACKEND DEVELOPER
 ===============================================================================
 
-[ ] BE-01. Audit matriks RLS dan dokumentasikan policy per operasi [P1]
+[x] BE-01. Audit matriks RLS dan dokumentasikan policy per operasi [P1]
     Pemilik: Backend Developer
     Kolaborator: QA
     Konteks: RLS adalah garis pertahanan utama. Policy yang terlalu longgar
@@ -655,7 +655,44 @@ BACKEND DEVELOPER
     - Setiap operasi punya policy yang disengaja dan teruji.
     - Tidak ada akses yang hanya bergantung pada UI.
     Verifikasi:
-    - SQL/manual test dengan akun organizer, tenant A, tenant B, dan anon.
+    - supabase/RLS_MATRIX.md memuat matriks tabel x operasi x role untuk
+      booths, blueprints, bookings, dan storage.objects, matriks RPC, katalog
+      policy/grant, skenario negatif RLS-02..RLS-15, serta temuan F1..F6.
+    - Policy publik hanya membaca blueprint published dan booth pada blueprint
+      published; policy lama "Booths are publicly readable",
+      "Blueprints are publicly readable", dan "Tenants can reserve available
+      booths" sudah di-drop.
+    - RLS membatasi tenant/anon pada booths/blueprints/bookings, tetapi grant
+      default Supabase (ALL untuk anon/authenticated pada objek baru public)
+      tidak dicabut oleh migrasi. Tenant/anon tetap ditolak RLS; organizer
+      masih dapat menulis bookings langsung karena policy FOR ALL + grant
+      default (F5). Route guard FE didokumentasikan sebagai UX, bukan kontrol
+      keamanan.
+    - supabase/tests/rls_matrix.sql menyiapkan fixture dalam transaksi,
+      memakai set local role + request.jwt.claims untuk anon, tenant A,
+      tenant B, dan organizer, lalu rollback. Skrip memeriksa katalog policy,
+      grant default, SELECT lintas tenant, tulis booth/blueprint/booking,
+      RPC lintas tenant, create_booking idempoten, sweep expiry, dan
+      mendiagnosis F5 (organizer direct write).
+    - qa_checklist_test_plan.md TS-13 ditambah RLS-07..RLS-15; README
+      menautkan RLS_MATRIX.md dan memberi peringatan F1.
+    - Temuan kritis F1: role otorisasi dibaca dari user_metadata.role, yang
+      dapat diubah sendiri oleh pengguna; tenant dapat menaikkan diri menjadi
+      organizer dan membaca semua booking/menulis booth/blueprint/storage.
+      Belum diperbaiki di BE-01 karena perlu app_metadata/profiles, backfill,
+      perubahan alur signup, dan uji ulang staging. Rencana remediasi ada di
+      RLS_MATRIX.md dan task BE-07.
+    - Temuan lain: F2 policy Storage tidak memeriksa path/owner; F3 anon dapat
+      memanggil release_expired_bookings; F4 bucket publik melewati policy
+      SELECT untuk URL langsung; F5 default privilege Supabase memberi grant
+      tulis/EXECUTE sehingga organizer dapat menulis bookings langsung dan
+      anon mencapai badan RPC tulis (ditolak SWY_AUTH_REQUIRED); F6 organizer
+      dapat menulis status booth di luar state machine (direkonsiliasi BE-02).
+    - npm run verify lulus: lint, format:check, typecheck, 198 unit test,
+      build produksi, dan anggaran bundle.
+    - Catatan: skrip RLS belum dieksekusi di mesin lokal karena tidak ada
+      psql/Supabase CLI/Docker. Jalankan supabase/tests/rls_matrix.sql dan
+      RLS-01..RLS-15 di staging, termasuk uji manual F1 dan F5.
     Dependensi: -
 
 [x] BE-02. Jaminan database terhadap double booking [P1]
@@ -777,6 +814,53 @@ BACKEND DEVELOPER
     - Tidak ada query utama yang melakukan full scan tanpa alasan.
     Verifikasi:
     - Migrasi ulang di database uji + EXPLAIN query utama.
+    Dependensi: BE-01
+
+[ ] BE-07. Remediasi eskalasi role lewat user_metadata [P0]
+    Pemilik: Backend Developer
+    Kolaborator: FE, QA, DevOps
+    Konteks: Temuan F1 BE-01. Semua policy dan RPC membaca
+    user_metadata.role, padahal pengguna dapat mengubah user_metadata sendiri
+    lewat Supabase Auth. Tenant dapat menaikkan diri menjadi organizer.
+    Rencana:
+    - Pindahkan role otorisasi ke app_metadata.role atau tabel user_roles
+      dengan RLS baca sendiri dan tulis hanya lewat service role/admin.
+    - Hentikan penulisan role otorisasi dari Register.tsx; gunakan alur
+      undangan/persetujuan organizer atau default tenant.
+    - Backfill akun lama, lalu buat helper SQL current_role() dan ganti
+      seluruh policy/RPC agar memakai helper tersebut.
+    - Ubah src/lib/auth.ts agar memprioritaskan app_metadata.role.
+    Acceptance:
+    - Percobaan eskalasi role pada RLS-14 ditolak setelah remediasi.
+    - Organizer asli tetap dapat mengelola booth/blueprint/booking.
+    - Tenant tetap hanya membaca booking sendiri dan blueprint published.
+    Verifikasi:
+    - Uji staging dengan akun organizer, tenant A, tenant B, dan anon;
+      jalankan supabase/tests/rls_matrix.sql + RLS-14.
+    Dependensi: BE-01
+
+[ ] BE-08. Cabut default privilege tulis dan EXECUTE yang tidak perlu [P1]
+    Pemilik: Backend Developer
+    Kolaborator: QA, DevOps
+    Konteks: Temuan F5 BE-01. Project Supabase standar memberi grant
+    SELECT/INSERT/UPDATE/DELETE/TRUNCATE dan EXECUTE kepada anon/authenticated
+    untuk objek baru di public. Migrasi tidak mencabutnya, sehingga organizer
+    dapat menulis bookings langsung dan anon mencapai badan RPC tulis.
+    Rencana:
+    - Cabut grant tulis/TRUNCATE bookings dari anon/authenticated, lalu grant
+      SELECT saja; perubahan status tetap lewat RPC.
+    - Cabut EXECUTE empat RPC tulis dari anon; pertahankan release_expired
+      untuk anon atau batasi ke authenticated bila fallback tidak diperlukan.
+    - Tinjau grant tulis anon pada booths/blueprints dan pisahkan policy
+      organizer bookings menjadi FOR SELECT bila memungkinkan.
+    - Dokumentasikan grant minimum di RLS_MATRIX.md/README.
+    Acceptance:
+    - Tenant/anon tidak dapat menulis bookings/booths/blueprints langsung.
+    - Organizer hanya mengubah booking lewat RPC; direct PATCH ditolak.
+    - Anon ditolak di lapisan grant untuk RPC tulis.
+    Verifikasi:
+    - Jalankan supabase/tests/rls_matrix.sql + RLS-15 di staging; cek
+      information_schema.role_table_grants dan role_routine_grants.
     Dependensi: BE-01
 
 
