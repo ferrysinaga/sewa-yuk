@@ -966,6 +966,63 @@ end $$;
 
 reset role;
 
+-- ---------------------------------------------------------------------------
+-- 10. Katalog Realtime: publication dan replica identity.
+-- ---------------------------------------------------------------------------
+do $$
+declare
+  v_count integer;
+  v_extra text;
+begin
+  if not exists (
+    select 1 from pg_publication where pubname = 'supabase_realtime'
+  ) then
+    raise exception 'Realtime: publication supabase_realtime tidak ditemukan';
+  end if;
+
+  select count(*) into v_count
+    from pg_publication_tables
+   where pubname = 'supabase_realtime'
+     and schemaname = 'public'
+     and tablename in ('booths', 'bookings');
+  if v_count <> 2 then
+    raise exception 'Realtime: booths dan bookings harus ada di publication, got %', v_count;
+  end if;
+
+  select string_agg(tablename, ', ' order by tablename)
+    into v_extra
+    from pg_publication_tables
+   where pubname = 'supabase_realtime'
+     and schemaname = 'public'
+     and tablename not in ('booths', 'bookings');
+
+  if v_extra is not null then
+    raise warning
+      'Realtime: tabel public tambahan ikut disiarkan (%); tinjau apakah payload-nya aman.',
+      v_extra;
+  end if;
+
+  select count(*) into v_count
+    from pg_class c
+    join pg_namespace n on n.oid = c.relnamespace
+   where n.nspname = 'public'
+     and c.relname in ('booths', 'bookings')
+     and c.relreplident = 'f';
+  if v_count <> 2 then
+    raise exception 'Realtime: booths dan bookings harus replica identity full, got %', v_count;
+  end if;
+
+  select count(*) into v_count
+    from pg_class c
+    join pg_namespace n on n.oid = c.relnamespace
+   where n.nspname = 'public'
+     and c.relname in ('booths', 'bookings')
+     and c.relrowsecurity;
+  if v_count <> 2 then
+    raise exception 'Realtime: RLS harus aktif pada booths dan bookings, got %', v_count;
+  end if;
+end $$;
+
 rollback;
 
 \echo 'BE-01 RLS matrix tests passed; semua fixture di-rollback.'

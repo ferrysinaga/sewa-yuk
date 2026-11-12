@@ -2,17 +2,30 @@ import { act, renderHook } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { useBookingFeed } from './useBookingFeed'
 
-const { subscribeCallbacks, removeChannel } = vi.hoisted(() => ({
+interface SubscriptionConfig {
+  event: string
+  schema: string
+  table: string
+  filter?: string
+}
+
+const { subscribeCallbacks, removeChannel, onCalls, channelNames } = vi.hoisted(() => ({
   subscribeCallbacks: [] as ((status: string) => void)[],
   removeChannel: vi.fn(),
+  onCalls: [] as { event: string; config: SubscriptionConfig }[],
+  channelNames: [] as string[],
 }))
 
 vi.mock('../lib/supabase', () => ({
   isSupabaseConfigured: true,
   supabase: {
-    channel: vi.fn(() => {
+    channel: vi.fn((name: string) => {
+      channelNames.push(name)
       const channel = {
-        on: vi.fn(() => channel),
+        on: vi.fn((event: string, config: SubscriptionConfig) => {
+          onCalls.push({ event, config })
+          return channel
+        }),
         subscribe: vi.fn((callback: (status: string) => void) => {
           subscribeCallbacks.push(callback)
           return channel
@@ -36,6 +49,8 @@ function setOnLine(value: boolean) {
 
 beforeEach(() => {
   subscribeCallbacks.length = 0
+  onCalls.length = 0
+  channelNames.length = 0
   removeChannel.mockClear()
   setOnLine(true)
 })
@@ -45,6 +60,36 @@ afterEach(() => {
 })
 
 describe('useBookingFeed', () => {
+  it('membatasi feed tenant ke booking miliknya lewat filter user_id', () => {
+    const setBookings = vi.fn()
+
+    renderHook(() => useBookingFeed({ userId: 'tenant-1', setBookings }))
+
+    expect(onCalls).toHaveLength(1)
+    expect(onCalls[0].event).toBe('postgres_changes')
+    expect(onCalls[0].config).toEqual({
+      event: '*',
+      schema: 'public',
+      table: 'bookings',
+      filter: 'user_id=eq.tenant-1',
+    })
+    expect(channelNames[0]).toContain('tenant-bookings-tenant-1')
+  })
+
+  it('tidak memakai filter untuk feed organizer', () => {
+    const setBookings = vi.fn()
+
+    renderHook(() => useBookingFeed({ userId: null, setBookings }))
+
+    expect(onCalls).toHaveLength(1)
+    expect(onCalls[0].config).toEqual({
+      event: '*',
+      schema: 'public',
+      table: 'bookings',
+    })
+    expect(channelNames[0]).toContain('admin-bookings')
+  })
+
   it('meminta resync hanya setelah channel tersambung kembali', () => {
     const onResync = vi.fn()
     const setBookings = vi.fn()

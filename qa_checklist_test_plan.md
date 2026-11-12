@@ -77,6 +77,10 @@ diklik untuk diperiksa; hanya tombol pemesanan yang dinonaktifkan.
 | **SYNC-01** | Integrasi Supabase Realtime | Buka halaman peta event yang sama di 2 browser/tab terpisah (User A & User B). | Perubahan status booth pada User A langsung terlihat di layar User B tanpa reload. | [ ] |
 | **SYNC-02** | Kunci Booth Saat Checkout | User A mengklik "Pesan booth ini" pada salah satu booth. | Status booth tersebut di layar User B berubah instan menjadi *Dipesan* (abu-abu, garis putus-putus). Booth masih bisa diklik untuk inspeksi, tetapi tombol pemesanan User B nonaktif. | [ ] |
 | **SYNC-03** | Penanganan Pemesanan Bersamaan | User A & B menekan tombol bayar pada booth yang sama di milidetik mendekati sama. | Sistem hanya mengonfirmasi 1 transaksi, user lainnya menerima pesan peringatan. | [ ] |
+| **RT-01** | Isolasi payload booking antar tenant | Login tenant A dan tenant B di dua browser context, buka `/bookings`, lalu buat/ubah booking milik tenant A. Amati console `postgres_changes` atau frame WebSocket. | Tenant A menerima payload booking miliknya; tenant B **tidak** menerima payload booking tenant A. Menghapus filter `user_id` di console tetap tidak membocorkan baris tenant A karena RLS. | [ ] |
+| **RT-02** | Organizer menerima semua booking | Login organizer, buka `/admin/bookings`, lalu buat/ubah booking dari tenant A dan tenant B. | Organizer menerima payload kedua booking dan daftar ikut diperbarui tanpa reload. | [ ] |
+| **RT-03** | Anon tidak menerima booking | Buka aplikasi tanpa login dan berlangganan `bookings` lewat console memakai anon key. | Tidak ada event booking yang diterima; payload tenant tidak pernah muncul. | [ ] |
+| **RT-04** | Booth draft tidak bocor | Sebagai organizer, ubah booth pada blueprint `draft`, sementara tenant dan anon membuka channel `booths`. | Hanya organizer yang menerima event booth draft; tenant/anon tidak menerima payload booth draft. Booth pada blueprint `published` tetap tersinkron. | [ ] |
 
 ---
 

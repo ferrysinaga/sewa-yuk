@@ -763,7 +763,7 @@ BACKEND DEVELOPER
       di ERROR_CONTRACT.md lalu QA BOOK-07..BOOK-09 dan ADM-06 di staging.
     Dependensi: -
 
-[ ] BE-04. Audit privasi realtime dan publication [P1]
+[x] BE-04. Audit privasi realtime dan publication [P1]
     Pemilik: Backend Developer
     Kolaborator: FE, QA
     Konteks: booths dan bookings aktif di Realtime. Payload tidak boleh
@@ -778,7 +778,31 @@ BACKEND DEVELOPER
     - Tidak ada data tenant lain yang terkirim ke klien tenant.
     - Realtime tetap berfungsi untuk perubahan booth dan status booking.
     Verifikasi:
-    - Uji dua tenant + organizer dengan payload/log.
+    - supabase/REALTIME_PRIVACY.md memuat konfigurasi publication
+      (booths/bookings, replica identity full, RLS aktif), tabel channel dan
+      filter (tenant-booths, tenant-bookings, admin-booths, admin-bookings),
+      matriks aktor x event, perilaku UPDATE/DELETE, temuan R1..R5, dan
+      langkah uji payload staging.
+    - Realtime mengevaluasi policy SELECT per subscriber: tenant hanya
+      menerima booking user_id = auth.uid() dan booth blueprint published;
+      organizer menerima semua; anon tidak menerima booking. Filter
+      user_id=eq.<uuid> didokumentasikan sebagai optimisasi, bukan batas
+      keamanan.
+    - Event DELETE tidak difilter RLS dan hanya memuat primary key; aplikasi
+      tidak punya alur hapus booking (pembatalan memakai status), sehingga
+      risiko dicatat sebagai R1. Eskalasi role F1 juga membuka event organizer
+      (R2) dan ditutup oleh BE-07.
+    - src/hooks/useBookingFeed.test.tsx menambah unit test kontrak channel:
+      feed tenant memakai filter user_id, feed organizer tanpa filter, nama
+      channel berbeda.
+    - supabase/tests/rls_matrix.sql bagian 10 memeriksa publication
+      supabase_realtime, replica identity full, RLS aktif, dan memberi
+      WARNING bila ada tabel public lain di publication.
+    - qa_checklist_test_plan.md TS-05 ditambah RT-01..RT-04; README menautkan
+      REALTIME_PRIVACY.md.
+    - npm run verify lulus: 200 unit test, build produksi, dan anggaran
+      bundle. Catatan: uji payload nyata dan e2e/sync.spec.ts masih menunggu
+      staging/.env.e2e (OPS-04).
     Dependensi: BE-01
 
 [ ] BE-05. Validasi storage dan pembersihan file yatim [P2]

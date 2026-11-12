@@ -99,6 +99,11 @@ schema `public`. Migrasi tidak mencabut default tersebut, jadi RLS adalah
 kontrol utama. Temuan F5 dan rekomendasi pencabutan grant ada di
 `supabase/RLS_MATRIX.md`.
 
+Konfigurasi publication Realtime, channel/filter frontend, dan jaminan privasi
+payload booking ada di `supabase/REALTIME_PRIVACY.md`. Tenant hanya menerima
+booking miliknya dan booth pada blueprint `published`; filter channel bukan
+batas keamanan, RLS tetap yang menentukan.
+
 ### 5.2 Data seed (opsional)
 
 Tiga blueprint contoh sudah dibuat oleh migrasi. Untuk menambahkan enam booth
