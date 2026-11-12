@@ -6,8 +6,11 @@ import { getErrorMessage, isNetworkError } from './errors'
 export function getUserRole(user: User | null | undefined): UserRole | null {
   if (!user) return null
 
-  const metadataRole = user.user_metadata?.role ?? user.app_metadata?.role
-  return isUserRole(metadataRole) ? metadataRole : null
+  // app_metadata hanya dapat diubah lewat service role/Admin API. user_metadata
+  // dapat diubah sendiri oleh pengguna, jadi tidak boleh dipakai untuk
+  // otorisasi. Akun tanpa role dianggap tenant (default aman).
+  const metadataRole = user.app_metadata?.role
+  return isUserRole(metadataRole) ? metadataRole : 'tenant'
 }
 
 export function getDefaultRouteForRole(role: UserRole | null): string {

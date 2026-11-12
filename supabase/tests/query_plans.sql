@@ -220,7 +220,7 @@ select set_config(
   json_build_object(
     'sub', :'organizer_id',
     'role', 'authenticated',
-    'user_metadata', json_build_object('role', 'organizer')
+    'app_metadata', json_build_object('role', 'organizer')
   )::text,
   true
 );
@@ -240,7 +240,7 @@ select set_config(
   json_build_object(
     'sub', :'organizer_id',
     'role', 'authenticated',
-    'user_metadata', json_build_object('role', 'organizer')
+    'app_metadata', json_build_object('role', 'organizer')
   )::text,
   true
 );
@@ -264,7 +264,7 @@ select set_config(
   json_build_object(
     'sub', :'organizer_id',
     'role', 'authenticated',
-    'user_metadata', json_build_object('role', 'organizer')
+    'app_metadata', json_build_object('role', 'organizer')
   )::text,
   true
 );

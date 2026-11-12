@@ -412,7 +412,7 @@ select set_config(
          jsonb_build_object(
            'sub', :'tenant_a_id',
            'role', 'authenticated',
-           'user_metadata', jsonb_build_object('role', 'tenant')
+           'app_metadata', jsonb_build_object('role', 'tenant')
          )::text,
          true
        ) as _claims,
@@ -601,7 +601,7 @@ select set_config(
          jsonb_build_object(
            'sub', :'organizer_id',
            'role', 'authenticated',
-           'user_metadata', jsonb_build_object('role', 'organizer')
+           'app_metadata', jsonb_build_object('role', 'organizer')
          )::text,
          true
        ) as _claims,
@@ -658,7 +658,7 @@ select set_config(
          jsonb_build_object(
            'sub', :'tenant_a_id',
            'role', 'authenticated',
-           'user_metadata', jsonb_build_object('role', 'tenant')
+           'app_metadata', jsonb_build_object('role', 'tenant')
          )::text,
          true
        ) as _claims,
@@ -877,7 +877,7 @@ select set_config(
          jsonb_build_object(
            'sub', :'organizer_id',
            'role', 'authenticated',
-           'user_metadata', jsonb_build_object('role', 'organizer')
+           'app_metadata', jsonb_build_object('role', 'organizer')
          )::text,
          true
        ) as _claims,
@@ -934,7 +934,7 @@ select set_config(
          jsonb_build_object(
            'sub', :'organizer_id',
            'role', 'authenticated',
-           'user_metadata', jsonb_build_object('role', 'organizer')
+           'app_metadata', jsonb_build_object('role', 'organizer')
          )::text,
          true
        ) as _claims,
@@ -1022,6 +1022,130 @@ begin
     raise exception 'Realtime: RLS harus aktif pada booths dan bookings, got %', v_count;
   end if;
 end $$;
+
+-- ---------------------------------------------------------------------------
+-- 11. F1/BE-07: eskalasi role lewat user_metadata harus gagal.
+--
+-- JWT di bawah meniru tenant yang memanggil PUT /auth/v1/user lalu menulis
+-- user_metadata.role = organizer. app_metadata tetap tenant. Setelah BE-07,
+-- helper dan seluruh policy harus mengabaikan user_metadata.
+-- ---------------------------------------------------------------------------
+set local role authenticated;
+select set_config(
+         'request.jwt.claims',
+         jsonb_build_object(
+           'sub', :'tenant_a_id',
+           'role', 'authenticated',
+           'app_metadata', jsonb_build_object('role', 'tenant'),
+           'user_metadata', jsonb_build_object('role', 'organizer')
+         )::text,
+         true
+       ) as _claims,
+       set_config('request.jwt.claim.sub', :'tenant_a_id', true) as _sub
+\gset
+
+do $$
+declare
+  v_role text;
+  v_count integer;
+  v_rows integer := 0;
+  v_write_allowed boolean := false;
+begin
+  select public.current_user_role() into v_role;
+  if v_role is distinct from 'tenant' then
+    raise exception 'RLS-14: current_user_role harus tenant, got %', v_role;
+  end if;
+
+  select count(*) into v_count
+    from public.bookings;
+  if v_count <> 1 then
+    raise exception 'RLS-14: tenant hanya boleh melihat 1 booking sendiri, got %', v_count;
+  end if;
+
+  begin
+    update public.booths
+       set status = 'Booked'
+     where id = '00000000-0000-4000-8000-00000000b001';
+    get diagnostics v_rows = row_count;
+    v_write_allowed := v_rows > 0;
+  exception
+    when insufficient_privilege then v_write_allowed := false;
+  end;
+
+  if v_write_allowed then
+    raise exception
+      'RLS-14: user_metadata.role=organizer berhasil menulis booth; F1 belum diremediasi';
+  end if;
+end $$;
+
+reset role;
+
+-- JWT tanpa app_metadata.role harus fallback ke tenant, bukan organizer.
+set local role authenticated;
+select set_config(
+         'request.jwt.claims',
+         jsonb_build_object(
+           'sub', :'tenant_a_id',
+           'role', 'authenticated',
+           'user_metadata', jsonb_build_object('role', 'organizer')
+         )::text,
+         true
+       ) as _claims,
+       set_config('request.jwt.claim.sub', :'tenant_a_id', true) as _sub
+\gset
+
+do $$
+declare
+  v_role text;
+begin
+  select public.current_user_role() into v_role;
+  if v_role is distinct from 'tenant' then
+    raise exception 'RLS-14: fallback role harus tenant, got %', v_role;
+  end if;
+end $$;
+
+reset role;
+
+-- Organizer asli (app_metadata.role = organizer) tetap dapat mengelola,
+-- meskipun user_metadata.role sengaja diisi tenant.
+set local role authenticated;
+select set_config(
+         'request.jwt.claims',
+         jsonb_build_object(
+           'sub', :'organizer_id',
+           'role', 'authenticated',
+           'app_metadata', jsonb_build_object('role', 'organizer'),
+           'user_metadata', jsonb_build_object('role', 'tenant')
+         )::text,
+         true
+       ) as _claims,
+       set_config('request.jwt.claim.sub', :'organizer_id', true) as _sub
+\gset
+
+do $$
+declare
+  v_role text;
+  v_rows integer;
+begin
+  select public.current_user_role() into v_role;
+  if v_role is distinct from 'organizer' then
+    raise exception 'RLS-14: organizer asli harus tetap organizer, got %', v_role;
+  end if;
+
+  update public.booths
+     set status = 'Booked'
+   where id = '00000000-0000-4000-8000-00000000b001';
+  get diagnostics v_rows = row_count;
+  if v_rows <> 1 then
+    raise exception 'RLS-14: organizer asli harus dapat menulis booth, got % rows', v_rows;
+  end if;
+
+  update public.booths
+     set status = 'Available'
+   where id = '00000000-0000-4000-8000-00000000b001';
+end $$;
+
+reset role;
 
 rollback;
 

@@ -14,12 +14,6 @@ import {
 import { inputClass } from '../lib/formStyles'
 import { isSupabaseConfigured, supabase } from '../lib/supabase'
 import { useAuthStore } from '../store/useAuthStore'
-import type { UserRole } from '../types/auth'
-
-const roleOptions: { value: UserRole; title: string; description: string }[] = [
-  { value: 'tenant', title: 'Penyewa', description: 'Cari dan sewa booth event' },
-  { value: 'organizer', title: 'Penyelenggara', description: 'Rancang dan kelola event' },
-]
 
 export default function Register() {
   useDocumentTitle('Daftar Akun')
@@ -30,7 +24,6 @@ export default function Register() {
   const { showToast } = useToast()
   const navigate = useNavigate()
 
-  const [role, setRole] = useState<UserRole>('tenant')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
@@ -78,16 +71,13 @@ export default function Register() {
       const { data, error } = await supabase.auth.signUp({
         email: email.trim(),
         password,
-        options: {
-          data: { role },
-        },
       })
 
       if (error) throw error
 
       if (data.session) {
         showToast('Akun berhasil dibuat. Mengalihkan ke halaman Anda…', 'success')
-        navigate(getDefaultRouteForRole(role), { replace: true })
+        navigate(getDefaultRouteForRole('tenant'), { replace: true })
         return
       }
 
@@ -114,7 +104,8 @@ export default function Register() {
             Buat akun baru
           </h1>
           <p className="mt-2 text-sm leading-relaxed text-muted">
-            Pilih peran Anda untuk mendapatkan pengalaman yang sesuai.
+            Akun baru dibuat sebagai penyewa. Akun penyelenggara ditunjuk oleh admin setelah
+            proses verifikasi.
           </p>
         </div>
 
@@ -126,47 +117,6 @@ export default function Register() {
         )}
 
         <form onSubmit={handleSubmit} noValidate className="mt-6 space-y-5">
-          <fieldset>
-            <legend className="text-sm font-medium text-ink">Daftar sebagai</legend>
-            <div className="mt-2 grid gap-2 sm:grid-cols-2">
-              {roleOptions.map((option) => {
-                const isSelected = role === option.value
-
-                return (
-                  <label
-                    key={option.value}
-                    className={`cursor-pointer rounded-card-sm border p-3 text-left transition-colors focus-within:ring-2 focus-within:ring-pine focus-within:ring-offset-2 focus-within:ring-offset-surface motion-reduce:transition-none ${
-                      isSelected
-                        ? 'border-pine bg-pine-soft'
-                        : 'border-line bg-surface hover:border-pine'
-                    }`}
-                  >
-                    <input
-                      type="radio"
-                      name="role"
-                      value={option.value}
-                      checked={isSelected}
-                      onChange={() => setRole(option.value)}
-                      className="sr-only"
-                    />
-                    <span className="flex items-center justify-between gap-2">
-                      <span className="text-sm font-semibold text-ink">{option.title}</span>
-                      <span
-                        aria-hidden="true"
-                        className={`flex h-4 w-4 items-center justify-center rounded-full border ${
-                          isSelected ? 'border-pine bg-pine' : 'border-line bg-surface'
-                        }`}
-                      >
-                        {isSelected && <span className="h-1.5 w-1.5 rounded-full bg-surface" />}
-                      </span>
-                    </span>
-                    <span className="mt-1 block text-xs text-muted">{option.description}</span>
-                  </label>
-                )
-              })}
-            </div>
-          </fieldset>
-
           <div>
             <label htmlFor="email" className="text-sm font-medium text-ink">
               Email
