@@ -132,6 +132,13 @@ Migrasi gambar membuat bucket publik `blueprint-assets` (maks. 5 MB, tipe
 `image/png`, `image/jpeg`, `image/webp`). Upload dan hapus gambar hanya boleh
 dilakukan akun dengan role `organizer`.
 
+Validasi klien/server, sumber file yatim, dan prosedur pembersihan ada di
+`supabase/STORAGE.md`. Audit katalog (read-only, staging) dijalankan dengan
+`supabase/tests/storage_audit.sql`. Pembersihan file tanpa referensi memakai
+Storage API lewat `npm run storage:orphans -- --older-than-hours=24` (dry-run)
+dan `-- --delete` setelah daftar ditinjau. Skrip memerlukan
+`SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY` dan menolak kunci non-service-role.
+
 ### 5.5 pg_cron (opsional)
 
 Migrasi expiry mencoba mendaftarkan job `pg_cron` setiap 2 menit. Jika ekstensi

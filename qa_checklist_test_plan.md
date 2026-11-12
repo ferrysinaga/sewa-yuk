@@ -160,6 +160,8 @@ diklik untuk diperiksa; hanya tombol pemesanan yang dinonaktifkan.
 | **IMG-03** | Ganti gambar | Unggah gambar baru lalu simpan. | Metadata menunjuk ke gambar baru dan file lama di Storage dihapus setelah penyimpanan berhasil. | [ ] |
 | **IMG-04** | Hapus gambar | Hapus gambar lewat kontrol uploader lalu simpan. | `image_url`/`image_path` menjadi `null`, kartu memakai placeholder denah, dan file di Storage terhapus. | [ ] |
 | **IMG-05** | Gagal upload tidak merusak data | Simulasikan jaringan gagal saat upload atau simpan. | Muncul pesan error, denah/booth lama tetap utuh, dan tidak ada file yatim baru. | [ ] |
+| **IMG-06** | Audit dan bersihkan file yatim | Unggah gambar, simpan, lalu hapus blueprint. Jalankan `supabase/tests/storage_audit.sql`, lalu `node scripts/storage-orphans.mjs --older-than-hours=0` (dry-run) dan `--delete`. | Audit menampilkan file yatim; dry-run mencantumkan path yang sama; setelah `--delete`, audit berikutnya tidak menemukan file yatim dan objek hilang dari bucket. | [ ] |
+| **IMG-07** | Validasi bucket di luar klien | Dengan JWT organizer, unggah langsung ke Storage API memakai `Content-Type: image/gif` dan file > 5 MB (misalnya lewat curl/Postman). | Storage menolak kedua unggahan (tipe/ukuran) dan tidak ada objek baru; validasi tidak hanya bergantung pada UI. | [ ] |
 
 ---
 

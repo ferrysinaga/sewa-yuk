@@ -805,7 +805,7 @@ BACKEND DEVELOPER
       staging/.env.e2e (OPS-04).
     Dependensi: BE-01
 
-[ ] BE-05. Validasi storage dan pembersihan file yatim [P2]
+[x] BE-05. Validasi storage dan pembersihan file yatim [P2]
     Pemilik: Backend Developer
     Kolaborator: FE, DevOps
     Konteks: Bucket blueprint-assets publik dengan batas 5 MB dan tipe
@@ -819,7 +819,34 @@ BACKEND DEVELOPER
     - File di luar tipe/ukuran ditolak.
     - Tidak ada referensi image_url yang menunjuk file hilang.
     Verifikasi:
-    - Uji upload valid/invalid dan hapus blueprint.
+    - supabase/STORAGE.md memuat konfigurasi bucket (publik, 5 MB,
+      png/jpeg/webp), empat policy Storage, lapisan validasi klien/server,
+      konvensi path, alur upload/ganti/hapus, sumber file yatim S1..S6, dan
+      prosedur audit/pembersihan.
+    - Validasi server ditegakkan bucket (bukan hanya klien). Klien menolak
+      tipe di luar daftar, file 0 byte, dan > 5 MB; metadata image_url/
+      image_path hanya ditulis setelah upload berhasil sehingga kegagalan
+      upload tidak menyimpan referensi tanpa file.
+    - src/lib/storage.test.ts menambah 17 unit test: validasi tipe/ukuran/
+      kosong, batas tepat 5 MB, sanitasi folder, ekstensi dari nama/MIME,
+      opsi upload (cacheControl/contentType/upsert), propagasi error,
+      no-op hapus path kosong, dan pemetaan pesan error.
+    - supabase/tests/storage_audit.sql (read-only, staging) memeriksa
+      katalog bucket/policy/RLS, image_path tanpa objek, objek tanpa
+      referensi beserta usia, objek di luar blueprints/, dan metadata
+      image_path/image_url tidak konsisten.
+    - scripts/storage-orphans.mjs membersihkan objek yatim lewat Storage
+      API (bukan delete from storage.objects), dry-run default, ambang usia
+      24 jam, pagination, batch 100, dan menolak kunci non-service-role.
+      Tersedia sebagai npm run storage:orphans.
+    - qa_checklist_test_plan.md menambah IMG-06 (audit/bersihkan yatim) dan
+      IMG-07 (validasi bucket di luar klien); README menautkan STORAGE.md.
+    - Temuan S1 (hapus blueprint tidak menghapus gambar) dicatat dengan
+      rekomendasi pembersihan best-effort; F2/F4 dirujuk ke RLS_MATRIX.md.
+    - npm run verify lulus: 217 unit test, build produksi, dan anggaran
+      bundle. Catatan: audit SQL, upload invalid, dan pembersihan nyata
+      masih menunggu staging/kredensial (OPS-04); tidak ada psql/Supabase
+      CLI di mesin lokal.
     Dependensi: BE-01
 
 [ ] BE-06. Siapkan rollback migrasi, backup, dan review index [P2]
