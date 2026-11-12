@@ -80,6 +80,11 @@ sebelumnya terputus. Bila memakai Supabase CLI dengan konfigurasi lokal,
 letakkan file di `supabase/migrations/` dan jalankan `supabase db push`
 (atau `supabase db reset` untuk database lokal).
 
+Urutan dependensi, prosedur replay dari database kosong, backup/restore,
+rollback per migrasi, dan review index ada di `supabase/MIGRATIONS.md`. Review
+query utama di staging dijalankan dengan `supabase/tests/query_plans.sql`
+(read-only, memakai `EXPLAIN (ANALYZE, BUFFERS)`).
+
 Kontrak error RPC pemesanan dan matriks idempotensi ada di
 `supabase/ERROR_CONTRACT.md`. Frontend memetakan `hint` error ke pesan pengguna
 lewat `getBookingErrorMessage` di `src/lib/booking.ts`.

@@ -849,7 +849,7 @@ BACKEND DEVELOPER
       CLI di mesin lokal.
     Dependensi: BE-01
 
-[ ] BE-06. Siapkan rollback migrasi, backup, dan review index [P2]
+[x] BE-06. Siapkan rollback migrasi, backup, dan review index [P2]
     Pemilik: Backend Developer
     Kolaborator: DevOps
     Konteks: Migrasi berurutan dan idempoten, tetapi rencana rollback dan
@@ -864,7 +864,37 @@ BACKEND DEVELOPER
     - Rollback berisiko punya prosedur yang jelas.
     - Tidak ada query utama yang melakukan full scan tanpa alasan.
     Verifikasi:
-    - Migrasi ulang di database uji + EXPLAIN query utama.
+    - supabase/MIGRATIONS.md memuat tabel urutan 9 migrasi beserta objek,
+      dependensi, risiko rollback, catatan idempotensi, prosedur replay dari
+      database kosong (bash/PowerShell), dan pemeriksaan pasca-replay.
+    - Backup/restore mencakup checklist sebelum migrasi, pg_dump schema+data
+      public, schema-only, metadata Storage, peringatan bahwa file Storage
+      tidak ikut pg_dump, restore ke database scratch, dan rollback drill.
+    - Rollback ditulis berurutan terbalik dengan prinsip forward-first,
+      logical vs full, dan transactional dry-run. Blok SQL tersedia untuk
+      migrasi 9 sampai 1, termasuk rollback logis non-destruktif untuk tabel
+      bookings dan peringatan public URL bucket.
+    - Review index memuat inventaris 12 index (termasuk unique partial
+      bookings_one_active_per_booth_idx dan partial
+      bookings_pending_expiry_idx), matriks 11 query utama beserta index yang
+      dipakai, dan temuan R1..R7. Tidak ada index baru diterapkan karena
+      keputusan menunggu EXPLAIN staging; kandidat index komposit/trigram dan
+      keyset pagination didokumentasikan.
+    - Query utama tidak melakukan full scan tanpa alasan: scan pada pencarian
+      wildcard, dashboard semua booth, dan agregasi metrik dijelaskan sebagai
+      konsekuensi volume kecil; sweep expiry memakai partial index yang tepat.
+    - supabase/tests/query_plans.sql (read-only, staging) memeriksa index wajib,
+      definisi unique/partial, index duplikat, ukuran tabel, pemakaian index,
+      lalu EXPLAIN (ANALYZE, BUFFERS) untuk event published, booth per event,
+      booth published, dashboard booth, booking tenant (RLS), halaman booking
+      admin, pencarian admin, metrik, sweep expiry, preflight duplikat, dan
+      lock booth.
+    - qa_checklist_test_plan.md menambah DB-02..DB-05 (replay, idempoten,
+      rollback drill, review plan); README menautkan MIGRATIONS.md.
+    - npm run verify lulus: 217 unit test, build produksi, dan anggaran
+      bundle. Catatan: replay, rollback drill, dan EXPLAIN belum dijalankan
+      karena tidak ada psql/Supabase CLI/kredensial staging di mesin lokal
+      (OPS-04).
     Dependensi: BE-01
 
 [ ] BE-07. Remediasi eskalasi role lewat user_metadata [P0]
