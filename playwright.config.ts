@@ -28,6 +28,10 @@ export default defineConfig({
   testDir: './e2e',
   fullyParallel: false,
   workers: 1,
+  // Kebijakan QA-05: jangan menambah retry untuk menutupi flaky test. Tes yang
+  // gagal harus diperbaiki akar masalahnya; retry hanya boleh sementara dengan
+  // issue tertaut di docs/qa/FLAKY_TESTS.md.
+  retries: 0,
   timeout: 90_000,
   expect: {
     timeout: 20_000,

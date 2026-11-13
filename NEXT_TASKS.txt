@@ -1102,7 +1102,7 @@ QA ENGINEER
     - Screenshot before/after dilampirkan di PR.
     Dependensi: FE-03
 
-[ ] QA-05. Kelola flaky test dan waktu pipeline [P2]
+[x] QA-05. Kelola flaky test dan waktu pipeline [P2]
     Pemilik: QA Engineer
     Kolaborator: DevOps, FE
     Konteks: Test realtime dan E2E paling rentan flaky; flaky test yang
@@ -1116,7 +1116,24 @@ QA ENGINEER
     - Tidak ada test yang di-retry berkali-kali tanpa alasan.
     - Durasi pipeline tetap dalam batas yang disepakati.
     Verifikasi:
-    - Bandingkan hasil 10 run berturut-turut.
+    - docs/qa/FLAKY_TESTS.md baru memuat kebijakan retry, register flaky
+      test (SYNC, A11Y, unit DOM, build), prosedur triase, anggaran durasi
+      pipeline, dan batasan staging.
+    - playwright.config.ts menetapkan retries: 0 dengan komentar kebijakan;
+      Vitest tetap tanpa retry dan CI tetap satu run per langkah.
+    - vite.config.ts memakai pool: 'vmThreads' sehingga jsdom dibuat sekali
+      per worker, bukan 29 kali. Tidak ada tes atau dependensi yang diubah.
+    - Bukti 10 run lokal `npm test`: 223/223 lulus setiap run, durasi
+      5,89-7,83 detik, rata-rata 6,63 detik. Baseline tiga run sebelumnya
+      11,03/12,99/12,16 detik (rata-rata 12,06 detik), jadi langkah unit test
+      membaik sekitar 45% dan warning jsdom berulang hilang.
+    - README bagian CI/E2E dan qa_checklist_test_plan.md (bagian 2.2)
+      menautkan kebijakan ini; anggaran job verify 20 menit dengan target
+      pemantauan 15 menit.
+    - npm run test:coverage dan npm run verify lulus. Catatan: durasi CI
+      nyata dan 10 run E2E SYNC/A11Y belum dapat diukur karena kredensial
+      staging belum tersedia (OPS-04); register E2E berisi kandidat dan
+      mitigasi, bukan bukti run.
     Dependensi: QA-01
 
 [ ] QA-06. Perbarui test plan dan template sign-off rilis [P2]

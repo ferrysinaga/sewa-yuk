@@ -2,7 +2,7 @@
 **Proyek:** sewa-yuk — Platform Booking Booth Event Interaktif 2D
 **Versi:** 1.3.0
 **Stack Utama:** Vite, React, TypeScript, Tailwind CSS, Zustand, Supabase (Auth, DB, Realtime), `@dnd-kit/core`
-**Revisi terakhir:** 8 November 2026 — ditambah skenario hitungan waktu kedaluwarsa berjalan dan indikator koneksi realtime (TS-15), serta penyelarasan status dokumen dengan Fase 2.
+**Revisi terakhir:** 13 November 2026 — ditambah SYNC-04 (expiry + reset booth) dan kebijakan flaky test/pipeline QA-05, serta penyelarasan status dokumen dengan Fase 2.
 
 ---
 
@@ -27,6 +27,18 @@ diklik untuk diperiksa; hanya tombol pemesanan yang dinonaktifkan.
 | **Reserved** | Abu-abu terang, garis putus-putus netral | Dipesan | Ya | Tidak |
 | **Booked** | Abu-abu lebih gelap, garis netral | Terisi | Ya | Tidak |
 | **Dipilih** | Isi pine + ikon centang | Tersedia/Dipesan/Terisi | — | Tergantung status |
+
+### 2.2 Kebijakan flaky test dan durasi pipeline
+
+- Retry default **0** untuk Vitest dan Playwright. Retry sementara hanya boleh
+  dengan issue tertaut dan maksimal 1.
+- Tes yang gagal tidak konsisten dicatat di `docs/qa/FLAKY_TESTS.md` beserta
+  akar masalah dan perbaikannya. Jangan menutupi flaky test dengan menaikkan
+  timeout atau worker tanpa data.
+- Vitest memakai `pool: 'vmThreads'` (satu jsdom per worker). Bukti 10 run dan
+  angka durasi ada di dokumen tersebut.
+- E2E yang butuh staging tetapi belum punya kredensial harus **skip dengan
+  alasan eksplisit**, bukan gagal acak.
 
 ---
 

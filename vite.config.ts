@@ -39,6 +39,9 @@ export default defineConfig({
   },
   test: {
     environment: 'jsdom',
+    // Satu jsdom per worker, bukan per file. `vmThreads` tetap mengisolasi
+    // modul per file tetapi menghindari pembuatan 29 environment jsdom.
+    pool: 'vmThreads',
     setupFiles: ['./src/test/setup.ts'],
     include: ['src/**/*.{test,spec}.{ts,tsx}'],
     restoreMocks: true,

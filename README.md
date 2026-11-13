@@ -298,6 +298,10 @@ Node 22 dengan cache npm, `npm ci`, `npm run lint`, `npm run format:check`,
 Playwright (`e2e/smoke.spec.ts`). Smoke test tidak membutuhkan kredensial; tes
 E2E berautentikasi tetap dilewati.
 
+Tidak ada retry otomatis di CI. Job `verify` memiliki timeout 20 menit dengan
+anggaran pemantauan 15 menit; detail kebijakan flaky, register, dan cara
+mengukur durasi ada di `docs/qa/FLAKY_TESTS.md`.
+
 Bila workflow merah, buka langkah yang gagal di tab **Actions**:
 
 - **Lint** — pelanggaran ESLint; jalankan `npm run lint` lokal.
@@ -377,6 +381,12 @@ Audit aksesibilitas mencakup:
 | A11Y-04 | `/admin`          | kredensial organizer terisi |
 | A11Y-05 | `/admin/bookings` | kredensial organizer terisi |
 | A11Y-06 | `/bookings`       | kredensial tenant A terisi  |
+
+Kebijakan flaky test, register, prosedur triase, dan anggaran durasi pipeline
+ada di `docs/qa/FLAKY_TESTS.md`. Vitest memakai `pool: 'vmThreads'` agar jsdom
+dibuat sekali per worker, bukan per file; 10 run lokal berturut-turut lulus
+dengan rata-rata sekitar 6,6 detik (sebelumnya sekitar 12 detik). Playwright
+memakai `retries: 0`; retry sementara hanya boleh dengan issue tertaut.
 
 ## 10. Alur QA singkat
 
