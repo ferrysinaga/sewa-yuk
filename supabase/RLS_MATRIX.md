@@ -5,9 +5,11 @@ sewa-yuk. Cakupannya adalah tabel `public.booths`, `public.blueprints`,
 `public.bookings`, bucket Storage `blueprint-assets`, dan RPC pemesanan.
 
 Audit dilakukan dari migrasi di `supabase/migrations/` dan kode frontend yang
-menulis role. Dokumen ini **tidak** mengubah skema, policy, atau RPC. Perbaikan
-temuan kritis F1 membutuhkan migrasi, backfill akun, dan pengujian ulang di
-staging, sehingga dicatat sebagai tindak lanjut terpisah.
+menulis role. Dokumen ini awalnya **tidak** mengubah skema, policy, atau RPC.
+Temuan kritis F1 kemudian diremediasi oleh **BE-07** melalui migrasi terpisah
+`20261112000000_app_metadata_role.sql`; detail rollout ada di
+`supabase/AUTH_ROLES.md`. Bagian F1 di bawah mencatat kondisi awal, dampak, dan
+status remediasinya.
 
 ## 1. Ringkasan eksekutif
 
@@ -17,10 +19,13 @@ staging, sehingga dicatat sebagai tindak lanjut terpisah.
   untuk objek baru di schema `public`, termasuk saat migrasi ini dijalankan.
   Migrasi tidak mencabut default tersebut, sehingga **RLS adalah kontrol
   utama**.
-- Otorisasi role saat ini membaca
+- Otorisasi role awalnya membaca
   `(auth.jwt() -> 'user_metadata' ->> 'role')`. Nilai ini **dapat diubah sendiri
-  oleh pengguna** melalui Supabase Auth, sehingga belum layak menjadi sumber
-  otorisasi produksi. Ini adalah temuan **F1 (kritis)**.
+  oleh pengguna** melalui Supabase Auth, sehingga tidak layak menjadi sumber
+  otorisasi produksi. Ini adalah temuan **F1 (kritis)**. **BE-07** telah
+  memindahkan otorisasi ke `app_metadata.role` lewat helper
+  `public.current_user_role()`; policy, RPC, dan frontend tidak lagi membaca
+  `user_metadata`.
 - Route guard dan penyembunyian tombol di frontend hanya UX. Keputusan akses
   data tetap dilakukan oleh RLS dan pengecekan di dalam RPC.
 - Blueprint dan booth publik hanya terbaca bila blueprint berstatus
@@ -42,26 +47,26 @@ staging, sehingga dicatat sebagai tindak lanjut terpisah.
 
 ## 2. Model role dan sumber otorisasi
 
-| Aktor          | Cara masuk                                         | Klaim yang dibaca policy/RPC                   |
-| -------------- | -------------------------------------------------- | ---------------------------------------------- |
-| `anon`         | Tanpa login, memakai anon key                      | Tidak punya `sub`/`user_metadata.role`         |
-| `tenant`       | Login akun dengan `user_metadata.role = tenant`    | `auth.uid()` dan `user_metadata.role`          |
-| `organizer`    | Login akun dengan `user_metadata.role = organizer` | `auth.uid()` dan `user_metadata.role`          |
-| `service_role` | Hanya server/CI, tidak pernah di frontend          | Melewati RLS. Jangan pernah dikirim ke browser |
+| Aktor          | Cara masuk                                        | Klaim yang dibaca policy/RPC                   |
+| -------------- | ------------------------------------------------- | ---------------------------------------------- |
+| `anon`         | Tanpa login, memakai anon key                     | Tidak punya `sub`/`app_metadata.role`          |
+| `tenant`       | Login akun dengan `app_metadata.role = tenant`    | `auth.uid()` dan `app_metadata.role`           |
+| `organizer`    | Login akun dengan `app_metadata.role = organizer` | `auth.uid()` dan `app_metadata.role`           |
+| `service_role` | Hanya server/CI, tidak pernah di frontend         | Melewati RLS. Jangan pernah dikirim ke browser |
 
-`src/pages/Register.tsx` menulis role saat signup:
+Setelah BE-07:
 
-```ts
-await supabase.auth.signUp({
-  email,
-  password,
-  options: { data: { role } },
-})
-```
-
-`options.data` adalah `user_metadata`. `src/lib/auth.ts` juga memprioritaskan
-`user_metadata.role` di atas `app_metadata.role`. Tidak ada tabel `profiles`,
-trigger `auth.users`, atau backfill `app_metadata` di repo ini.
+- `src/pages/Register.tsx` tidak lagi menulis role. Pendaftaran publik selalu
+  menghasilkan akun tenant.
+- `src/lib/auth.ts` hanya membaca `user.app_metadata?.role`; nilai hilang atau
+  tak dikenal diperlakukan sebagai `tenant`.
+- Semua policy dan RPC memanggil `public.current_user_role()`, yang membaca
+  `auth.jwt() -> 'app_metadata' ->> 'role'` dengan fallback `tenant`.
+- Organizer lama di-backfill eksplisit lewat `scripts/backfill-roles.mjs`
+  dengan allowlist email/UUID. Nilai `user_metadata.role` tidak disalin karena
+  tidak dapat dipercaya.
+- `user_metadata` tetap boleh dipakai untuk data tampilan seperti `full_name`,
+  tetapi bukan untuk otorisasi.
 
 ## 3. Matriks tabel x operasi x role
 
@@ -206,23 +211,23 @@ Catatan:
 
 ## 5. Skenario negatif dan ekspektasi
 
-| ID     | Aktor     | Aksi                                                       | Ekspektasi                                                                                                      | Bukti otomatis      |
-| ------ | --------- | ---------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- | ------------------- |
-| RLS-01 | Tenant    | Buka `/admin`, `/admin/bookings`, `/admin/blueprint`       | Dialihkan ke `/event`; tidak ada halaman admin dirender                                                         | E2E/manual (UI)     |
-| RLS-02 | Tenant    | `GET /rest/v1/blueprints?id=eq.<draft-id>`                 | `200 []`; draft tidak terlihat                                                                                  | `rls_matrix.sql`    |
-| RLS-03 | Anon      | `PATCH /rest/v1/booths?id=eq.<booth-id>`                   | Ditolak `401/403`/`42501` atau `0` baris; status booth tidak berubah                                            | `rls_matrix.sql`    |
-| RLS-04 | Anon      | `POST /rest/v1/booths`                                     | Ditolak `401/403`/`42501`; tidak ada booth baru                                                                 | `rls_matrix.sql`    |
-| RLS-05 | Tenant A  | RPC `cancel_booking(<booking-tenant-B>)`                   | Ditolak `SWY_NOT_OWNER`; booking B tetap `pending`                                                              | `rls_matrix.sql`    |
-| RLS-06 | Anon      | `GET /rest/v1/bookings`                                    | Ditolak atau `200 []`; tidak ada data tenant                                                                    | `rls_matrix.sql`    |
-| RLS-07 | Tenant    | `PATCH`/`POST`/`DELETE /rest/v1/booths`                    | Update/delete `0` baris; insert `42501`; status booth tetap                                                     | `rls_matrix.sql`    |
-| RLS-08 | Tenant    | `POST`/`PATCH`/`DELETE /rest/v1/blueprints`                | Insert `42501`; update/delete `0` baris; draft tetap ada                                                        | `rls_matrix.sql`    |
-| RLS-09 | Tenant A  | `GET /rest/v1/bookings?id=eq.<booking-tenant-B>`           | `200 []`; hanya booking sendiri yang terlihat                                                                   | `rls_matrix.sql`    |
-| RLS-10 | Tenant A  | RPC `confirm_booking(<booking-tenant-A>)`                  | Ditolak `SWY_FORBIDDEN`; booking tetap `pending`                                                                | `rls_matrix.sql`    |
-| RLS-11 | Anon      | RPC `create_booking(<booth-id>)`                           | Ditolak grant **atau** `SWY_AUTH_REQUIRED`; tidak ada booking dibuat                                            | `rls_matrix.sql`    |
-| RLS-12 | Tenant    | Upload/update/delete objek di `blueprint-assets`           | Ditolak RLS; objek tidak berubah                                                                                | Manual REST/Storage |
-| RLS-13 | Anon      | List/read objek `blueprint-assets`                         | Diizinkan; aset memang publik                                                                                   | Manual REST/Storage |
-| RLS-14 | Tenant    | `PUT /auth/v1/user` dengan `{"data":{"role":"organizer"}}` | **Saat ini berhasil (F1).** Setelah remediasi, role efektif tetap tenant                                        | Manual, staging     |
-| RLS-15 | Organizer | `PATCH /rest/v1/bookings?id=eq.<booking-id>`               | **Saat ini berhasil (F5)** karena policy `FOR ALL` + grant default. Target: ditolak setelah grant tulis dicabut | `rls_matrix.sql`    |
+| ID     | Aktor     | Aksi                                                       | Ekspektasi                                                                                                                              | Bukti otomatis                        |
+| ------ | --------- | ---------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------- |
+| RLS-01 | Tenant    | Buka `/admin`, `/admin/bookings`, `/admin/blueprint`       | Dialihkan ke `/event`; tidak ada halaman admin dirender                                                                                 | E2E/manual (UI)                       |
+| RLS-02 | Tenant    | `GET /rest/v1/blueprints?id=eq.<draft-id>`                 | `200 []`; draft tidak terlihat                                                                                                          | `rls_matrix.sql`                      |
+| RLS-03 | Anon      | `PATCH /rest/v1/booths?id=eq.<booth-id>`                   | Ditolak `401/403`/`42501` atau `0` baris; status booth tidak berubah                                                                    | `rls_matrix.sql`                      |
+| RLS-04 | Anon      | `POST /rest/v1/booths`                                     | Ditolak `401/403`/`42501`; tidak ada booth baru                                                                                         | `rls_matrix.sql`                      |
+| RLS-05 | Tenant A  | RPC `cancel_booking(<booking-tenant-B>)`                   | Ditolak `SWY_NOT_OWNER`; booking B tetap `pending`                                                                                      | `rls_matrix.sql`                      |
+| RLS-06 | Anon      | `GET /rest/v1/bookings`                                    | Ditolak atau `200 []`; tidak ada data tenant                                                                                            | `rls_matrix.sql`                      |
+| RLS-07 | Tenant    | `PATCH`/`POST`/`DELETE /rest/v1/booths`                    | Update/delete `0` baris; insert `42501`; status booth tetap                                                                             | `rls_matrix.sql`                      |
+| RLS-08 | Tenant    | `POST`/`PATCH`/`DELETE /rest/v1/blueprints`                | Insert `42501`; update/delete `0` baris; draft tetap ada                                                                                | `rls_matrix.sql`                      |
+| RLS-09 | Tenant A  | `GET /rest/v1/bookings?id=eq.<booking-tenant-B>`           | `200 []`; hanya booking sendiri yang terlihat                                                                                           | `rls_matrix.sql`                      |
+| RLS-10 | Tenant A  | RPC `confirm_booking(<booking-tenant-A>)`                  | Ditolak `SWY_FORBIDDEN`; booking tetap `pending`                                                                                        | `rls_matrix.sql`                      |
+| RLS-11 | Anon      | RPC `create_booking(<booth-id>)`                           | Ditolak grant **atau** `SWY_AUTH_REQUIRED`; tidak ada booking dibuat                                                                    | `rls_matrix.sql`                      |
+| RLS-12 | Tenant    | Upload/update/delete objek di `blueprint-assets`           | Ditolak RLS; objek tidak berubah                                                                                                        | Manual REST/Storage                   |
+| RLS-13 | Anon      | List/read objek `blueprint-assets`                         | Diizinkan; aset memang publik                                                                                                           | Manual REST/Storage                   |
+| RLS-14 | Tenant    | `PUT /auth/v1/user` dengan `{"data":{"role":"organizer"}}` | **Setelah BE-07 ditolak secara efektif.** `user_metadata` boleh berubah, tetapi role tetap tenant; akses admin dan tulis tetap ditolak. | `rls_matrix.sql` (bagian 11), staging |
+| RLS-15 | Organizer | `PATCH /rest/v1/bookings?id=eq.<booking-id>`               | **Saat ini berhasil (F5)** karena policy `FOR ALL` + grant default. Target: ditolak setelah grant tulis dicabut                         | `rls_matrix.sql`                      |
 
 ## 6. Temuan
 
@@ -252,28 +257,29 @@ policy organizer dan RPC organizer menganggapnya organizer:
 Tidak diperlukan service role atau akses database langsung. Ini adalah
 pelanggaran otorisasi penuh dan harus diperbaiki sebelum produksi.
 
-**Remediasi yang disarankan**
+**Remediasi (diterapkan di BE-07)**
 
-1. Pindahkan role otorisasi ke `app_metadata.role` (hanya dapat ditulis
-   service role/admin API) atau tabel `public.user_roles` dengan RLS baca
-   sendiri dan tulis hanya lewat service role.
-2. Jangan lagi menulis role otorisasi dari `Register.tsx`. Untuk pendaftaran
-   organizer, gunakan Edge Function/server yang memvalidasi undangan atau
-   persetujuan admin, lalu menulis `app_metadata` dengan admin API. Jika
-   self-signup organizer tidak diperlukan, default-kan akun baru ke `tenant`.
-3. Backfill akun yang sudah ada dari `user_metadata.role` ke sumber baru.
-   Pertahankan `user_metadata` hanya untuk data tampilan seperti `full_name`.
-4. Buat helper SQL tunggal, misalnya `public.current_role()`, yang membaca
-   sumber baru. Ganti seluruh policy dan RPC agar memakai helper tersebut.
-5. Ubah `src/lib/auth.ts` agar memprioritaskan `app_metadata.role`, lalu
-   perbarui `Register.tsx`.
-6. Uji ulang di staging: RLS-14 harus gagal menaikkan role; organizer asli
-   tetap dapat mengelola; tenant tetap hanya melihat booking sendiri.
-7. Setelah backfill terverifikasi, hapus fallback `user_metadata` dari policy
-   dan RPC.
+1. Role otorisasi dipindahkan ke `app_metadata.role` (hanya dapat ditulis
+   service role/Admin API).
+2. `Register.tsx` tidak lagi menulis role otorisasi. Akun baru selalu tenant;
+   organizer ditunjuk admin lewat backfill/Admin API.
+3. Backfill akun lama dilakukan eksplisit lewat `scripts/backfill-roles.mjs`
+   dengan allowlist email/UUID, bukan menyalin `user_metadata.role`.
+   `user_metadata` dipertahankan hanya untuk data tampilan seperti `full_name`.
+4. Helper SQL tunggal `public.current_user_role()` membaca sumber baru dengan
+   fallback `tenant`. Seluruh policy dan RPC memakai helper tersebut.
+5. `src/lib/auth.ts` hanya membaca `app_metadata.role`; `Register.tsx`
+   diperbarui.
+6. Staging harus menguji ulang RLS-14: eskalasi lewat `user_metadata` tidak
+   mengubah role efektif, organizer asli tetap dapat mengelola, dan tenant tetap
+   hanya melihat booking sendiri. `supabase/tests/rls_matrix.sql` bagian 11
+   mengotomatiskan skenario ini.
+7. Tidak ada fallback `user_metadata` yang tersisa di policy atau RPC.
 
-**Status:** terbuka. Tidak diubah di BE-01 karena melibatkan migrasi, backfill,
-perubahan alur signup, dan pengujian ulang staging.
+**Status:** diremediasi di BE-07 (migrasi
+`20261112000000_app_metadata_role.sql`, frontend, dan skrip backfill). Verifikasi
+staging masih tertunda sampai kredensial/OPS-04 tersedia. Rincian rollout dan
+rollback ada di `supabase/AUTH_ROLES.md`.
 
 ### F2 — Policy Storage tidak memeriksa kepemilikan path (sedang)
 
@@ -435,8 +441,10 @@ status F5, sehingga hasilnya dapat dilampirkan ke laporan staging.
 Uji manual tambahan:
 
 1. **RLS-14 (F1):** login tenant, panggil `PUT /auth/v1/user` dengan
-   `{"data":{"role":"organizer"}}`, refresh token, lalu coba baca semua booking.
-   Saat ini harus berhasil (membuktikan F1); setelah remediasi harus gagal.
+   `{"data":{"role":"organizer"}}`, refresh token, lalu coba baca semua booking
+   dan tulis booth. Setelah BE-07, role efektif harus tetap tenant dan akses
+   harus ditolak. Skenario ini juga diperiksa otomatis oleh
+   `rls_matrix.sql` bagian 11.
 2. **RLS-15 (F5):** sebagai organizer, `PATCH /rest/v1/bookings?id=eq.<id>`.
    Di project dengan default privilege, saat ini berhasil; setelah grant tulis
    dicabut harus ditolak.
@@ -453,8 +461,8 @@ Uji manual tambahan:
   dipahami, termasuk default privilege Supabase.
 - Skenario negatif RLS-02..RLS-11 lulus di staging.
 - Tidak ada akses yang hanya bergantung pada route guard atau UI.
-- F1 tercatat sebagai blocker produksi dengan rencana remediasi yang dapat
-  diuji ulang.
+- F1 sudah diremediasi lewat `app_metadata.role`; verifikasi staging RLS-14
+  masih wajib sebelum produksi.
 - F5 tercatat sebagai hardening grant; target RLS-15 adalah penolakan setelah
   grant tulis booking dicabut.
 
@@ -469,6 +477,8 @@ Uji manual tambahan:
 - `supabase/migrations/20261105000000_booking_expiry.sql`
 - `supabase/migrations/20261111000000_rpc_idempotency_error_contract.sql`
 - `supabase/migrations/20261111000100_double_booking_guarantee.sql`
+- `supabase/migrations/20261112000000_app_metadata_role.sql`
+- `supabase/AUTH_ROLES.md`
 - `supabase/ERROR_CONTRACT.md`
 - `supabase/DOUBLE_BOOKING.md`
 - `supabase/tests/rls_matrix.sql`

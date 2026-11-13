@@ -897,7 +897,7 @@ BACKEND DEVELOPER
       (OPS-04).
     Dependensi: BE-01
 
-[ ] BE-07. Remediasi eskalasi role lewat user_metadata [P0]
+[x] BE-07. Remediasi eskalasi role lewat user_metadata [P0]
     Pemilik: Backend Developer
     Kolaborator: FE, QA, DevOps
     Konteks: Temuan F1 BE-01. Semua policy dan RPC membaca
@@ -916,8 +916,42 @@ BACKEND DEVELOPER
     - Organizer asli tetap dapat mengelola booth/blueprint/booking.
     - Tenant tetap hanya membaca booking sendiri dan blueprint published.
     Verifikasi:
-    - Uji staging dengan akun organizer, tenant A, tenant B, dan anon;
-      jalankan supabase/tests/rls_matrix.sql + RLS-14.
+    - supabase/migrations/20261112000000_app_metadata_role.sql menambahkan
+      public.current_user_role() yang hanya membaca
+      auth.jwt() -> 'app_metadata' ->> 'role' dengan fallback tenant. Helper
+      memakai security invoker, search_path kosong, dan EXECUTE untuk anon +
+      authenticated.
+    - Seluruh policy booths, blueprints, bookings, dan storage.objects diganti
+      memakai helper. RPC create_booking, cancel_booking, dan confirm_booking
+      di-replace dengan body BE-03 dan sumber role baru; grant EXECUTE minimum
+      BE-03 dipertahankan.
+    - Migrasi sengaja TIDAK menyalin user_metadata.role ke app_metadata karena
+      nilai itu tidak dapat dipercaya. scripts/backfill-roles.mjs melakukan
+      backfill eksplisit via allowlist email/UUID, dry-run default, --apply,
+      pagination Admin API, penolakan kunci non-service-role, dan gagal tanpa
+      menulis bila ada target tidak ditemukan. Tersedia sebagai
+      npm run roles:backfill.
+    - src/lib/auth.ts hanya membaca app_metadata.role dan mengembalikan tenant
+      untuk nilai hilang/tak dikenal. src/lib/auth.test.ts menambah 6 unit test
+      termasuk kasus user_metadata.role=organizer yang harus diabaikan.
+    - src/pages/Register.tsx tidak lagi menulis options.data.role atau
+      menampilkan pemilih role; akun baru selalu tenant dan diarahkan ke
+      /event. Teks halaman menjelaskan organizer ditunjuk admin.
+    - supabase/AUTH_ROLES.md memuat model ancaman, aturan role, helper SQL,
+      urutan rilis (migrasi + backfill sebelum frontend), prosedur backfill,
+      verifikasi RLS-14, dan rollback. README bagian akun/role diperbarui;
+      supabase/MIGRATIONS.md menambah migrasi 10 beserta rollback-nya;
+      RLS_MATRIX.md menandai F1 diremediasi dengan verifikasi staging tertunda.
+    - supabase/tests/rls_matrix.sql memakai klaim app_metadata untuk semua
+      skenario dan menambah bagian 11: JWT tenant + user_metadata organizer
+      tetap tenant, fallback tanpa app_metadata tetap tenant, dan organizer
+      asli tetap dapat menulis. query_plans.sql juga memakai app_metadata.
+    - qa_checklist_test_plan.md memperbarui RLS-14 dan menambah RLS-16
+      (backfill + registrasi tenant); DB-02 menjadi 10 migrasi.
+    - npm run verify lulus: 29 file / 223 unit test, build produksi, dan
+      anggaran bundle. node --check scripts/backfill-roles.mjs lulus.
+      Catatan: migrasi, backfill nyata, dan RLS-14 belum dijalankan karena
+      tidak ada psql/Supabase CLI/kredensial staging (OPS-04).
     Dependensi: BE-01
 
 [ ] BE-08. Cabut default privilege tulis dan EXECUTE yang tidak perlu [P1]

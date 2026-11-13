@@ -74,6 +74,7 @@ satu. Urutan ini penting karena saling bergantung.
 | 7      | `supabase/migrations/20261105000000_booking_expiry.sql`                 | Auto-release booking kedaluwarsa + `cancelled_reason`              |
 | 8      | `supabase/migrations/20261111000000_rpc_idempotency_error_contract.sql` | Idempotensi RPC, kontrak error, dan `search_path` aman             |
 | 9      | `supabase/migrations/20261111000100_double_booking_guarantee.sql`       | Unique index anti double booking + rekonsiliasi booth              |
+| 10     | `supabase/migrations/20261112000000_app_metadata_role.sql`              | Otorisasi role dari `app_metadata` + helper `current_user_role()`  |
 
 Semua migrasi ditulis idempoten, jadi aman dijalankan ulang bila eksekusi
 sebelumnya terputus. Bila memakai Supabase CLI dengan konfigurasi lokal,
@@ -153,24 +154,24 @@ saat dibuka, dan tombol **Perbarui status** menjalankan sweep yang sama.
 
 ## 6. Akun uji dan role
 
-Role disimpan di `user_metadata.role` saat pendaftaran:
+Role otorisasi disimpan di **`app_metadata.role`**, yang hanya dapat ditulis
+dengan service role/Admin API. `user_metadata.role` tidak dipakai untuk
+otorisasi karena pengguna dapat mengubahnya sendiri (F1).
 
 - **Penyelenggara / organizer** → akses `/admin*`
 - **Penyewa / tenant** → akses `/event*` dan `/bookings`
+- Akun tanpa `app_metadata.role` atau nilai tak dikenal diperlakukan sebagai
+  tenant (default aman).
 
-> **Peringatan keamanan (BE-01 F1):** `user_metadata` dapat diubah sendiri oleh
-> pengguna melalui Supabase Auth. Sampai remediasi F1 diterapkan, role di
-> `user_metadata` belum layak dipercaya untuk produksi. Jangan menambah fitur
-> sensitif yang hanya bergantung pada nilai ini. Rencana perbaikan ada di
-> `supabase/RLS_MATRIX.md`.
+Pendaftaran publik selalu membuat akun tenant. Penunjukan organizer dilakukan
+admin setelah verifikasi, bukan lewat pilihan role di `/register`.
 
 Cara membuat akun:
 
 1. Buka `/register`.
-2. Pilih peran yang sesuai.
-3. Daftar dengan email aktif. Jika konfirmasi email aktif di Supabase, klik
+2. Daftar dengan email aktif. Jika konfirmasi email aktif di Supabase, klik
    tautan konfirmasi sebelum login.
-4. Ulangi untuk akun kedua dan seterusnya.
+3. Ulangi untuk akun kedua dan seterusnya.
 
 Akun minimum untuk QA lengkap:
 
@@ -180,17 +181,22 @@ Akun minimum untuk QA lengkap:
 | Tenant A  | `tenant`    | Membuat booking, uji realtime               |
 | Tenant B  | `tenant`    | Tab kedua untuk uji realtime/race condition |
 
-Jika role akun salah, perbaiki lewat **Authentication → Users → Edit user**
-(`raw_user_meta_data`) atau SQL berikut, lalu logout/login agar JWT diperbarui:
+Untuk menunjuk organizer, jalankan backfill dengan allowlist eksplisit
+(`SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY`, dry-run default):
 
-```sql
-update auth.users
-set raw_user_meta_data = raw_user_meta_data || '{"role":"organizer"}'::jsonb
-where email = 'organizer@example.com';
+```bash
+npm run roles:backfill -- --organizer-emails=organizer@example.com
+npm run roles:backfill -- --organizer-emails=organizer@example.com --apply
 ```
 
-Ganti `organizer` dengan `tenant` sesuai kebutuhan. Jangan mengubah role lewat
-tabel `public` karena otorisasi RLS membaca JWT.
+Alternatif manual: **Authentication → Users → Edit user**, tambahkan
+`app_metadata.role = "organizer"`. Jangan menulis role otorisasi ke
+`raw_user_meta_data`. Setelah perubahan, pengguna harus logout/login agar JWT
+memuat `app_metadata` terbaru.
+
+Urutan rilis, model ancaman, verifikasi RLS-14, dan rollback ada di
+`supabase/AUTH_ROLES.md`. Jangan deploy frontend sebelum migrasi
+`20261112000000_app_metadata_role.sql` dan backfill organizer dijalankan.
 
 ## 7. Menjalankan aplikasi
 

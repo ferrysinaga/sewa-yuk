@@ -11,7 +11,7 @@ staging sampai ada persetujuan rilis.
 
 ## 1. Ringkasan eksekutif
 
-- Ada 9 migrasi dengan urutan linear. Tiap file memeriksa dependensi dan
+- Ada 10 migrasi dengan urutan linear. Tiap file memeriksa dependensi dan
   ditulis idempoten, sehingga aman dijalankan ulang.
 - Rollback dilakukan **berurutan terbalik**. Untuk tabel inti, rollback penuh
   bersifat destruktif; opsi yang dipilih secara default adalah rollback logis
@@ -30,17 +30,18 @@ staging sampai ada persetujuan rilis.
 
 ## 2. Urutan migrasi dan dependensi
 
-| Urutan | File                                                | Objek utama                                                            | Dependensi                             | Risiko rollback                          |
-| ------ | --------------------------------------------------- | ---------------------------------------------------------------------- | -------------------------------------- | ---------------------------------------- |
-| 1      | `20261103000000_create_booths.sql`                  | Tabel `booths`, index `booths_blueprint_id_idx`, RLS + policy dasar    | Tidak ada                              | Tinggi (data denah hilang)               |
-| 2      | `20261103000100_create_blueprints.sql`              | Tabel `blueprints`, policy baca/tulis, seed 3 event                    | Tidak ada (relasi ke booth hanya teks) | Tinggi (metadata event hilang)           |
-| 3      | `20261103000200_tenant_realtime_policies.sql`       | Policy reservasi tenant, `replica identity full`, publication `booths` | 1                                      | Rendah                                   |
-| 4      | `20261103000300_blueprint_publishing.sql`           | Kolom `status`, constraint, index, policy publish/draft                | 1, 2                                   | Sedang (status hilang)                   |
-| 5      | `20261103000400_blueprint_images.sql`               | Kolom `image_url`/`image_path`, bucket + policy Storage                | 2                                      | Sedang (URL/path hilang; file tetap)     |
-| 6      | `20261103000500_bookings.sql`                       | Tabel `bookings`, 5 index, RPC pemesanan, publication `bookings`       | 1, 2, 4                                | Kritis (riwayat booking hilang)          |
-| 7      | `20261105000000_booking_expiry.sql`                 | `cancelled_reason`, index expiry, RPC sweep, jadwal `pg_cron`          | 6                                      | Sedang (alasan batal hilang; sweep mati) |
-| 8      | `20261111000000_rpc_idempotency_error_contract.sql` | Body RPC idempoten + kontrak error + `revoke ... from public`          | 6, 7                                   | Rendah (fungsi saja)                     |
-| 9      | `20261111000100_double_booking_guarantee.sql`       | Unique partial index + rekonsiliasi booth + sweep diperluas            | 6, 7, 8                                | Sedang (jaminan duplikat hilang)         |
+| Urutan | File                                                | Objek utama                                                            | Dependensi                             | Risiko rollback                                               |
+| ------ | --------------------------------------------------- | ---------------------------------------------------------------------- | -------------------------------------- | ------------------------------------------------------------- |
+| 1      | `20261103000000_create_booths.sql`                  | Tabel `booths`, index `booths_blueprint_id_idx`, RLS + policy dasar    | Tidak ada                              | Tinggi (data denah hilang)                                    |
+| 2      | `20261103000100_create_blueprints.sql`              | Tabel `blueprints`, policy baca/tulis, seed 3 event                    | Tidak ada (relasi ke booth hanya teks) | Tinggi (metadata event hilang)                                |
+| 3      | `20261103000200_tenant_realtime_policies.sql`       | Policy reservasi tenant, `replica identity full`, publication `booths` | 1                                      | Rendah                                                        |
+| 4      | `20261103000300_blueprint_publishing.sql`           | Kolom `status`, constraint, index, policy publish/draft                | 1, 2                                   | Sedang (status hilang)                                        |
+| 5      | `20261103000400_blueprint_images.sql`               | Kolom `image_url`/`image_path`, bucket + policy Storage                | 2                                      | Sedang (URL/path hilang; file tetap)                          |
+| 6      | `20261103000500_bookings.sql`                       | Tabel `bookings`, 5 index, RPC pemesanan, publication `bookings`       | 1, 2, 4                                | Kritis (riwayat booking hilang)                               |
+| 7      | `20261105000000_booking_expiry.sql`                 | `cancelled_reason`, index expiry, RPC sweep, jadwal `pg_cron`          | 6                                      | Sedang (alasan batal hilang; sweep mati)                      |
+| 8      | `20261111000000_rpc_idempotency_error_contract.sql` | Body RPC idempoten + kontrak error + `revoke ... from public`          | 6, 7                                   | Rendah (fungsi saja)                                          |
+| 9      | `20261111000100_double_booking_guarantee.sql`       | Unique partial index + rekonsiliasi booth + sweep diperluas            | 6, 7, 8                                | Sedang (jaminan duplikat hilang)                              |
+| 10     | `20261112000000_app_metadata_role.sql`              | Helper `current_user_role()`, policy/RPC berbasis `app_metadata`       | 1, 2, 5, 6, 7, 8, 9                    | Rendah-teknis; tinggi-keamanan bila dibalik (F1 terbuka lagi) |
 
 ### 2.1 Catatan dependensi
 
@@ -48,6 +49,10 @@ staging sampai ada persetujuan rilis.
   kolom `blueprints.status`.
 - Migrasi 7 membutuhkan `bookings`; migrasi 8 membutuhkan kolom
   `cancelled_reason`; migrasi 9 membutuhkan RPC `release_expired_bookings()`.
+- Migrasi 10 membutuhkan policy/RPC dari migrasi 1, 2, 5, 6, 7, 8, dan 9.
+  Migrasi ini tidak mengubah data; ia mengganti sumber role ke
+  `app_metadata.role`. Backfill organizer dijalankan terpisah lewat
+  `scripts/backfill-roles.mjs` sebelum frontend baru di-deploy.
 - Migrasi 9 memanggil `release_expired_bookings()` untuk membersihkan booking
   kedaluwarsa sebelum membuat unique index. Bila masih ada duplikat booking
   aktif, migrasi berhenti dengan pesan yang menyebut booth bermasalah; tidak
@@ -112,6 +117,9 @@ Ulangi perintah yang sama. Ekspektasi:
 - Tidak ada error `already exists`.
 - Seed blueprint tidak bertambah (`on conflict (id) do nothing`).
 - Migrasi 9 menampilkan notice rekonsiliasi; jumlah booth yang diubah boleh 0.
+- Migrasi 10 menampilkan notice bahwa otorisasi memakai `app_metadata.role` dan
+  mengingatkan backfill organizer. Menjalankannya ulang hanya me-replace helper,
+  policy, dan RPC; tidak mengubah `app_metadata` pengguna.
 - Bila `pg_cron` tidak tersedia, muncul notice bahwa sweep dijalankan aplikasi.
 
 ### 3.4 Pemeriksaan setelah replay
@@ -214,7 +222,7 @@ Latihan rollback dilakukan di database scratch:
 
 - **Forward-first:** untuk bug kecil, perbaiki dengan migrasi baru. Rollback
   skema berisiko kehilangan data.
-- **Reverse order:** rollback migrasi 9 lebih dulu, lalu 8, 7, dan seterusnya.
+- **Reverse order:** rollback migrasi 10 lebih dulu, lalu 9, 8, 7, dan seterusnya.
   Melewati urutan dapat gagal karena FK, policy, atau fungsi yang saling
   bergantung.
 - **Logical vs full:** rollback logis menghentikan pemakaian fitur tetapi
@@ -230,6 +238,7 @@ Latihan rollback dilakukan di database scratch:
 
 | Migrasi      | Rollback logis                                      | Rollback penuh                                            | Catatan                                                                 |
 | ------------ | --------------------------------------------------- | --------------------------------------------------------- | ----------------------------------------------------------------------- |
+| 10 BE-07     | Pertahankan `app_metadata`; jangan rollback         | Drop helper + kembalikan policy/RPC `user_metadata`       | **Membuka kembali F1.** Hanya darurat; lihat `AUTH_ROLES.md`            |
 | 9 BE-02      | Drop unique index; pertahankan data                 | Sama, tidak ada data untuk dihapus                        | Rekonsiliasi booth adalah perbaikan, bukan perubahan yang perlu dibalik |
 | 8 BE-03      | Jalankan ulang migrasi 7                            | Sama                                                      | Hanya body fungsi/ grant; jangan restore `EXECUTE` ke `PUBLIC`          |
 | 7 Expiry     | Hentikan `pg_cron`, drop RPC sweep                  | Drop kolom `cancelled_reason` + index                     | Data alasan batal hilang pada rollback penuh                            |
@@ -244,6 +253,30 @@ Latihan rollback dilakukan di database scratch:
 
 Jalankan dari repo root. Blok di bawah adalah contoh untuk staging; sesuaikan
 nama database dan path bila perlu.
+
+#### 10 — BE-07 app_metadata role
+
+Rollback ini **tidak disarankan** karena mengembalikan pembacaan
+`user_metadata` dan membuka kembali F1. Utamakan forward fix. Bila benar-benar
+diperlukan di staging:
+
+```sql
+-- 1. Kembalikan policy dan RPC ke versi sebelum BE-07.
+\i supabase/migrations/20261103000000_create_booths.sql
+\i supabase/migrations/20261103000100_create_blueprints.sql
+\i supabase/migrations/20261103000300_blueprint_publishing.sql
+\i supabase/migrations/20261103000400_blueprint_images.sql
+\i supabase/migrations/20261103000500_bookings.sql
+\i supabase/migrations/20261111000000_rpc_idempotency_error_contract.sql
+
+-- 2. Hapus helper setelah tidak ada policy/RPC yang memakainya.
+drop function if exists public.current_user_role();
+```
+
+Efek: role kembali dibaca dari `user_metadata`, sehingga tenant dapat
+menaikkan diri menjadi organizer. `app_metadata` yang sudah di-backfill tidak
+perlu dihapus. Pantau `bookings`/`booths` dan segera pasang kembali BE-07.
+Rincian ada di `supabase/AUTH_ROLES.md` bagian 9.
 
 #### 9 — BE-02 double booking guarantee
 
@@ -613,7 +646,8 @@ unit test, build, budget). Verifikasi database tetap memerlukan staging
 
 ## 9. Referensi
 
-- `supabase/migrations/` (9 file migrasi)
+- `supabase/migrations/` (10 file migrasi)
+- `supabase/AUTH_ROLES.md`
 - `supabase/RLS_MATRIX.md`
 - `supabase/DOUBLE_BOOKING.md`
 - `supabase/ERROR_CONTRACT.md`
