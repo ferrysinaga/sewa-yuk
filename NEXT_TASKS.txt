@@ -1321,7 +1321,7 @@ DEVOPS ENGINEER
 LINTAS ROLE - GERBANG RILIS
 ===============================================================================
 
-[ ] REL-01. Release readiness checklist [P1]
+[x] REL-01. Release readiness checklist [P1]
     Pemilik: Product Manager + QA Engineer + DevOps Engineer
     Kolaborator: FE, BE, UI/UX
     Konteks: Rilis harus melewati satu gerbang yang sama, bukan keputusan
@@ -1338,5 +1338,22 @@ LINTAS ROLE - GERBANG RILIS
     - Tidak ada bug Critical/Major terbuka tanpa keputusan eksplisit.
     - Release note dan rollback plan tersedia sebelum deploy.
     Verifikasi:
-    - Checklist ditandatangani PM, QA, dan DevOps di PR/issue rilis.
+    - docs/product/REL-01-release-readiness.md baru memuat identitas rilis,
+      checklist gate otomatis, gate database/keamanan, gate UI/QA manual,
+      gate operasi, blocker beserta pemilik, status release note/rollback,
+      keputusan GO/CONDITIONAL/NO-GO, dan kolom tanda tangan PM/QA/DevOps/FE/
+      BE.
+    - Gate otomatis lokal dicatat lulus: npm run verify (29 file/223 tes),
+      coverage (statements 84,85%; branches 79,19%), build 788,74 kB JS /
+      28,77 kB CSS, bundle budget, secret scan bersih, audit 0 high/critical,
+      serta smoke/a11y publik 3 lulus dan 4 skip karena kredensial.
+    - Rollback plan tersedia di docs/ops/ROLLBACK.md dan risiko per migrasi
+      ada di supabase/MIGRATIONS.md. README bagian 12.1 menautkan checklist.
+    - Keputusan saat ini NO-GO: SYNC E2E, a11y terautentikasi, RLS matrix,
+      migrasi 8-11, simulasi rollback, branch protection (OPS-01), preview
+      environment (OPS-04), dan release note (PM-05) belum tersedia. Blocker
+      B1-B5 punya pemilik dan rencana penutupan; B1/B2 tidak boleh di-waiver.
+    - npm run verify lulus. Catatan: tanda tangan PM/QA/DevOps dan hasil UAT
+      belum ada karena membutuhkan staging (OPS-04); checklist harus diubah
+      ke GO/CONDITIONAL sebelum deploy.
     Dependensi: PM-01, PM-02, FE-01, FE-02, BE-02, QA-01, OPS-02, OPS-03

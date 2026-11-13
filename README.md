@@ -520,6 +520,9 @@ beserta skenario error boundary/chunk (ERR-01..04) dan responsif mobile
 
 - `docs/product/PM-01-release-scope.md` — ruang lingkup, non-goal, risiko, dan
   kriteria sukses rilis berikutnya.
+- `docs/product/REL-01-release-readiness.md` — checklist gate rilis, blocker
+  staging, keputusan GO/NO-GO, dan tanda tangan lintas role.
+- `docs/qa/RELEASE_SIGN_OFF.md` — template sign-off rilis yang dilampirkan di PR.
 - `supabase/ERROR_CONTRACT.md` — kontrak error RPC dan matriks idempotensi.
 - `supabase/DOUBLE_BOOKING.md` — jaminan satu booking aktif per booth.
 - `qa_checklist_test_plan.md` — test plan, skenario UAT, dan status eksekusi.
