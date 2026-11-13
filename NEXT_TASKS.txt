@@ -1212,7 +1212,7 @@ DEVOPS ENGINEER
       nyata Vercel/Supabase belum diuji karena tidak ada akses (OPS-04).
     Dependensi: -
 
-[ ] OPS-03. Tulis dan uji runbook rollback [P1]
+[x] OPS-03. Tulis dan uji runbook rollback [P1]
     Pemilik: DevOps Engineer
     Kolaborator: BE, PM, QA
     Konteks: Deploy frontend dan migrasi database perlu jalur pemulihan yang
@@ -1226,7 +1226,21 @@ DEVOPS ENGINEER
     - Rollback dapat dilakukan dalam hitungan menit.
     - Data tidak hilang dan aplikasi kembali ke versi stabil.
     Verifikasi:
-    - Simulasi rollback + catat waktu dan langkah.
+    - docs/ops/ROLLBACK.md memuat target RTO/RPO, matriks peran dan kewenangan
+      keputusan (termasuk emergency authority), trigger rollback, langkah
+      Vercel Dashboard/CLI, urutan frontend-dulu, rollback migrasi reverse
+      order, batasan Storage, komunikasi, checklist verifikasi, dan template
+      catatan insiden.
+    - Risiko rollback tiap migrasi ditautkan ke supabase/MIGRATIONS.md bagian
+      5; rollback migrasi 10/11 membuka kembali F1/F5 dan rollback migrasi 9
+      menghapus unique index anti double booking.
+    - Tabletop 13 November 2026 mencatat skenario grant belum aktif: rollback
+      frontend diperkirakan < 15 menit, sedangkan forward fix grant dipilih
+      agar tidak menghapus data. Langkah dan perkiraan waktu dicatat.
+    - README dan supabase/MIGRATIONS.md menautkan runbook ini. npm run verify
+      lulus. Catatan: simulasi rollback Vercel/Supabase nyata belum dijalankan
+      karena tidak ada akses environment non-produksi (OPS-04); target waktu
+      masih perkiraan tabletop dan harus diperbarui setelah simulasi staging.
     Dependensi: BE-06
 
 [ ] OPS-04. Siapkan preview environment dan data uji terisolasi [P1]

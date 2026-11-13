@@ -332,6 +332,11 @@ Jangan pernah memberi prefix `VITE_` pada service role/secret key. Hanya
 `SUPABASE_SERVICE_ROLE_KEY` dan `E2E_SERVICE_ROLE_KEY` hanya untuk shell/CI
 staging.
 
+Runbook rollback frontend (Vercel) dan database, termasuk siapa yang boleh
+memutuskan, urutan frontend-dulu, komunikasi, dan checklist verifikasi, ada di
+`docs/ops/ROLLBACK.md`. Risiko rollback tiap migrasi tercatat di
+`supabase/MIGRATIONS.md` bagian 5.
+
 ### E2E dan aksesibilitas
 
 ```bash

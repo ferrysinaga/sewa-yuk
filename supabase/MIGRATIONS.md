@@ -239,6 +239,8 @@ Latihan rollback dilakukan di database scratch:
 - **Transactional dry-run:** DDL PostgreSQL transaksional. Bungkus blok rollback
   dengan `begin; ... rollback;` di database scratch untuk melihat error tanpa
   perubahan permanen. `pg_cron` dan operasi eksternal tidak selalu transaksional.
+- **Runbook operasional:** keputusan, urutan frontend-dulu, komunikasi, dan
+  verifikasi pasca-rollback ada di `docs/ops/ROLLBACK.md`.
 - **Storage bukan SQL:** jangan menghapus baris `storage.objects` untuk
   "rollback" file. Gunakan Storage API/Dashboard agar file fisik ikut terhapus.
 
