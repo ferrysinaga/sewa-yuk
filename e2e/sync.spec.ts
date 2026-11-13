@@ -1,14 +1,33 @@
 import { expect, test } from '@playwright/test'
 import type { Browser, BrowserContext, Page } from '@playwright/test'
-import { boothId, eventId, login, missingEnv, skipMessage, tenantA, tenantB } from './fixtures'
+import {
+  boothId,
+  eventId,
+  expireBooking,
+  getBoothStatus,
+  hasAdminApi,
+  listActiveBookings,
+  login,
+  missingEnv,
+  resetBooth,
+  serviceRoleKey,
+  skipMessage,
+  supabaseUrl,
+  tenantA,
+  tenantB,
+} from './fixtures'
 
 /**
- * E2E realtime SYNC-01/02/03.
+ * E2E realtime SYNC-01/02/03/04.
  *
  * Tes ini membutuhkan dua akun tenant dan satu booth Available di Supabase
  * nyata karena inti skenarionya adalah sinkronisasi Realtime dan penanganan
  * race condition di database. Bila konfigurasi belum tersedia, seluruh tes
  * dilewati agar `npm run test:e2e` tetap hijau di mesin tanpa kredensial.
+ *
+ * `E2E_SUPABASE_URL` + `E2E_SERVICE_ROLE_KEY` bersifat opsional, tetapi
+ * dibutuhkan untuk asersi database SYNC-03 dan seluruh setup SYNC-04. Kunci
+ * service role hanya boleh dipakai di staging/CI, tidak pernah di produksi.
  */
 
 const missing = missingEnv([
@@ -21,6 +40,11 @@ const missing = missingEnv([
 ])
 
 test.skip(missing.length > 0, skipMessage('SYNC E2E', missing))
+
+const adminMissing = missingEnv([
+  ['E2E_SUPABASE_URL', supabaseUrl],
+  ['E2E_SERVICE_ROLE_KEY', serviceRoleKey],
+])
 
 const boothSelector = `[data-booth-id="${boothId}"]`
 
@@ -95,14 +119,29 @@ async function safeCancelBooking(page: Page) {
   }
 }
 
+/**
+ * Service role menghapus seluruh booking booth uji lalu mengembalikan status
+ * ke Available. Bila kunci admin tidak tersedia, fallback ke pembatalan UI.
+ */
 async function cleanup(
   contextA: BrowserContext,
   contextB: BrowserContext,
   pageA: Page,
   pageB: Page,
 ) {
-  await safeCancelBooking(pageA)
-  await safeCancelBooking(pageB)
+  if (hasAdminApi) {
+    try {
+      await resetBooth(boothId)
+    } catch (error) {
+      console.warn('Gagal reset booth lewat admin API, mencoba pembatalan lewat UI.', error)
+      await safeCancelBooking(pageA)
+      await safeCancelBooking(pageB)
+    }
+  } else {
+    await safeCancelBooking(pageA)
+    await safeCancelBooking(pageB)
+  }
+
   await contextA.close()
   await contextB.close()
 }
@@ -188,6 +227,60 @@ test('SYNC-03: pemesanan bersamaan hanya menghasilkan satu transaksi', async ({ 
 
     const loser = aWon ? pageB : pageA
     await expect(loser.getByRole('alert')).toContainText(/Booth sudah tidak tersedia/)
+
+    if (hasAdminApi) {
+      // Bukti tingkat database: unique partial index BE-02 menyisakan tepat
+      // satu booking aktif, bukan hanya satu pesan sukses di UI.
+      await expect.poll(() => listActiveBookings(boothId), { timeout: 15_000 }).toHaveLength(1)
+    } else {
+      test.info().annotations.push({
+        type: 'admin-api-skipped',
+        description: `Asersi database SYNC-03 dilewati. Isi ${adminMissing.join(', ')} pada .env.e2e.`,
+      })
+    }
+  } finally {
+    await cleanup(contextA, contextB, pageA, pageB)
+  }
+})
+
+test('SYNC-04: booking kedaluwarsa melepas booth kembali Available', async ({ browser }) => {
+  test.skip(
+    !hasAdminApi,
+    skipMessage(
+      'SYNC-04',
+      missingEnv([
+        ['E2E_SUPABASE_URL', supabaseUrl],
+        ['E2E_SERVICE_ROLE_KEY', serviceRoleKey],
+      ]),
+    ),
+  )
+
+  const { contextA, contextB, pageA, pageB } = await openTwoTenants(browser)
+
+  try {
+    await reserveBooth(pageA)
+
+    const active = await listActiveBookings(boothId)
+    expect(active).toHaveLength(1)
+
+    const booking = active[0]
+    if (!booking) throw new Error('Booking aktif tidak ditemukan setelah reserveBooth.')
+
+    await expireBooking(booking.id)
+
+    // /bookings menjalankan sweep lebih dulu, lalu menampilkan alasan yang
+    // jelas untuk booking yang dilepas.
+    await pageA.goto('/bookings')
+    await expect(pageA.getByText('Kedaluwarsa').first()).toBeVisible({ timeout: 30_000 })
+
+    // Booth kembali Available di konteks tenant lain tanpa data uji tertahan.
+    await openEvent(pageB)
+    await expect(pageB.locator(boothSelector)).toHaveAttribute('data-booth-status', 'Available', {
+      timeout: 30_000,
+    })
+
+    expect(await listActiveBookings(boothId)).toHaveLength(0)
+    expect(await getBoothStatus(boothId)).toBe('Available')
   } finally {
     await cleanup(contextA, contextB, pageA, pageB)
   }

@@ -341,18 +341,31 @@ E2E_ORGANIZER_PASSWORD=
 
 E2E_EVENT_ID=hall-a
 E2E_BOOTH_ID=11111111-1111-4111-8111-111111111101
+
+# Opsional, hanya staging/CI. Jangan pakai kunci produksi.
+E2E_SUPABASE_URL=
+E2E_SERVICE_ROLE_KEY=
 ```
 
 Prasyarat data:
 
 - `hall-a` berstatus `published` dan memiliki minimal satu booth `Available`;
 - `E2E_BOOTH_ID` menunjuk booth `Available` yang boleh dipakai bergantian;
-- akun organizer dan tenant sudah dikonfirmasi;
+- akun organizer dan tenant sudah dikonfirmasi dan memakai `app_metadata.role`
+  (lihat `supabase/AUTH_ROLES.md`);
 - Realtime aktif untuk `booths` dan `bookings`.
 
-Tes SYNC memakai dua browser context dan mengembalikan booth ke `Available`
-lewat pembatalan booking di akhir skenario. Jangan arahkan `E2E_BOOTH_ID` ke
-booth produksi.
+`E2E_SUPABASE_URL` dan `E2E_SERVICE_ROLE_KEY` bersifat opsional dan **hanya
+untuk staging/CI**. Service role melewati RLS serta dapat menghapus data uji,
+jadi jangan memakai kunci produksi. Bila keduanya kosong, SYNC-03 tetap berjalan
+dengan asersi UI dan SYNC-04 dilewati dengan alasan yang jelas.
+
+Tes SYNC memakai dua browser context. Cleanup memakai service role untuk
+menghapus booking booth uji dan mengembalikan status ke `Available`; tanpa
+kunci admin, cleanup memakai pembatalan lewat UI. Jangan arahkan `E2E_BOOTH_ID`
+ke booth produksi. SYNC-04 sengaja memajukan `expires_at` lewat admin API untuk
+membuktikan sweep mengembalikan booth ke `Available` dan tenant melihat label
+`Kedaluwarsa`.
 
 Audit aksesibilitas mencakup:
 
@@ -388,17 +401,17 @@ Audit aksesibilitas mencakup:
 
 ## 11. Troubleshooting
 
-| Gejala                                           | Penyebab umum              | Solusi                                                                      |
-| ------------------------------------------------ | -------------------------- | --------------------------------------------------------------------------- |
-| "Supabase belum dikonfigurasi"                   | `.env` belum ada / kosong  | Isi `VITE_SUPABASE_URL` dan `VITE_SUPABASE_ANON_KEY`, restart `npm run dev` |
-| "Tabel ... belum tersedia"                       | Migrasi belum dijalankan   | Jalankan migrasi sesuai urutan bagian 5.1                                   |
-| Login berhasil tetapi diarahkan ke halaman salah | `user_metadata.role` salah | Perbaiki role, logout, login ulang                                          |
-| Tenant tidak bisa membuka `/admin`               | Memang dibatasi            | Gunakan akun organizer                                                      |
-| Booth tidak muncul di `/event`                   | Blueprint masih `draft`    | Publikasikan lewat `/admin/blueprint`                                       |
-| Denah tidak bisa dihapus                         | Masih ada booking aktif    | Selesaikan atau batalkan booking terkait di `/admin/bookings`               |
-| Perubahan booth tidak realtime                   | Realtime belum aktif       | Aktifkan `booths` dan `bookings` di Database → Replication                  |
-| E2E SYNC dilewati                                | `.env.e2e` belum lengkap   | Isi semua variabel dan sediakan booth `Available`                           |
-| `npm` ditolak di PowerShell                      | Execution policy           | Gunakan `npm.cmd`                                                           |
+| Gejala                                           | Penyebab umum             | Solusi                                                                      |
+| ------------------------------------------------ | ------------------------- | --------------------------------------------------------------------------- |
+| "Supabase belum dikonfigurasi"                   | `.env` belum ada / kosong | Isi `VITE_SUPABASE_URL` dan `VITE_SUPABASE_ANON_KEY`, restart `npm run dev` |
+| "Tabel ... belum tersedia"                       | Migrasi belum dijalankan  | Jalankan migrasi sesuai urutan bagian 5.1                                   |
+| Login berhasil tetapi diarahkan ke halaman salah | `app_metadata.role` salah | Backfill/ubah lewat Admin API, logout, login ulang                          |
+| Tenant tidak bisa membuka `/admin`               | Memang dibatasi           | Gunakan akun organizer                                                      |
+| Booth tidak muncul di `/event`                   | Blueprint masih `draft`   | Publikasikan lewat `/admin/blueprint`                                       |
+| Denah tidak bisa dihapus                         | Masih ada booking aktif   | Selesaikan atau batalkan booking terkait di `/admin/bookings`               |
+| Perubahan booth tidak realtime                   | Realtime belum aktif      | Aktifkan `booths` dan `bookings` di Database → Replication                  |
+| E2E SYNC dilewati                                | `.env.e2e` belum lengkap  | Isi semua variabel dan sediakan booth `Available`                           |
+| `npm` ditolak di PowerShell                      | Execution policy          | Gunakan `npm.cmd`                                                           |
 
 ## 12. Catatan pengembangan
 
