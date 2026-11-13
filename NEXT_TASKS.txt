@@ -1136,7 +1136,7 @@ QA ENGINEER
       mitigasi, bukan bukti run.
     Dependensi: QA-01
 
-[ ] QA-06. Perbarui test plan dan template sign-off rilis [P2]
+[x] QA-06. Perbarui test plan dan template sign-off rilis [P2]
     Pemilik: QA Engineer
     Kolaborator: PM
     Konteks: Perilaku error boundary, reconnect, dan mobile berubah; dokumen
@@ -1150,7 +1150,27 @@ QA ENGINEER
     - Test plan cocok dengan route dan perilaku aktual.
     - Sign-off mencakup hasil otomatis dan manual.
     Verifikasi:
-    - Review bersama PM dan FE/BE.
+    - qa_checklist_test_plan.md menambah RESP-02 (checkout mobile sebagai
+      bottom sheet: items-end, max 92vh, scroll internal, focus trap, Escape),
+      RESP-03 (tabel admin memakai scroll horizontal di kontainer, bukan
+      melebarkan body), dan TS-16 ERR-01..04 (error boundary global, chunk
+      gagal pertama, chunk tetap gagal setelah reload, dan pemulihan penanda
+      sessionStorage).
+    - Template bug report diperluas dengan versi/commit, environment,
+      peran, data uji, frekuensi, test otomatis terkait, trace Playwright,
+      dan tautan register flaky.
+    - docs/qa/RELEASE_SIGN_OFF.md baru memuat identitas rilis, gate otomatis
+      wajib, gate manual kritis per area, tabel blocker/waiver, keputusan
+      GO/CONDITIONAL/NO-GO, tanda tangan QA/FE/BE/PM-DevOps, dan langkah
+      pasca-rilis. Bukti otomatis 13 November 2026 dicatat di dalamnya.
+    - .github/pull_request_template.md menambah gate verify/coverage/smoke/
+      a11y/audit/RLS, cek dampak routing-skema-secret-mobile, dan tautan
+      sign-off rilis. README bagian alur QA menautkan dokumen ini.
+    - npx playwright test e2e/smoke.spec.ts e2e/a11y.spec.ts lulus (3 lulus:
+      A11Y-01, A11Y-02, smoke login; 4 dilewati karena kredensial staging
+      belum tersedia). npm run verify lulus. Catatan: hasil manual QA-02/
+      QA-03/QA-04, E2E SYNC, RLS staging, dan rollback nyata masih menunggu
+      environment staging (OPS-04), jadi sign-off belum dapat menyatakan GO.
     Dependensi: QA-01, QA-02, QA-03
 
 

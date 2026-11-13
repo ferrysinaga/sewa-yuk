@@ -110,6 +110,8 @@ diklik untuk diperiksa; hanya tombol pemesanan yang dinonaktifkan.
 | :--- | :--- | :--- | :--- | :---: |
 | **PERF-01** | Rendering Canvas Zustand | Lakukan drag/pilih booth berulang kali sambil memantau DevTools React. | Re-render hanya terjadi pada komponen terisolasi, tidak ada lag/frame-drop. | [ ] |
 | **RESP-01** | Tampilan Layar Ponsel | Buka halaman peta penyewa pada tampilan 375px (Mobile). | SVG dapat digeser/di-zoom (cubit, tombol zoom, atau Ctrl + scroll), legenda tetap terbaca, dan panel detail berpindah ke bawah peta (bukan *bottom sheet* melayang). Tombol pemesanan tetap dapat dijangkau tanpa scroll horizontal. | [ ] |
+| **RESP-02** | Checkout mobile sebagai bottom sheet | Di viewport 375px, pilih booth `Available` lalu tekan **Pesan booth ini**. | Dialog checkout muncul dari bawah (`items-end`), lebarnya penuh, sudut atas membulat, tinggi maksimum 92vh, dan isi dialog dapat di-scroll tanpa menggeser halaman di belakang. Tombol tutup, CTA, dan ringkasan harga tetap terjangkau; fokus terperangkap di dialog dan Escape menutupnya. | [ ] |
+| **RESP-03** | Tabel admin pada layar sempit | Buka `/admin/bookings` pada 375px dan 768px. | Tabel memakai scroll horizontal di dalam kontainer, bukan membuat seluruh halaman melebar. Kolom aksi dan status tetap dapat dicapai; tidak ada teks terpotong permanen dan tidak ada scroll horizontal pada `body`. | [ ] |
 
 ---
 
@@ -230,20 +232,57 @@ diklik untuk diperiksa; hanya tombol pemesanan yang dinonaktifkan.
 
 ---
 
+### TS-16: Error Boundary dan Pemulihan Chunk
+| ID Skenario | Deskripsi Pengujian | Langkah Pengujian | Hasil yang Diharapkan | Status |
+| :--- | :--- | :--- | :--- | :---: |
+| **ERR-01** | Error render tertangkap global | Di staging, picu error render pada komponen halaman (mis. lewat komponen uji yang melempar error atau React DevTools). | Fallback `role="alert"` tampil dengan judul **Terjadi kesalahan**, menjelaskan data tetap aman, serta tombol **Muat ulang** dan **Kembali ke beranda**. Fokus pindah ke judul fallback; halaman tidak menjadi layar putih. | [ ] |
+| **ERR-02** | Chunk gagal dimuat pertama kali | Blokir request `assets/*.js` lewat DevTools Network, lalu navigasi ke route lazy seperti `/admin` atau `/event/:id`. | Muncul judul **Versi aplikasi mungkin diperbarui**; aplikasi mencoba reload otomatis satu kali. Penanda `sewa-yuk:chunk-reload-attempted` tersimpan di `sessionStorage` agar tidak terjadi reload berulang tanpa akhir. | [ ] |
+| **ERR-03** | Chunk tetap gagal setelah reload | Biarkan request chunk tetap diblokir setelah reload otomatis. | Judul berubah menjadi **Halaman belum dapat dimuat** dengan instruksi memeriksa koneksi dan memuat ulang manual. Tidak ada loop reload; tombol **Muat ulang** dan **Kembali ke beranda** tetap dapat dipakai. | [ ] |
+| **ERR-04** | Pemulihan chunk berhasil | Buka blokir request chunk, lalu klik **Muat ulang** atau reload manual. | Halaman tujuan termuat normal, penanda `sessionStorage` dibersihkan oleh boundary saat render sukses, dan auto-reload berikutnya diizinkan kembali. | [ ] |
+
+---
+
 ## 4. Templat Pelaporan Bug (Bug Report Template)
 
 Jika ditemukan ketidaksesuaian saat pengujian, gunakan format laporan berikut:
 
 ```text
 [ID BUG]: BUG-00X
+[Versi/commit]: (Hash commit atau URL deployment)
+[Environment]: Lokal / Preview / Staging / Produksi + browser/OS/viewport
+[Peran]: anon / tenant / organizer
+[Data uji]: ID event, booth, atau booking yang dipakai (jangan tempel secret)
 [Judul]: (Misal: Status Booth tidak berubah secara realtime di Safari)
 [Komponen]: InteractiveMap / Supabase Realtime / Zustand
 [Keparahan]: Critical / Major / Minor / Cosmetic
+[Frekuensi]: x/y percobaan (mis. 10/10, 3/10)
 [Langkah Reproduksi]:
   1. Buka halaman event di browser Safari.
   2. Lakukan transaksi dari browser Chrome.
   3. Amati layar Safari.
 [Hasil Aktual]: Booth di Safari masih tampil "Tersedia" dengan garis tepi pine.
 [Hasil Diharapkan]: Booth di Safari berubah menjadi "Dipesan" (abu-abu, garis putus-putus) tanpa reload.
-[Bukti]: (Lampirkan screenshot/video rekaman layar)
+[Test otomatis terkait]: (mis. SYNC-01, A11Y-03, atau "belum ada")
+[Bukti]: (Lampirkan screenshot/video rekaman layar; sertakan trace Playwright bila ada)
+[Catatan flaky]: (Bila tidak konsisten, tautkan baris register di docs/qa/FLAKY_TESTS.md)
 ```
+
+---
+
+## 5. Sign-off rilis
+
+Checklist ringkas untuk melampirkan hasil otomatis dan manual di PR ada di
+`docs/qa/RELEASE_SIGN_OFF.md`. Isi minimal:
+
+- commit/deployment yang diuji dan environment;
+- hasil `npm run verify`, `npm run test:coverage`, smoke/a11y E2E, dan
+  `npm run security:secrets`;
+- status skenario manual kritis (AUTH, MAP, SYNC, BOOK, ADM, EXP, RLS, RESP,
+  ERR, CONN);
+- blocker/waiver dengan pemilik dan tenggat;
+- keputusan **GO / NO-GO / CONDITIONAL** serta tanda tangan QA, FE, BE, dan
+  PM/DevOps.
+
+Jangan menandai rilis **GO** bila RLS staging, rollback, atau alur booking
+kritis belum diverifikasi. Gunakan **CONDITIONAL** dengan daftar risiko yang
+disetujui bila pengecualian memang diperlukan.

@@ -433,6 +433,13 @@ memakai `retries: 0`; retry sementara hanya boleh dengan issue tertaut.
 7. Jalankan `npm run test:e2e -- e2e/a11y.spec.ts` untuk memastikan tidak ada
    pelanggaran WCAG A/AA pada halaman yang dapat diaudit.
 
+Checklist sign-off rilis yang ringkas (gate otomatis, skenario manual kritis,
+blocker/waiver, dan keputusan GO/CONDITIONAL/NO-GO) ada di
+`docs/qa/RELEASE_SIGN_OFF.md`. Salin ke PR rilis dan lampirkan bukti; template
+PR di `.github/pull_request_template.md` sudah menautkannya. Test plan lengkap
+beserta skenario error boundary/chunk (ERR-01..04) dan responsif mobile
+(RESP-01..03) ada di `qa_checklist_test_plan.md`.
+
 ## 11. Troubleshooting
 
 | Gejala                                           | Penyebab umum             | Solusi                                                                      |
