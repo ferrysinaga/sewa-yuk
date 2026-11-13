@@ -229,38 +229,94 @@ begin
     raise exception 'Katalog storage: expected 4 policy, got %', v_count;
   end if;
 
-  -- Grant dan default privilege. Project Supabase standar memberi ALL kepada
-  -- anon/authenticated; jangan menganggap grant tulis tidak ada. RLS yang
-  -- menolak tenant/anon. Nilai di bawah dicatat sebagai temuan F5.
+  -- Grant minimum setelah BE-08. RLS tetap kontrol utama, tetapi tulis
+  -- bookings dan EXECUTE RPC tulis anon tidak lagi diberikan.
   if not has_table_privilege('anon', 'public.booths', 'SELECT') then
     raise exception 'Grant: anon harus bisa SELECT booths';
+  end if;
+  if not has_table_privilege('anon', 'public.blueprints', 'SELECT') then
+    raise exception 'Grant: anon harus bisa SELECT blueprints';
   end if;
   if not has_table_privilege('authenticated', 'public.bookings', 'SELECT') then
     raise exception 'Grant: authenticated harus bisa SELECT bookings';
   end if;
 
-  raise notice 'F5: anon INSERT/UPDATE/DELETE bookings = %/%/%',
-    has_table_privilege('anon', 'public.bookings', 'INSERT'),
-    has_table_privilege('anon', 'public.bookings', 'UPDATE'),
-    has_table_privilege('anon', 'public.bookings', 'DELETE');
+  if has_table_privilege('anon', 'public.bookings', 'INSERT')
+     or has_table_privilege('anon', 'public.bookings', 'UPDATE')
+     or has_table_privilege('anon', 'public.bookings', 'DELETE')
+     or has_table_privilege('anon', 'public.bookings', 'TRUNCATE') then
+    raise exception 'Grant: anon masih memiliki grant tulis bookings';
+  end if;
 
-  raise notice 'F5: authenticated INSERT/UPDATE/DELETE bookings = %/%/%',
-    has_table_privilege('authenticated', 'public.bookings', 'INSERT'),
-    has_table_privilege('authenticated', 'public.bookings', 'UPDATE'),
-    has_table_privilege('authenticated', 'public.bookings', 'DELETE');
+  if has_table_privilege('authenticated', 'public.bookings', 'INSERT')
+     or has_table_privilege('authenticated', 'public.bookings', 'UPDATE')
+     or has_table_privilege('authenticated', 'public.bookings', 'DELETE')
+     or has_table_privilege('authenticated', 'public.bookings', 'TRUNCATE') then
+    raise exception 'Grant: authenticated masih memiliki grant tulis bookings';
+  end if;
 
-  raise notice 'F5: anon EXECUTE create_booking/mark/cancel/confirm = %/%/%/%',
-    has_function_privilege('anon', 'public.create_booking(uuid,text)', 'EXECUTE'),
-    has_function_privilege('anon', 'public.mark_booking_paid(uuid)', 'EXECUTE'),
-    has_function_privilege('anon', 'public.cancel_booking(uuid)', 'EXECUTE'),
-    has_function_privilege('anon', 'public.confirm_booking(uuid)', 'EXECUTE');
+  if has_table_privilege('anon', 'public.booths', 'INSERT')
+     or has_table_privilege('anon', 'public.booths', 'UPDATE')
+     or has_table_privilege('anon', 'public.booths', 'DELETE') then
+    raise exception 'Grant: anon masih memiliki grant tulis booths';
+  end if;
+
+  if has_table_privilege('anon', 'public.blueprints', 'INSERT')
+     or has_table_privilege('anon', 'public.blueprints', 'UPDATE')
+     or has_table_privilege('anon', 'public.blueprints', 'DELETE') then
+    raise exception 'Grant: anon masih memiliki grant tulis blueprints';
+  end if;
+
+  if not has_table_privilege('authenticated', 'public.booths', 'INSERT')
+     or not has_table_privilege('authenticated', 'public.booths', 'UPDATE')
+     or not has_table_privilege('authenticated', 'public.booths', 'DELETE') then
+    raise exception 'Grant: organizer membutuhkan tulis booths';
+  end if;
+
+  if not has_table_privilege('authenticated', 'public.blueprints', 'INSERT')
+     or not has_table_privilege('authenticated', 'public.blueprints', 'UPDATE')
+     or not has_table_privilege('authenticated', 'public.blueprints', 'DELETE') then
+    raise exception 'Grant: organizer membutuhkan tulis blueprints';
+  end if;
+
+  if has_table_privilege('authenticated', 'public.booths', 'TRUNCATE')
+     or has_table_privilege('authenticated', 'public.blueprints', 'TRUNCATE') then
+    raise exception 'Grant: TRUNCATE tidak boleh diberikan ke authenticated';
+  end if;
+
+  if has_function_privilege('anon', 'public.create_booking(uuid,text)', 'EXECUTE')
+     or has_function_privilege('anon', 'public.mark_booking_paid(uuid)', 'EXECUTE')
+     or has_function_privilege('anon', 'public.cancel_booking(uuid)', 'EXECUTE')
+     or has_function_privilege('anon', 'public.confirm_booking(uuid)', 'EXECUTE') then
+    raise exception 'Grant: anon masih memiliki EXECUTE RPC tulis';
+  end if;
 
   if not has_function_privilege('anon', 'public.release_expired_bookings()', 'EXECUTE') then
     raise exception 'Grant: anon harus bisa EXECUTE release_expired_bookings';
   end if;
-  if not has_function_privilege('authenticated', 'public.create_booking(uuid,text)', 'EXECUTE') then
-    raise exception 'Grant: authenticated harus bisa EXECUTE create_booking';
+  if not has_function_privilege('authenticated', 'public.create_booking(uuid,text)', 'EXECUTE')
+     or not has_function_privilege('authenticated', 'public.mark_booking_paid(uuid)', 'EXECUTE')
+     or not has_function_privilege('authenticated', 'public.cancel_booking(uuid)', 'EXECUTE')
+     or not has_function_privilege('authenticated', 'public.confirm_booking(uuid)', 'EXECUTE') then
+    raise exception 'Grant: authenticated harus bisa EXECUTE RPC tulis';
   end if;
+
+  if not has_function_privilege('anon', 'public.current_user_role()', 'EXECUTE')
+     or not has_function_privilege('authenticated', 'public.current_user_role()', 'EXECUTE') then
+    raise exception 'Grant: helper current_user_role harus bisa dieksekusi anon/authenticated';
+  end if;
+
+  if not exists (
+    select 1 from pg_policies
+     where schemaname = 'public'
+       and tablename = 'bookings'
+       and policyname = 'Organizers can manage bookings'
+       and cmd = 'SELECT'
+  ) then
+    raise exception 'Katalog bookings: policy organizer harus SELECT saja';
+  end if;
+
+  raise notice 'Grant minimum BE-08 sesuai: tulis bookings hanya lewat RPC.';
 
   -- Lima RPC pemesanan harus SECURITY DEFINER.
   select count(*) into v_count
@@ -926,7 +982,7 @@ begin
 end $$;
 
 -- ---------------------------------------------------------------------------
--- 9. Diagnostik F5: apakah organizer masih bisa menulis booking langsung?
+-- 9. RLS-15: organizer tidak boleh menulis booking langsung (F5).
 -- ---------------------------------------------------------------------------
 set local role authenticated;
 select set_config(
@@ -957,10 +1013,10 @@ begin
   end;
 
   if v_allowed then
-    raise warning
-      'F5 aktif: organizer dapat UPDATE bookings langsung tanpa RPC. Cabut grant tulis default Supabase.';
+    raise exception
+      'RLS-15: organizer masih dapat UPDATE bookings langsung; grant tulis belum dicabut';
   else
-    raise notice 'F5 tidak aktif: grant tulis bookings sudah dicabut.';
+    raise notice 'RLS-15 lulus: tulis bookings hanya lewat RPC.';
   end if;
 end $$;
 

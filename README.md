@@ -75,6 +75,7 @@ satu. Urutan ini penting karena saling bergantung.
 | 8      | `supabase/migrations/20261111000000_rpc_idempotency_error_contract.sql` | Idempotensi RPC, kontrak error, dan `search_path` aman             |
 | 9      | `supabase/migrations/20261111000100_double_booking_guarantee.sql`       | Unique index anti double booking + rekonsiliasi booth              |
 | 10     | `supabase/migrations/20261112000000_app_metadata_role.sql`              | Otorisasi role dari `app_metadata` + helper `current_user_role()`  |
+| 11     | `supabase/migrations/20261112000100_grant_hardening.sql`                | Grant minimum tabel + `EXECUTE` RPC, bookings baca-saja            |
 
 Semua migrasi ditulis idempoten, jadi aman dijalankan ulang bila eksekusi
 sebelumnya terputus. Bila memakai Supabase CLI dengan konfigurasi lokal,
@@ -96,14 +97,16 @@ status booth ada di `supabase/DOUBLE_BOOKING.md`.
 Matriks RLS per tabel/operasi/role, skenario negatif, dan temuan audit ada di
 `supabase/RLS_MATRIX.md`. Uji RLS staging dijalankan dengan
 `supabase/tests/rls_matrix.sql` memakai akun organizer, tenant A, tenant B, dan
-anon. Temuan kritis F1 (role di `user_metadata` dapat diubah sendiri) harus
-diperbaiki sebelum produksi; lihat dokumen tersebut untuk rencana remediasi.
+anon. Temuan kritis F1 (role di `user_metadata` dapat diubah sendiri) sudah
+diremediasi lewat `app_metadata.role`; urutan rilis dan backfill organizer ada
+di `supabase/AUTH_ROLES.md`.
 
 Project Supabase standar memberi grant default `SELECT/INSERT/UPDATE/DELETE/
 TRUNCATE` dan `EXECUTE` kepada `anon`/`authenticated` untuk objek baru di
-schema `public`. Migrasi tidak mencabut default tersebut, jadi RLS adalah
-kontrol utama. Temuan F5 dan rekomendasi pencabutan grant ada di
-`supabase/RLS_MATRIX.md`.
+schema `public`. Migrasi `20261112000100_grant_hardening.sql` mencabut grant
+yang tidak dibutuhkan: `bookings` hanya `SELECT` untuk `authenticated`, anon
+tidak punya akses tulis, dan RPC tulis hanya untuk `authenticated`. Matriks
+grant, verifikasi katalog, dan rollback ada di `supabase/GRANTS.md`.
 
 Konfigurasi publication Realtime, channel/filter frontend, dan jaminan privasi
 payload booking ada di `supabase/REALTIME_PRIVACY.md`. Tenant hanya menerima

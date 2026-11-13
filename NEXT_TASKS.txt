@@ -954,7 +954,7 @@ BACKEND DEVELOPER
       tidak ada psql/Supabase CLI/kredensial staging (OPS-04).
     Dependensi: BE-01
 
-[ ] BE-08. Cabut default privilege tulis dan EXECUTE yang tidak perlu [P1]
+[x] BE-08. Cabut default privilege tulis dan EXECUTE yang tidak perlu [P1]
     Pemilik: Backend Developer
     Kolaborator: QA, DevOps
     Konteks: Temuan F5 BE-01. Project Supabase standar memberi grant
@@ -974,8 +974,36 @@ BACKEND DEVELOPER
     - Organizer hanya mengubah booking lewat RPC; direct PATCH ditolak.
     - Anon ditolak di lapisan grant untuk RPC tulis.
     Verifikasi:
-    - Jalankan supabase/tests/rls_matrix.sql + RLS-15 di staging; cek
-      information_schema.role_table_grants dan role_routine_grants.
+    - supabase/migrations/20261112000100_grant_hardening.sql mencabut seluruh
+      grant bookings dari anon, mencabut INSERT/UPDATE/DELETE/TRUNCATE
+      bookings dari authenticated, dan menyisakan SELECT. Policy
+      "Organizers can manage bookings" diganti menjadi FOR SELECT.
+    - Grant tulis anon pada booths/blueprints dicabut; TRUNCATE/REFERENCES/
+      TRIGGER dicabut dari authenticated pada ketiga tabel. Grant tulis
+      authenticated pada booths/blueprints dipertahankan karena editor
+      organizer menulis langsung; RLS tetap membatasi ke organizer.
+    - EXECUTE create_booking, mark_booking_paid, cancel_booking, dan
+      confirm_booking dicabut dari PUBLIC + anon, lalu diberikan hanya ke
+      authenticated. release_expired_bookings tetap untuk anon +
+      authenticated sebagai fallback sweep halaman publik. EXECUTE
+      current_user_role dipertahankan untuk anon + authenticated.
+    - supabase/GRANTS.md memuat matriks grant sebelum/sesudah, alasan grant
+      tulis organizer pada booths/blueprints, jalur RPC-only bookings,
+      catatan default privilege untuk objek baru, kueri verifikasi
+      information_schema, uji REST manual, dan rollback.
+    - supabase/tests/rls_matrix.sql bagian 2 sekarang meng-assert grant minimum
+      (anon tanpa tulis, authenticated bookings SELECT saja, RPC tulis anon
+      tanpa EXECUTE, helper dan sweep tetap tersedia) dan memastikan policy
+      organizer bookings adalah SELECT. Bagian 9 (RLS-15) gagal bila organizer
+      masih bisa UPDATE bookings langsung.
+    - supabase/MIGRATIONS.md menambah migrasi 11 beserta dependensi dan blok
+      rollback; README menautkan GRANTS.md dan memperbarui status F1/F5;
+      RLS_MATRIX.md menandai F5 diremediasi; qa_checklist_test_plan.md
+      memperbarui RLS-11/RLS-15, DB-02 menjadi 11 migrasi, dan menambah DB-06.
+    - npm run verify lulus: 29 file / 223 unit test, build produksi, dan
+      anggaran bundle. Catatan: migrasi, kueri grant, dan RLS-15/RLS-11 belum
+      dijalankan karena tidak ada psql/Supabase CLI/kredensial staging
+      (OPS-04).
     Dependensi: BE-01
 
 
