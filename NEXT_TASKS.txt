@@ -1175,7 +1175,7 @@ DEVOPS ENGINEER
     - Uji dengan PR percobaan yang sengaja menggagalkan lint.
     Dependensi: -
 
-[ ] OPS-02. Tambah secret scanning dan audit dependensi [P1]
+[x] OPS-02. Tambah secret scanning dan audit dependensi [P1]
     Pemilik: DevOps Engineer
     Kolaborator: BE
     Konteks: Frontend hanya boleh memakai VITE_*; service_role key tidak boleh
@@ -1189,7 +1189,27 @@ DEVOPS ENGINEER
     - Tidak ada secret sensitif di repo, log, atau bundle.
     - Temuan audit punya pemilik dan tenggat.
     Verifikasi:
-    - Scan repo + build bundle + review environment Vercel/Supabase.
+    - scripts/check-secrets.mjs memeriksa file .env/.env.e2e yang ter-track,
+      pola private key/AWS/GitHub/Stripe/Supabase secret, dan JWT dengan role
+      service_role di file tracked maupun dist/. Anon key tetap diizinkan.
+      Tersedia sebagai npm run security:secrets dan dijalankan di akhir
+      npm run verify setelah build.
+    - Uji detektor: file sementara di dist/ berisi JWT role service_role
+      membuat skrip gagal dengan file:line; file uji dihapus setelahnya.
+      Scan repo + dist saat ini lulus tanpa temuan.
+    - .github/workflows/security.yml menambah secret scan pada push/PR dan
+      audit dependensi terjadwal (Senin 03:00 UTC) + workflow_dispatch.
+      npm run security:audit memakai npm audit --audit-level=high.
+    - .gitignore sudah mengabaikan .env dan .env.* dengan pengecualian file
+      contoh; hanya .env.e2e.example yang ter-track dan nilainya kosong.
+    - docs/ops/SECRETS.md memuat aturan VITE_*, pemindaian lokal/CI, hasil
+      audit (0 high/critical; 10 moderate minimatch di toolchain eslint dev,
+      pemilik DevOps, tenggat 2026-12-31), prosedur rotasi/cabut kunci,
+      verifikasi git check-ignore, dan batasan staging.
+    - README menambah bagian keamanan secret dan dependensi. npm run verify
+      lulus termasuk security:secrets. Catatan: GitHub native secret scanning
+      dan push protection harus diaktifkan manual di Settings, serta rotasi
+      nyata Vercel/Supabase belum diuji karena tidak ada akses (OPS-04).
     Dependensi: -
 
 [ ] OPS-03. Tulis dan uji runbook rollback [P1]

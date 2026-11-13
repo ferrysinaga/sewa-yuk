@@ -313,6 +313,25 @@ Bila workflow merah, buka langkah yang gagal di tab **Actions**:
 - **E2E smoke** — halaman login gagal dimuat; jalankan
   `npx playwright test e2e/smoke.spec.ts` lokal.
 
+### Keamanan secret dan dependensi
+
+```bash
+npm run security:secrets
+npm run security:audit
+```
+
+`security:secrets` memindai file tracked dan `dist/` terhadap pola secret serta
+JWT dengan role `service_role`; perintah ini juga bagian dari `npm run verify`.
+`security:audit` menjalankan `npm audit --audit-level=high`. Workflow
+`.github/workflows/security.yml` menjalankan secret scan pada push/PR dan audit
+dependensi terjadwal setiap Senin. Prosedur rotasi kunci dan kebijakan temuan
+audit ada di `docs/ops/SECRETS.md`.
+
+Jangan pernah memberi prefix `VITE_` pada service role/secret key. Hanya
+`VITE_SUPABASE_URL` dan `VITE_SUPABASE_ANON_KEY` yang boleh masuk bundle;
+`SUPABASE_SERVICE_ROLE_KEY` dan `E2E_SERVICE_ROLE_KEY` hanya untuk shell/CI
+staging.
+
 ### E2E dan aksesibilitas
 
 ```bash
