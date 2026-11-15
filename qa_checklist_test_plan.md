@@ -2,7 +2,7 @@
 **Proyek:** sewa-yuk — Platform Booking Booth Event Interaktif 2D
 **Versi:** 1.3.0
 **Stack Utama:** Vite, React, TypeScript, Tailwind CSS, Zustand, Supabase (Auth, DB, Realtime), `@dnd-kit/core`
-**Revisi terakhir:** 13 November 2026 — ditambah SYNC-04 (expiry + reset booth) dan kebijakan flaky test/pipeline QA-05, serta penyelarasan status dokumen dengan Fase 2.
+**Revisi terakhir:** 15 November 2026 — ditambah TS-17 aksesibilitas (A11Y-01..09), checklist audit di `docs/qa/A11Y_AUDIT.md`, serta penyelarasan status dokumen dengan Fase 2.
 
 ---
 
@@ -239,6 +239,24 @@ diklik untuk diperiksa; hanya tombol pemesanan yang dinonaktifkan.
 | **ERR-02** | Chunk gagal dimuat pertama kali | Blokir request `assets/*.js` lewat DevTools Network, lalu navigasi ke route lazy seperti `/admin` atau `/event/:id`. | Muncul judul **Versi aplikasi mungkin diperbarui**; aplikasi mencoba reload otomatis satu kali. Penanda `sewa-yuk:chunk-reload-attempted` tersimpan di `sessionStorage` agar tidak terjadi reload berulang tanpa akhir. | [ ] |
 | **ERR-03** | Chunk tetap gagal setelah reload | Biarkan request chunk tetap diblokir setelah reload otomatis. | Judul berubah menjadi **Halaman belum dapat dimuat** dengan instruksi memeriksa koneksi dan memuat ulang manual. Tidak ada loop reload; tombol **Muat ulang** dan **Kembali ke beranda** tetap dapat dipakai. | [ ] |
 | **ERR-04** | Pemulihan chunk berhasil | Buka blokir request chunk, lalu klik **Muat ulang** atau reload manual. | Halaman tujuan termuat normal, penanda `sessionStorage` dibersihkan oleh boundary saat render sukses, dan auto-reload berikutnya diizinkan kembali. | [ ] |
+
+---
+
+### TS-17: Aksesibilitas (WCAG A/AA)
+| ID Skenario | Deskripsi Pengujian | Langkah Pengujian | Hasil yang Diharapkan | Status |
+| :--- | :--- | :--- | :--- | :---: |
+| **A11Y-01** | Landing page | Jalankan `npx playwright test e2e/a11y.spec.ts` atau audit axe di `/`. | Tidak ada pelanggaran WCAG A/AA; heading, landmark, dan kontras valid. | [ ] |
+| **A11Y-02** | Event explorer | Audit `/event`, termasuk filter dan kolom pencarian. | Tidak ada pelanggaran WCAG A/AA; kontrol filter/pencarian punya label dan fokus terlihat. | [ ] |
+| **A11Y-03** | Detail event | Isi `E2E_EVENT_ID`, buka `/event/:eventId`, lalu audit. | Tidak ada pelanggaran WCAG A/AA; peta, legenda, dan panel detail terbaca. | [ ] |
+| **A11Y-04** | Dashboard organizer | Login organizer, buka `/admin`, lalu audit. | Tidak ada pelanggaran WCAG A/AA; tabel inventaris dan filter dapat dioperasikan dengan keyboard. | [ ] |
+| **A11Y-05** | Pemesanan organizer | Login organizer, buka `/admin/bookings`, lalu audit. | Tidak ada pelanggaran WCAG A/AA; tabel, filter, pagination, dan aksi punya label. | [ ] |
+| **A11Y-06** | Pesanan tenant | Login tenant A, buka `/bookings`, lalu audit. | Tidak ada pelanggaran WCAG A/AA; kartu booking, status, dan tombol terbaca. | [ ] |
+| **A11Y-07** | Skip link landing | Tab dari awal `/`, lalu Enter pada **Lewati ke konten utama**. | Skip link menjadi fokus pertama, terlihat saat fokus, dan memindahkan fokus ke `<main id="main">`. | [ ] |
+| **A11Y-08** | Skip link event explorer | Tab dari awal `/event`, lalu Enter pada skip link. | Skip link menjadi fokus pertama, terlihat, dan memindahkan fokus ke konten utama. | [ ] |
+| **A11Y-09** | Keyboard peta booth | Di `/event/:eventId`, fokuskan booth lalu tekan Enter; tekan Escape. | Booth terpilih (`aria-current="true"`), panel detail menampilkan aksi, dan Escape melepas pilihan. | [ ] |
+
+Checklist manual keyboard, kontras, label, dan target sentuh ada di
+`docs/qa/A11Y_AUDIT.md`.
 
 ---
 

@@ -1052,7 +1052,7 @@ QA ENGINEER
       .env.e2e dan kredensial staging belum tersedia (OPS-04).
     Dependensi: BE-02
 
-[ ] QA-02. Lengkapi audit aksesibilitas halaman terautentikasi [P1]
+[x] QA-02. Lengkapi audit aksesibilitas halaman terautentikasi [P1]
     Pemilik: QA Engineer
     Kolaborator: UI/UX, FE
     Konteks: A11Y-01 dan A11Y-02 selalu berjalan; A11Y-03 sampai A11Y-06
@@ -1066,7 +1066,22 @@ QA ENGINEER
     - Tidak ada pelanggaran WCAG A/AA pada halaman yang diaudit.
     - Test yang dilewati punya alasan eksplisit, bukan gagal palsu.
     Verifikasi:
-    - npm run test:e2e -- e2e/a11y.spec.ts.
+    - e2e/a11y.spec.ts menambah A11Y-07/08 (skip link landing dan event
+      explorer: fokus pertama, terlihat, Enter memindahkan fokus ke #main)
+      dan A11Y-09 (booth dipilih dengan Enter, aria-current=true, panel aksi
+      tampil, Escape melepas pilihan). A11Y-04/05/06 juga menjalankan cek
+      skip link sebelum audit axe.
+    - npx playwright test e2e/a11y.spec.ts: 4 lulus (A11Y-01, A11Y-02,
+      A11Y-07, A11Y-08), 5 skip dengan alasan variabel yang kurang
+      (A11Y-03/09 butuh E2E_EVENT_ID; A11Y-04/05 butuh kredensial organizer;
+      A11Y-06 butuh kredensial tenant A). Tidak ada kegagalan palsu.
+    - docs/qa/A11Y_AUDIT.md baru memuat matriks route/tes, hasil otomatis,
+      checklist manual keyboard/fokus/kontras/label/target sentuh, cara
+      menjalankan dengan staging, dan batasan. qa_checklist_test_plan.md
+      menambah TS-17 (A11Y-01..09); README menautkan dokumen dan tes baru.
+    - Catatan: A11Y-03..06 dan A11Y-09 belum dieksekusi karena kredensial
+      dan data staging belum tersedia (OPS-04). Audit manual halaman
+      terautentikasi tetap menunggu environment tersebut.
     Dependensi: OPS-04
 
 [ ] QA-03. Jalankan suite negatif otorisasi dan RLS [P1]

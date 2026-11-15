@@ -39,6 +39,22 @@ async function waitForPage(page: Page, heading?: string) {
   })
 }
 
+/**
+ * Skip link harus menjadi elemen pertama yang menerima fokus Tab, terlihat
+ * saat fokus, dan memindahkan fokus ke <main id="main">.
+ */
+async function expectSkipLink(page: Page) {
+  const skipLink = page.getByRole('link', { name: 'Lewati ke konten utama' })
+  await expect(skipLink).toHaveCount(1)
+
+  await page.keyboard.press('Tab')
+  await expect(skipLink).toBeFocused()
+  await expect(skipLink).toBeVisible()
+
+  await page.keyboard.press('Enter')
+  await expect(page.locator('#main')).toBeFocused()
+}
+
 test('A11Y-01: Landing page tidak memiliki pelanggaran WCAG AA', async ({ page }) => {
   await page.goto('/')
   await waitForPage(page)
@@ -51,12 +67,44 @@ test('A11Y-02: Event explorer tidak memiliki pelanggaran WCAG AA', async ({ page
   await expectNoViolations(page, 'Event explorer')
 })
 
+test('A11Y-07: skip link landing page dapat dipakai dengan keyboard', async ({ page }) => {
+  await page.goto('/')
+  await waitForPage(page)
+  await expectSkipLink(page)
+})
+
+test('A11Y-08: skip link event explorer dapat dipakai dengan keyboard', async ({ page }) => {
+  await page.goto('/event')
+  await waitForPage(page, 'Temukan booth untuk bisnis Anda')
+  await expectSkipLink(page)
+})
+
 test('A11Y-03: Detail event tidak memiliki pelanggaran WCAG AA', async ({ page }) => {
   test.skip(!eventId, skipMessage('A11Y-03', missingEnv([['E2E_EVENT_ID', eventId]])))
 
   await page.goto(`/event/${eventId}`)
   await waitForPage(page)
   await expectNoViolations(page, 'Detail event')
+})
+
+test('A11Y-09: booth dapat dipilih dan dilepas dengan keyboard', async ({ page }) => {
+  test.skip(!eventId, skipMessage('A11Y-09', missingEnv([['E2E_EVENT_ID', eventId]])))
+
+  await page.goto(`/event/${eventId}`)
+  await waitForPage(page)
+
+  const booth = page.locator('[data-booth-id]').first()
+  await expect(booth).toBeVisible({ timeout: 30_000 })
+
+  await booth.focus()
+  await page.keyboard.press('Enter')
+  await expect(booth).toHaveAttribute('aria-current', 'true')
+  await expect(
+    page.getByRole('button', { name: /Pesan booth ini|Booth tidak tersedia/ }),
+  ).toBeVisible()
+
+  await page.keyboard.press('Escape')
+  await expect(booth).not.toHaveAttribute('aria-current', 'true')
 })
 
 test('A11Y-04: Dashboard organizer tidak memiliki pelanggaran WCAG AA', async ({ page }) => {
@@ -69,6 +117,7 @@ test('A11Y-04: Dashboard organizer tidak memiliki pelanggaran WCAG AA', async ({
   await login(page, organizer)
   await page.goto('/admin')
   await waitForPage(page)
+  await expectSkipLink(page)
   await expectNoViolations(page, 'Dashboard organizer')
 })
 
@@ -82,6 +131,7 @@ test('A11Y-05: Pemesanan organizer tidak memiliki pelanggaran WCAG AA', async ({
   await login(page, organizer)
   await page.goto('/admin/bookings')
   await waitForPage(page, 'Pemesanan Booth')
+  await expectSkipLink(page)
   await expectNoViolations(page, 'Pemesanan organizer')
 })
 
@@ -96,5 +146,6 @@ test('A11Y-06: Pesanan tenant tidak memiliki pelanggaran WCAG AA', async ({ page
   await page.goto('/bookings')
   await waitForPage(page, 'Pesanan Saya')
   await expect(page).toHaveURL(/\/bookings(\/|$|\?)/)
+  await expectSkipLink(page)
   await expectNoViolations(page, 'Pesanan tenant')
 })

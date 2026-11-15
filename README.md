@@ -406,6 +406,12 @@ Audit aksesibilitas mencakup:
 | A11Y-04 | `/admin`          | kredensial organizer terisi |
 | A11Y-05 | `/admin/bookings` | kredensial organizer terisi |
 | A11Y-06 | `/bookings`       | kredensial tenant A terisi  |
+| A11Y-07 | `/`               | skip link + keyboard        |
+| A11Y-08 | `/event`          | skip link + keyboard        |
+| A11Y-09 | `/event/:eventId` | `E2E_EVENT_ID` + keyboard   |
+
+Checklist manual keyboard, kontras, label, dan target sentuh untuk halaman
+terautentikasi ada di `docs/qa/A11Y_AUDIT.md`.
 
 Kebijakan flaky test, register, prosedur triase, dan anggaran durasi pipeline
 ada di `docs/qa/FLAKY_TESTS.md`. Vitest memakai `pool: 'vmThreads'` agar jsdom
