@@ -1120,7 +1120,7 @@ QA ENGINEER
       kelulusan palsu. Eksekusi staging tetap wajib sebelum REL-01 GO.
     Dependensi: BE-01
 
-[ ] QA-04. Regresi responsif peta, checkout, dan tabel admin [P1]
+[x] QA-04. Regresi responsif peta, checkout, dan tabel admin [P1]
     Pemilik: QA Engineer
     Kolaborator: UI/UX, FE
     Konteks: Layout mobile dan tabel admin adalah area yang sering berubah.
@@ -1133,7 +1133,23 @@ QA ENGINEER
     - Tidak ada kontrol utama yang tidak dapat dijangkau.
     - Tidak ada teks/harga yang terpotong.
     Verifikasi:
-    - Screenshot before/after dilampirkan di PR.
+    - e2e/responsive.spec.ts baru berisi 15 tes (RESP-01..05 untuk 375, 768,
+      dan 1280 px). Tes memeriksa overflow dokumen/body, bounding box kontrol,
+      teks heading/harga yang tidak terpotong, scroll internal tabel admin,
+      kolom Aksi setelah scroll, pagination, ukuran dialog checkout, dan
+      penutupan modal dengan Escape.
+    - RESP-01/02 (landing dan event explorer) berjalan tanpa kredensial:
+      6 lulus. RESP-03/04/05 (peta detail, checkout, admin bookings) di-skip
+      dengan alasan eksplisit karena E2E_EVENT_ID, kredensial tenant A, dan
+      kredensial organizer belum tersedia; total 9 skip, 0 gagal.
+    - Setiap tes melampirkan screenshot ke laporan Playwright sebagai bukti
+      visual. docs/qa/RESPONSIVE_REGRESSION.md baru memuat matriks, hasil,
+      checklist manual peta/checkout/tabel admin, cara melampirkan screenshot
+      before/after, dan batasan. qa_checklist_test_plan.md menambah TS-18;
+      README menautkan suite dan dokumen.
+    - Catatan: eksekusi staging untuk RESP-03/04/05 tetap wajib sebelum
+      REL-01 GO. Screenshot before/after identik karena QA-04 tidak mengubah
+      kode UI; yang dilampirkan adalah bukti eksekusi.
     Dependensi: FE-03
 
 [x] QA-05. Kelola flaky test dan waktu pipeline [P2]

@@ -431,6 +431,14 @@ Bila variabel atau staging belum tersedia, tes di-skip dengan alasan eksplisit.
 Matriks skenario, hasil eksekusi, dan triase ada di `docs/qa/NEGATIVE_RLS.md`;
 verifikasi level database tetap memakai `supabase/tests/rls_matrix.sql`.
 
+Regresi responsif ada di `e2e/responsive.spec.ts` untuk 375 px, 768 px, dan
+1280 px. Tes publik (landing dan event explorer) selalu berjalan; peta detail,
+modal checkout, dan tabel `/admin/bookings` dijalankan bila `E2E_EVENT_ID` dan
+kredensial staging tersedia. Suite memeriksa overflow halaman, kontrol yang
+terpotong, scroll internal tabel, dan fokus modal. Screenshot dilampirkan ke
+laporan Playwright; checklist manual dan batasannya ada di
+`docs/qa/RESPONSIVE_REGRESSION.md`.
+
 Kebijakan flaky test, register, prosedur triase, dan anggaran durasi pipeline
 ada di `docs/qa/FLAKY_TESTS.md`. Vitest memakai `pool: 'vmThreads'` agar jsdom
 dibuat sekali per worker, bukan per file; 10 run lokal berturut-turut lulus
@@ -462,8 +470,8 @@ Checklist sign-off rilis yang ringkas (gate otomatis, skenario manual kritis,
 blocker/waiver, dan keputusan GO/CONDITIONAL/NO-GO) ada di
 `docs/qa/RELEASE_SIGN_OFF.md`. Salin ke PR rilis dan lampirkan bukti; template
 PR di `.github/pull_request_template.md` sudah menautkannya. Test plan lengkap
-beserta skenario error boundary/chunk (ERR-01..04) dan responsif mobile
-(RESP-01..03) ada di `qa_checklist_test_plan.md`.
+beserta skenario error boundary/chunk (ERR-01..04) dan responsif
+(RESP-01..05) ada di `qa_checklist_test_plan.md`.
 
 ## 11. Troubleshooting
 
@@ -550,6 +558,7 @@ beserta skenario error boundary/chunk (ERR-01..04) dan responsif mobile
 - `docs/qa/RELEASE_SIGN_OFF.md` — template sign-off rilis yang dilampirkan di PR.
 - `docs/qa/A11Y_AUDIT.md` — cakupan audit aksesibilitas dan checklist manual.
 - `docs/qa/NEGATIVE_RLS.md` — matriks suite negatif RLS, hasil, dan triase.
+- `docs/qa/RESPONSIVE_REGRESSION.md` — matriks regresi responsif dan bukti screenshot.
 - `docs/ops/RUNTIME.md` — versi Node lokal/CI/deploy, cache pipeline, dan
   prosedur uji backup/restore.
 - `supabase/ERROR_CONTRACT.md` — kontrak error RPC dan matriks idempotensi.

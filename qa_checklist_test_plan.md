@@ -2,7 +2,7 @@
 **Proyek:** sewa-yuk — Platform Booking Booth Event Interaktif 2D
 **Versi:** 1.3.0
 **Stack Utama:** Vite, React, TypeScript, Tailwind CSS, Zustand, Supabase (Auth, DB, Realtime), `@dnd-kit/core`
-**Revisi terakhir:** 15 November 2026 - ditambah TS-17 aksesibilitas (A11Y-01..09), checklist audit di `docs/qa/A11Y_AUDIT.md`, otomasi suite negatif RLS di `e2e/security.spec.ts` beserta catatan `docs/qa/NEGATIVE_RLS.md`, serta penyelarasan status dokumen dengan Fase 2.
+**Revisi terakhir:** 15 November 2026 - ditambah TS-17 aksesibilitas (A11Y-01..09), checklist audit di `docs/qa/A11Y_AUDIT.md`, otomasi suite negatif RLS di `e2e/security.spec.ts` beserta catatan `docs/qa/NEGATIVE_RLS.md`, regresi responsif TS-18 di `e2e/responsive.spec.ts`, serta penyelarasan status dokumen dengan Fase 2.
 
 ---
 
@@ -266,6 +266,20 @@ database. Lihat `docs/qa/NEGATIVE_RLS.md`.
 
 Checklist manual keyboard, kontras, label, dan target sentuh ada di
 `docs/qa/A11Y_AUDIT.md`.
+
+---
+
+### TS-18: Regresi Responsif Peta, Checkout, dan Tabel Admin
+| ID Skenario | Deskripsi Pengujian | Langkah Pengujian | Hasil yang Diharapkan | Status |
+| :--- | :--- | :--- | :--- | :---: |
+| **RESP-01** | Landing page responsif | Buka `/` pada 375 px, 768 px, dan 1280 px. | Tidak ada horizontal scroll halaman; heading dan CTA **Jelajahi acara** terlihat serta tidak terpotong. | [ ] |
+| **RESP-02** | Event explorer responsif | Buka `/event` pada ketiga viewport. | Kolom pencarian dan filter kategori dapat dijangkau; tidak ada overflow halaman. | [ ] |
+| **RESP-03** | Peta dan panel detail responsif | Buka `/event/:eventId` dengan `E2E_EVENT_ID`, pilih booth pada ketiga viewport. | Peta termuat; panel detail mengikuti urutan filter → peta → detail di mobile; tombol pesan dan harga tidak terpotong. | [ ] |
+| **RESP-04** | Modal checkout responsif | Login tenant A, buka checkout dari booth `Available` pada ketiga viewport. | Dialog tidak melebar keluar viewport; tombol Batal dan tombol utama terjangkau; Escape menutup dialog dan mengembalikan fokus. | [ ] |
+| **RESP-05** | Tabel admin responsif | Login organizer, buka `/admin/bookings` pada ketiga viewport. | Filter membungkus rapi; tabel scroll di dalam kontainernya; kolom Aksi dan pagination terjangkau; harga tidak terpotong. | [ ] |
+
+Hasil otomatis dan checklist manual ada di
+`docs/qa/RESPONSIVE_REGRESSION.md`.
 
 ---
 
