@@ -633,6 +633,41 @@ FRONTEND DEVELOPER
     - `npm run verify` lulus (lint, format, typecheck, 198 unit test, build,
       budget bundle).
 
+[ ] FE-07. Poles tampilan dan konsistensi visual lintas halaman [P2]
+    Pemilik: Frontend Developer
+    Kolaborator: UI/UX, QA
+    Konteks: Alur fungsional sudah stabil, tetapi hasil QA-04 dan audit UX-04
+    masih menunjukkan ketidakkonsistenan visual: jarak antar-blok, hierarki
+    teks, kepadatan tabel, pembungkusan teks di layar sempit, serta tampilan
+    state loading/empty/error/disabled. Perbaikan ini fokus pada presentasi,
+    bukan mengubah routing, data, atau logika bisnis.
+    Rencana:
+    - Ambil screenshot baseline 375, 768, dan 1280 px untuk `/`, `/event`,
+      `/event/:eventId`, `/login`, `/register`, `/bookings`, `/admin`,
+      `/admin/bookings`, dan `/admin/blueprint`.
+    - Rapikan spacing, alignment, radius, ukuran tombol, dan skala tipografi
+      agar konsisten dengan token UX-04; hapus kelas ad-hoc yang tidak perlu.
+    - Perbaiki teks yang terpotong, wrapping canggung, harga/nama event yang
+      berdesakan, serta kepadatan tabel dan filter admin di layar sempit.
+    - Selaraskan tampilan state loading, empty, error, disabled, dan fokus
+      keyboard di seluruh halaman.
+    - Jangan mengubah perilaku DnD, routing, query Supabase, atau kontrak RPC.
+    Acceptance:
+    - Screenshot before/after terlampir per halaman dan viewport yang berubah.
+    - Tidak ada horizontal scroll halaman, teks/harga utama terpotong, atau
+      kontrol utama yang tidak terjangkau pada 375/768/1280 px.
+    - Warna, radius, spacing, dan tipografi memakai token yang sudah ada;
+      tidak ada warna atau ukuran baru yang tidak terdokumentasi.
+    - Smoke, a11y, dan regresi responsif tetap lulus; tidak ada pelanggaran
+      WCAG A/AA baru.
+    Verifikasi:
+    - npm run verify.
+    - npm run test:e2e -- e2e/smoke.spec.ts e2e/a11y.spec.ts
+      e2e/responsive.spec.ts.
+    - Lampirkan screenshot before/after di PR (lihat
+      docs/qa/RESPONSIVE_REGRESSION.md bagian 5).
+    Dependensi: UX-04, QA-04, FE-03
+
 
 ===============================================================================
 BACKEND DEVELOPER
