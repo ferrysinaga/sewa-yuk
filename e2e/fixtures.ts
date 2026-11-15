@@ -26,8 +26,17 @@ export const boothId = process.env.E2E_BOOTH_ID ?? ''
  * RLS dan hanya boleh dipakai di staging/CI, tidak pernah di frontend.
  */
 export const supabaseUrl = process.env.E2E_SUPABASE_URL ?? ''
+export const anonKey = process.env.E2E_SUPABASE_ANON_KEY ?? ''
 export const serviceRoleKey = process.env.E2E_SERVICE_ROLE_KEY ?? ''
 export const hasAdminApi = Boolean(supabaseUrl && serviceRoleKey)
+export const hasAnonApi = Boolean(supabaseUrl && anonKey)
+
+/** ID data uji untuk suite negatif RLS. Semuanya opsional. */
+export const draftEventId = process.env.E2E_DRAFT_EVENT_ID ?? ''
+export const tenantABookingId = process.env.E2E_TENANT_A_BOOKING_ID ?? ''
+export const tenantBBookingId = process.env.E2E_TENANT_B_BOOKING_ID ?? ''
+export const unavailableBoothId = process.env.E2E_UNAVAILABLE_BOOTH_ID ?? ''
+export const draftBoothId = process.env.E2E_DRAFT_BOOTH_ID ?? ''
 
 /** Daftar nama variabel yang belum diisi, dipakai untuk alasan skip. */
 export function missingEnv(entries: Array<[string, string]>): string[] {
@@ -80,6 +89,93 @@ export async function adminRest<T>(path: string, init: AdminRequestInit = {}): P
 
   const text = await response.text()
   return (text ? JSON.parse(text) : null) as T
+}
+
+export interface RestResult {
+  status: number
+  body: unknown
+  text: string
+}
+
+interface RestRequestInit {
+  method?: 'GET' | 'POST' | 'PATCH' | 'DELETE'
+  token?: string
+  body?: unknown
+  prefer?: string
+}
+
+/**
+ * Panggil PostgREST dengan anon key (default) atau JWT pengguna. Dipakai suite
+ * negatif RLS; tidak pernah memakai service role.
+ */
+export async function restRequest(path: string, init: RestRequestInit = {}): Promise<RestResult> {
+  if (!hasAnonApi) {
+    throw new Error('E2E_SUPABASE_URL dan E2E_SUPABASE_ANON_KEY belum diisi.')
+  }
+
+  const response = await fetch(`${supabaseUrl}/rest/v1${path}`, {
+    method: init.method ?? 'GET',
+    headers: {
+      apikey: anonKey,
+      Authorization: `Bearer ${init.token ?? anonKey}`,
+      'Content-Type': 'application/json',
+      ...(init.prefer ? { Prefer: init.prefer } : {}),
+    },
+    body: init.body === undefined ? undefined : JSON.stringify(init.body),
+  })
+
+  const text = await response.text()
+  let body: unknown = null
+
+  if (text) {
+    try {
+      body = JSON.parse(text)
+    } catch {
+      body = text
+    }
+  }
+
+  return { status: response.status, body, text }
+}
+
+/** Ambil access token lewat Auth REST memakai kredensial uji. */
+export async function getAccessToken(credentials: Credentials): Promise<string> {
+  if (!hasAnonApi) {
+    throw new Error('E2E_SUPABASE_URL dan E2E_SUPABASE_ANON_KEY belum diisi.')
+  }
+
+  const response = await fetch(`${supabaseUrl}/auth/v1/token?grant_type=password`, {
+    method: 'POST',
+    headers: {
+      apikey: anonKey,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      email: credentials.email,
+      password: credentials.password,
+    }),
+  })
+
+  if (!response.ok) {
+    throw new Error(`Login REST gagal: ${response.status} ${await response.text()}`)
+  }
+
+  const data = (await response.json()) as { access_token?: string }
+
+  if (!data.access_token) {
+    throw new Error('Login REST tidak mengembalikan access_token.')
+  }
+
+  return data.access_token
+}
+
+/** True bila respons menunjukkan akses ditolak atau tidak ada baris berubah. */
+export function isDeniedOrEmpty(result: RestResult): boolean {
+  if (result.status === 401 || result.status === 403) return true
+  if (result.status === 204) return true
+  if (result.status >= 400) return true
+
+  return Array.isArray(result.body) && result.body.length === 0
 }
 
 export interface AdminBookingRow {

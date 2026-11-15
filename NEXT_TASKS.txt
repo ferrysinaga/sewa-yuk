@@ -1084,7 +1084,7 @@ QA ENGINEER
       terautentikasi tetap menunggu environment tersebut.
     Dependensi: OPS-04
 
-[ ] QA-03. Jalankan suite negatif otorisasi dan RLS [P1]
+[x] QA-03. Jalankan suite negatif otorisasi dan RLS [P1]
     Pemilik: QA Engineer
     Kolaborator: BE
     Konteks: TS-13 sudah mendefinisikan negative test, tetapi perlu
@@ -1098,7 +1098,26 @@ QA ENGINEER
     - Semua percobaan akses ditolak dengan pesan yang tepat.
     - Tidak ada data sensitif yang tampil di UI atau payload.
     Verifikasi:
-    - Catat hasil per skenario di qa_checklist_test_plan.md.
+    - e2e/security.spec.ts baru berisi 14 tes REST/route guard: RLS-01..11,
+      RLS-15, RLS-17, dan RLS-18. Tes memakai anon key atau JWT pengguna
+      (bukan service role), dan memeriksa status 401/403/42501, 0 baris,
+      hint SWY_NOT_OWNER / SWY_FORBIDDEN / SWY_BOOTH_UNAVAILABLE /
+      SWY_EVENT_NOT_PUBLISHED, serta status booth yang tidak berubah.
+    - e2e/fixtures.ts menambah helper restRequest, getAccessToken,
+      isDeniedOrEmpty, dan variabel E2E_SUPABASE_ANON_KEY,
+      E2E_DRAFT_EVENT_ID, E2E_TENANT_A_BOOKING_ID,
+      E2E_TENANT_B_BOOKING_ID, E2E_UNAVAILABLE_BOOTH_ID,
+      E2E_DRAFT_BOOTH_ID. .env.e2e.example diperbarui.
+    - docs/qa/NEGATIVE_RLS.md baru memuat prasyarat, matriks otomasi,
+      skenario yang tetap SQL/staging-only (RLS-12..14, RLS-16, DB-01..06),
+      format hasil, cara menjalankan, dan triase. qa_checklist_test_plan.md
+      menambah RLS-17/18 dan catatan status implementasi; README menautkan
+      dokumen dan variabel baru.
+    - npx playwright test --list e2e/security.spec.ts mendaftarkan 14 tes.
+    - Catatan: eksekusi terhadap staging belum dilakukan karena .env.e2e,
+      project Supabase staging, dan data uji tidak tersedia di mesin ini.
+      Semua tes akan skip dengan alasan variabel yang kurang; tidak ada
+      kelulusan palsu. Eksekusi staging tetap wajib sebelum REL-01 GO.
     Dependensi: BE-01
 
 [ ] QA-04. Regresi responsif peta, checkout, dan tabel admin [P1]

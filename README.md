@@ -373,7 +373,15 @@ E2E_BOOTH_ID=11111111-1111-4111-8111-111111111101
 
 # Opsional, hanya staging/CI. Jangan pakai kunci produksi.
 E2E_SUPABASE_URL=
+E2E_SUPABASE_ANON_KEY=
 E2E_SERVICE_ROLE_KEY=
+
+# Data uji suite negatif RLS (lihat docs/qa/NEGATIVE_RLS.md).
+E2E_DRAFT_EVENT_ID=
+E2E_TENANT_A_BOOKING_ID=
+E2E_TENANT_B_BOOKING_ID=
+E2E_UNAVAILABLE_BOOTH_ID=
+E2E_DRAFT_BOOTH_ID=
 ```
 
 Prasyarat data:
@@ -412,6 +420,16 @@ Audit aksesibilitas mencakup:
 
 Checklist manual keyboard, kontras, label, dan target sentuh untuk halaman
 terautentikasi ada di `docs/qa/A11Y_AUDIT.md`.
+
+Suite negatif otorisasi/RLS ada di `e2e/security.spec.ts`. Tes memakai anon key
+dan JWT pengguna (bukan service role) untuk membuktikan bahwa tenant tidak dapat
+membuka rute organizer, membaca atau menulis data tenant lain, menulis
+booth/blueprint langsung, atau memanggil RPC organizer. Data uji diatur lewat
+`E2E_DRAFT_EVENT_ID`, `E2E_TENANT_A_BOOKING_ID`, `E2E_TENANT_B_BOOKING_ID`,
+`E2E_UNAVAILABLE_BOOTH_ID`, dan `E2E_DRAFT_BOOTH_ID`.
+Bila variabel atau staging belum tersedia, tes di-skip dengan alasan eksplisit.
+Matriks skenario, hasil eksekusi, dan triase ada di `docs/qa/NEGATIVE_RLS.md`;
+verifikasi level database tetap memakai `supabase/tests/rls_matrix.sql`.
 
 Kebijakan flaky test, register, prosedur triase, dan anggaran durasi pipeline
 ada di `docs/qa/FLAKY_TESTS.md`. Vitest memakai `pool: 'vmThreads'` agar jsdom
@@ -530,6 +548,8 @@ beserta skenario error boundary/chunk (ERR-01..04) dan responsif mobile
 - `docs/product/REL-01-release-readiness.md` — checklist gate rilis, blocker
   staging, keputusan GO/NO-GO, dan tanda tangan lintas role.
 - `docs/qa/RELEASE_SIGN_OFF.md` — template sign-off rilis yang dilampirkan di PR.
+- `docs/qa/A11Y_AUDIT.md` — cakupan audit aksesibilitas dan checklist manual.
+- `docs/qa/NEGATIVE_RLS.md` — matriks suite negatif RLS, hasil, dan triase.
 - `docs/ops/RUNTIME.md` — versi Node lokal/CI/deploy, cache pipeline, dan
   prosedur uji backup/restore.
 - `supabase/ERROR_CONTRACT.md` — kontrak error RPC dan matriks idempotensi.

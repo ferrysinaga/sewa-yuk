@@ -2,7 +2,7 @@
 **Proyek:** sewa-yuk — Platform Booking Booth Event Interaktif 2D
 **Versi:** 1.3.0
 **Stack Utama:** Vite, React, TypeScript, Tailwind CSS, Zustand, Supabase (Auth, DB, Realtime), `@dnd-kit/core`
-**Revisi terakhir:** 15 November 2026 — ditambah TS-17 aksesibilitas (A11Y-01..09), checklist audit di `docs/qa/A11Y_AUDIT.md`, serta penyelarasan status dokumen dengan Fase 2.
+**Revisi terakhir:** 15 November 2026 - ditambah TS-17 aksesibilitas (A11Y-01..09), checklist audit di `docs/qa/A11Y_AUDIT.md`, otomasi suite negatif RLS di `e2e/security.spec.ts` beserta catatan `docs/qa/NEGATIVE_RLS.md`, serta penyelarasan status dokumen dengan Fase 2.
 
 ---
 
@@ -198,6 +198,8 @@ diklik untuk diperiksa; hanya tombol pemesanan yang dinonaktifkan.
 | **RLS-13** | Anon membaca aset blueprint | Dengan anon key, list dan baca objek `blueprint-assets`. | Diizinkan karena bucket publik; hanya aset gambar yang memang publik yang dapat diakses. | [ ] |
 | **RLS-14** | Tenant menaikkan role sendiri (F1) | Login tenant, panggil `PUT /auth/v1/user` dengan body `{"data":{"role":"organizer"}}`, refresh token, lalu coba baca seluruh booking, tulis booth, dan panggil `confirm_booking`. | `user_metadata` boleh berubah, tetapi role efektif tetap tenant: UI tetap `/event`, booking hanya milik sendiri, tulis booth ditolak, dan RPC organizer ditolak. Otomatis diperiksa `supabase/tests/rls_matrix.sql` bagian 11. Jalankan hanya di staging. | [ ] |
 | **RLS-15** | Organizer menulis booking langsung (F5) | Dengan JWT organizer, panggil `PATCH /rest/v1/bookings?id=eq.<booking-id>` untuk mengubah status. | Ditolak `401/403`/`42501` atau `0` baris sejak BE-08: grant tulis dicabut dan policy organizer hanya `SELECT`. Perubahan status hanya lewat RPC. | [ ] |
+| **RLS-17** | Tenant memesan booth Reserved/Booked | Dengan JWT tenant, panggil RPC `create_booking` memakai ID booth yang berstatus `Reserved` atau `Booked`. | Ditolak dengan hint `SWY_BOOTH_UNAVAILABLE`; tidak ada booking baru dan status booth tidak berubah. | [ ] |
+| **RLS-18** | Tenant memesan booth pada blueprint draft | Dengan JWT tenant, panggil RPC `create_booking` memakai ID booth pada blueprint `draft`. | Ditolak dengan hint `SWY_EVENT_NOT_PUBLISHED`; tidak ada booking baru. | [ ] |
 | **RLS-16** | Backfill organizer dan registrasi baru (BE-07) | Jalankan `npm run roles:backfill -- --organizer-emails=<email>` (dry-run lalu `--apply`), logout/login organizer, lalu daftar akun baru lewat `/register`. | Organizer lama kembali melihat `/admin*` setelah token diperbarui; akun baru selalu tenant dan tidak dapat memilih role. `app_metadata.role` terisi, `user_metadata.role` tidak dipakai. | [ ] |
 | **DB-01** | Unique index anti double booking | Di SQL Editor, jalankan transaksi uji pada `supabase/DOUBLE_BOOKING.md` yang menyisipkan dua booking aktif untuk booth yang sama, lalu rollback. | Insert pertama berhasil, insert kedua gagal `23505` pada `bookings_one_active_per_booth_idx`; setelah rollback tidak ada data berubah. Uji dua browser context **SYNC-03** juga hanya menghasilkan satu pemenang. | [ ] |
 | **DB-02** | Replay migrasi dari database kosong | Di project staging kosong, jalankan 11 file `supabase/migrations/*.sql` berurutan sesuai `supabase/MIGRATIONS.md` bagian 3. | Semua migrasi selesai tanpa error; tabel, index, policy, RPC, publication, helper `current_user_role()`, grant minimum, dan seed blueprint terbentuk. Tidak ada objek yang hilang. | [ ] |
@@ -205,6 +207,13 @@ diklik untuk diperiksa; hanya tombol pemesanan yang dinonaktifkan.
 | **DB-04** | Rollback drill di database scratch | Di database scratch hasil replay, jalankan blok rollback `supabase/MIGRATIONS.md` bagian 5 secara terbalik, lalu replay migrasi dari awal. | Rollback berhasil tanpa error, data yang memang destruktif sudah dibackup, dan replay berikutnya mengembalikan schema/fungsi/index yang sama. | [ ] |
 | **DB-05** | Review index dan query plan | Jalankan `psql "$SUPABASE_DB_URL" -v confirm_staging=yes -v tenant_id=<uuid> -v organizer_id=<uuid> -f supabase/tests/query_plans.sql`. | Semua index wajib ada, tidak ada index duplikat, dan rencana query tercetak. Seq scan besar, sort disk, atau `Rows Removed by Filter` tinggi dicatat di baseline `supabase/MIGRATIONS.md` bagian 6.4 beserta tindak lanjutnya. | [ ] |
 | **DB-06** | Verifikasi grant minimum (F5) | Jalankan kueri `information_schema.role_table_grants` dan `routine_privileges` di `supabase/GRANTS.md` bagian 6, lalu `rls_matrix.sql`. | Anon hanya `SELECT` booths/blueprints dan tidak punya akses bookings/RPC tulis; authenticated hanya `SELECT` bookings; organizer tetap bisa menulis booths/blueprints; `release_expired_bookings` tetap bisa dipanggil anon. | [ ] |
+
+Status implementasi per 15 November 2026: RLS-01 sampai RLS-11, RLS-15,
+RLS-17, dan RLS-18 sudah memiliki tes otomatis di `e2e/security.spec.ts`. Status `[ ]` berarti skenario
+belum dieksekusi di staging, bukan berarti lulus. RLS-12 sampai RLS-14, RLS-16,
+dan DB-01 sampai DB-06 tetap diverifikasi lewat `supabase/tests/rls_matrix.sql`
+atau prosedur manual karena membutuhkan Storage, Auth admin, atau transaksi
+database. Lihat `docs/qa/NEGATIVE_RLS.md`.
 
 ---
 
