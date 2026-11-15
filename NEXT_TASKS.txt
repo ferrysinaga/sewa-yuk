@@ -1314,6 +1314,19 @@ DEVOPS ENGINEER
     - Versi runtime konsisten dan terdokumentasi.
     Verifikasi:
     - Bandingkan jumlah baris tabel utama sebelum/sesudah restore.
+    Catatan status: PARTIAL — keselarasan runtime selesai, uji restore belum.
+    - .nvmrc berisi Node 22 LTS; package.json menambah engines Node
+      ^22.22.2 || ^24.15.0 || >=26.0.0 dan npm >=10 agar cocok dengan
+      jsdom/Vitest. CI dan Vercel memakai Node 22.
+    - docs/ops/RUNTIME.md baru memuat tabel versi lokal/CI/deploy, cara
+      berpindah versi, catatan cache/durasi pipeline, prosedur backup/restore
+      ke project scratch, query pembanding jumlah baris, kriteria lulus, dan
+      batasan. README prasyarat menyebut Node 22.22.2+/24.15+/26+ dan
+      menjelaskan Node 23/25 tidak didukung dependensi pengujian.
+    - npm run verify lulus pada Node 25.2.0 (hanya eksperimen; EBADENGINE
+      muncul saat install). Uji backup/restore belum dijalankan karena tidak
+      ada project Supabase kedua, pg_dump/psql, atau akses staging (OPS-04).
+      Task tetap terbuka sampai restore nyata dan perbandingan baris dicatat.
     Dependensi: OPS-03
 
 

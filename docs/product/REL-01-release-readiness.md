@@ -82,7 +82,9 @@ adalah blocker rilis, bukan pekerjaan yang boleh dilewati.
 - [ ] OPS-01 branch protection dan required checks aktif di repository.
 - [ ] OPS-04 preview environment dan data uji terisolasi tersedia.
 - [ ] OPS-05 monitoring error dan notifikasi deploy.
-- [ ] OPS-06 backup/restore nyata dan keselarasan versi runtime.
+- [x] OPS-06 versi runtime selaras: `.nvmrc` Node 22 LTS, `engines` di
+      `package.json`, CI/Vercel Node 22, dan `docs/ops/RUNTIME.md`.
+- [ ] OPS-06 backup/restore nyata ke project terpisah dan perbandingan baris.
 - [ ] Simulasi rollback Vercel/Supabase nyata dicatat.
 - [ ] Backup/PITR terbaru dicek sebelum deploy.
 
@@ -95,6 +97,7 @@ adalah blocker rilis, bukan pekerjaan yang boleh dilewati.
 | B3  | Branch protection belum aktif                             | PR dengan gate gagal masih dapat di-merge                          | DevOps + PM  | OPS-01                                   |
 | B4  | Rollback baru diuji lewat tabletop, belum simulasi nyata  | Target RTO/RPO belum terbukti                                      | DevOps + BE  | Simulasi staging setelah OPS-04          |
 | B5  | Release note belum ada                                    | Pengguna/organizer belum tahu perubahan dan tindakan yang perlu    | PM           | PM-05 setelah REL-01 dan UAT             |
+| B6  | Backup/restore database belum diuji ke project terpisah   | Backup belum terbukti dapat dipulihkan                             | DevOps + BE  | OPS-06 setelah OPS-04                    |
 
 Aturan: blocker keamanan/data (B1, B2) **tidak boleh** di-waiver untuk produksi.
 Blocker operasi hanya boleh di-waiver bila ada mitigasi tertulis dan pemilik.
@@ -151,6 +154,7 @@ tersedia. Rilis belum dapat dinyatakan siap.
 - `docs/qa/RELEASE_SIGN_OFF.md`
 - `docs/qa/FLAKY_TESTS.md`
 - `docs/ops/ROLLBACK.md`
+- `docs/ops/RUNTIME.md`
 - `docs/ops/SECRETS.md`
 - `qa_checklist_test_plan.md`
 - `supabase/MIGRATIONS.md`

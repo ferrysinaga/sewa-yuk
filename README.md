@@ -21,8 +21,9 @@ atas agar aplikasi, database, akun uji, dan tes otomatis siap dipakai.
 
 ## 2. Prasyarat
 
-- Node.js 22.22+ atau 24.15+ (disarankan LTS terbaru). Beberapa dependensi
-  pengujian belum mendukung Node 20.
+- Node.js 22.22.2+ (22 LTS), 24.15+, atau 26+. `.nvmrc` dan CI memakai Node 22
+  LTS; Node 23/25 (current) tidak didukung `jsdom`/Vitest sehingga hanya untuk
+  eksperimen lokal.
 - npm 10+
 - Proyek Supabase (cloud atau lokal)
 - Browser Chromium untuk Playwright
@@ -523,6 +524,8 @@ beserta skenario error boundary/chunk (ERR-01..04) dan responsif mobile
 - `docs/product/REL-01-release-readiness.md` — checklist gate rilis, blocker
   staging, keputusan GO/NO-GO, dan tanda tangan lintas role.
 - `docs/qa/RELEASE_SIGN_OFF.md` — template sign-off rilis yang dilampirkan di PR.
+- `docs/ops/RUNTIME.md` — versi Node lokal/CI/deploy, cache pipeline, dan
+  prosedur uji backup/restore.
 - `supabase/ERROR_CONTRACT.md` — kontrak error RPC dan matriks idempotensi.
 - `supabase/DOUBLE_BOOKING.md` — jaminan satu booking aktif per booth.
 - `qa_checklist_test_plan.md` — test plan, skenario UAT, dan status eksekusi.
