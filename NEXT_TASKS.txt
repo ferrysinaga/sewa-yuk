@@ -322,7 +322,7 @@ UI/UX DESIGNER
     - Smoke + a11y publik: 4 lulus, 3 skip karena `.env.e2e` belum tersedia;
       review visual halaman terautentikasi menunggu staging.
 
-[ ] UX-05. Tetapkan copy dan matriks presentasi status booking [P2]
+[x] UX-05. Tetapkan copy dan matriks presentasi status booking [P2]
     Pemilik: UI/UX Designer
     Kolaborator: Frontend Developer, QA
     Konteks: PM-04 mencatat F-01..F-04 (label "Dibayar", countdown pada
@@ -349,6 +349,36 @@ UI/UX DESIGNER
     - Matriks ditambahkan ke docs/product/PM-04-expiry-cancellation-policy.md
       atau dokumen UX terpisah.
     Dependensi: PM-04, UX-04
+    STATUS: SELESAI (16 November 2026)
+    Hasil:
+    - docs/product/UX-05-booking-status-copy.md: prinsip copy, matriks status
+      kanonik (pending, pending lewat batas, awaiting_confirmation, confirmed,
+      cancelled manual, cancelled expired), pemetaan tone ke token yang ada,
+      matriks komponen x status, dan copy rinci per komponen.
+    - Keputusan copy: "Dibayar" menjadi "Diverifikasi" (F-01); awaiting
+      memakai "Batas pembayaran awal" tanpa countdown plus keterangan batas
+      tidak berlaku (F-02); toast batal dibedakan expired/manual untuk tenant
+      dan admin (F-03); nilai 24 jam hanya dari BOOKING_HOLD_HOURS dan parameter
+      database (F-04).
+    - Tone awaiting_confirmation diubah dari pine ke netral agar tidak terbaca
+      sebagai status selesai (CH-01); tidak ada token warna/radius/ukuran baru.
+    - Istilah "Booked" diganti "Terisi" di toast admin, panel kartu tenant, dan
+      metrik; fallback "booth dihapus"/"Tanpa nama" diganti "Booth dihapus"/
+      "Nama tenant belum diisi".
+    - Filter "Dibatalkan" tetap memuat booking kedaluwarsa, dijelaskan lewat
+      aria-label dan teks bantuan "Termasuk pesanan kedaluwarsa.".
+    - Aturan aksesibilitas: badge selalu bertekst dengan dot aria-hidden,
+      countdown role="timer" aria-live="off", perubahan status diumumkan lewat
+      toast role="status" yang sudah ada.
+    - PM-04 bagian 8 menautkan dokumen ini dan mencatat F-01..F-04 masuk UX-05
+      (copy) dan FE-08 (implementasi). Tidak ada perubahan kode produksi.
+    Verifikasi:
+    - Review statis label di src/types/booking.ts dan src/lib/boothDisplay.ts
+      terhadap PM-04 bagian 3 dan 6: selesai, tercatat di matriks dokumen.
+    - `npm run verify` lulus (lint, format, typecheck, unit test, build, budget
+      bundle, secret scan) tanpa perubahan runtime.
+    - Uji perilaku EXP-01/EXP-02/EXP-07, BOOK-03..05, ADM-02/03 dan screenshot
+      375/768/1280 px dijalankan pada FE-08; staging tetap menunggu OPS-04.
 
 
 ===============================================================================

@@ -148,7 +148,11 @@ kepada tenant dan organizer.
 - Review statis database vs UI vs dokumentasi: **selesai** (matriks bagian 4).
 - Uji satu booking kedaluwarsa di environment uji: **belum dijalankan** karena
   staging/.env.e2e belum tersedia; gunakan QA EXP-01/EXP-02 setelah OPS-04.
-- Review bersama BE dan QA: **menunggu**; temuan F-01..F-04 perlu keputusan
-  apakah masuk UX-04, FE-06, atau task baru pada siklus berikutnya.
+- Review bersama BE dan QA: **dijadwalkan**; F-01..F-04 diputuskan masuk UX-05
+  (copy) dan FE-08 (implementasi) pada siklus berikutnya.
+- Copy kanonik dan matriks presentasi status ditetapkan di
+  `docs/product/UX-05-booking-status-copy.md`: label **Diverifikasi**,
+  **Batas pembayaran awal**, toast terpisah untuk `expired`, tone netral untuk
+  `awaiting_confirmation`, dan satu sumber nilai 24 jam.
 - Tidak ada perubahan kode produksi pada task ini. Perubahan copy dan skema
   dilakukan lewat task FE/BE terpisah agar dapat diuji.
