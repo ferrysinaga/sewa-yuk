@@ -5,17 +5,13 @@ import {
   formatRemaining,
   getPaymentInstruction,
   getRemainingMs,
-  isExpiredBooking,
 } from '../../../lib/booking'
 import {
-  BOOKING_EXPIRED_BADGE,
-  BOOKING_EXPIRED_DOT,
-  BOOKING_EXPIRED_LABEL,
-  BOOKING_STATUS_BADGE,
-  BOOKING_STATUS_DOT,
-  BOOKING_STATUS_LABEL,
-  PAYMENT_METHOD_LABEL,
-} from '../../../types/booking'
+  AWAITING_DEADLINE_NOTE,
+  describeRemainingTime,
+  getBookingStatusView,
+} from '../../../lib/bookingStatus'
+import { PAYMENT_METHOD_LABEL } from '../../../types/booking'
 import type { BookingRow } from '../../../types/booking'
 import type { TenantBookingsState } from './useTenantBookings'
 
@@ -37,29 +33,25 @@ export default function TenantBookingCard({
   } = state
 
   const event = blueprintById.get(booking.blueprint_id)
-  const expired = isExpiredBooking(booking, now)
+  const view = getBookingStatusView(booking, now)
   const remainingMs = getRemainingMs(booking.expires_at, now)
-  const instruction =
-    booking.status === 'pending' && !expired
-      ? getPaymentInstruction(booking.payment_method, booking)
-      : null
+  const instruction = view.canMarkPaid
+    ? getPaymentInstruction(booking.payment_method, booking)
+    : null
   const isUpdating = updatingId === booking.id
   const confirmingCancel = confirmingCancelId === booking.id
-  const bookingStatusLabel = expired ? BOOKING_EXPIRED_LABEL : BOOKING_STATUS_LABEL[booking.status]
-  const statusBadge = expired ? BOOKING_EXPIRED_BADGE : BOOKING_STATUS_BADGE[booking.status]
-  const statusDot = expired ? BOOKING_EXPIRED_DOT : BOOKING_STATUS_DOT[booking.status]
 
   return (
-    <li className="overflow-hidden rounded-card border border-line bg-surface ">
+    <li className="overflow-hidden rounded-card border border-line bg-surface">
       <div className="flex flex-wrap items-start justify-between gap-3 border-b border-line px-5 py-4">
         <div>
           <div className="flex flex-wrap items-center gap-2">
             <span className="font-mono text-xs font-semibold text-ink">{booking.booking_code}</span>
             <span
-              className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-compact font-semibold ring-1 ring-inset ${statusBadge}`}
+              className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-compact font-semibold ring-1 ring-inset ${view.badge}`}
             >
-              <span className={`h-1.5 w-1.5 rounded-full ${statusDot}`} />
-              {bookingStatusLabel}
+              <span aria-hidden="true" className={`h-1.5 w-1.5 rounded-full ${view.dot}`} />
+              {view.label}
             </span>
           </div>
           <p className="mt-1 text-sm font-semibold text-ink">
@@ -95,27 +87,51 @@ export default function TenantBookingCard({
             <dt className="text-muted">Dipesan</dt>
             <dd className="font-medium text-ink">{formatDateTime(booking.reserved_at)}</dd>
           </div>
-          {booking.expires_at &&
-            (booking.status === 'pending' || booking.status === 'awaiting_confirmation') && (
-              <div className="flex items-center justify-between gap-3">
-                <dt className="text-muted">
-                  {expired ? 'Batas pembayaran (terlewat)' : 'Batas pembayaran'}
-                </dt>
-                <dd className="text-right">
-                  <span className="block font-medium text-clay-dark">
-                    {formatDateTime(booking.expires_at)}
+          {view.showDeadline && booking.expires_at && view.countdown === 'none' && (
+            <div>
+              <dt className="text-muted">{view.deadlineLabel}</dt>
+              <dd className="mt-0.5">
+                <span className="block text-right font-medium text-muted">
+                  {formatDateTime(booking.expires_at)}
+                </span>
+                <span className="mt-1 block text-compact leading-relaxed text-muted">
+                  {AWAITING_DEADLINE_NOTE}
+                </span>
+              </dd>
+            </div>
+          )}
+          {view.showDeadline && booking.expires_at && view.countdown !== 'none' && (
+            <div className="flex items-start justify-between gap-3">
+              <dt className="text-muted">{view.deadlineLabel}</dt>
+              <dd className="text-right">
+                <span
+                  className={`block font-medium ${
+                    view.deadlineTone === 'clay' ? 'text-clay-dark' : 'text-muted'
+                  }`}
+                >
+                  {formatDateTime(booking.expires_at)}
+                </span>
+                {view.countdown === 'remaining' && (
+                  <span
+                    role="timer"
+                    aria-live="off"
+                    aria-label={describeRemainingTime(remainingMs)}
+                    className="mt-0.5 block text-compact tabular-nums text-clay-dark"
+                  >
+                    Sisa {formatRemaining(remainingMs)}
                   </span>
-                  {booking.status === 'pending' && (
-                    <span className="mt-0.5 block text-compact tabular-nums text-clay-dark">
-                      {expired ? 'Kedaluwarsa' : `Sisa ${formatRemaining(remainingMs)}`}
-                    </span>
-                  )}
-                </dd>
-              </div>
-            )}
+                )}
+                {view.countdown === 'expired' && (
+                  <span className="mt-0.5 block text-compact font-semibold text-clay-dark">
+                    Kedaluwarsa
+                  </span>
+                )}
+              </dd>
+            </div>
+          )}
           {booking.status === 'confirmed' && (
             <div className="flex items-center justify-between gap-3">
-              <dt className="text-muted">Dibayar</dt>
+              <dt className="text-muted">Diverifikasi</dt>
               <dd className="font-medium text-pine-dark">{formatDateTime(booking.paid_at)}</dd>
             </div>
           )}
@@ -130,13 +146,6 @@ export default function TenantBookingCard({
         </dl>
 
         <div>
-          {expired && booking.status === 'pending' && (
-            <div className="rounded-card-sm border border-line bg-clay-soft p-3 text-xs leading-relaxed text-clay-dark">
-              Batas pembayaran sudah lewat. Pesanan akan dibatalkan otomatis dan booth dilepas untuk
-              penyewa lain. Tekan tombol Perbarui status untuk memperbarui sekarang.
-            </div>
-          )}
-
           {instruction && (
             <div className="rounded-card-sm border border-line bg-clay-soft p-3">
               <p className="text-compact font-semibold uppercase tracking-wide text-clay-dark">
@@ -153,30 +162,11 @@ export default function TenantBookingCard({
             </div>
           )}
 
-          {booking.status === 'awaiting_confirmation' && (
-            <div className="rounded-card-sm border border-line bg-pine-soft p-3 text-xs leading-relaxed text-pine-dark">
-              Konfirmasi pembayaran sudah dikirim. Organizer akan memverifikasi dan mengubah status
-              booth menjadi Booked.
-            </div>
-          )}
-
-          {booking.status === 'confirmed' && (
-            <div className="rounded-card-sm border border-line bg-pine-soft p-3 text-xs leading-relaxed text-pine-dark">
-              Pembayaran terverifikasi. Booth sudah resmi menjadi milik Anda pada event ini.
-            </div>
-          )}
-
-          {booking.status === 'cancelled' && (
-            <div className="rounded-card-sm border border-line bg-unavailable p-3 text-xs leading-relaxed text-muted">
-              {booking.cancelled_reason === 'expired'
-                ? 'Pesanan kedaluwarsa karena batas pembayaran terlewat. Booth sudah dilepas dan dapat dipesan penyewa lain.'
-                : 'Pesanan dibatalkan. Booth sudah dilepas dan dapat dipesan penyewa lain.'}
-            </div>
-          )}
+          {view.description && <div className={view.panelClass}>{view.description}</div>}
         </div>
       </div>
 
-      {(booking.status === 'pending' || booking.status === 'awaiting_confirmation') && (
+      {view.canCancel && (
         <div className="border-t border-line px-5 py-3">
           {confirmingCancel ? (
             <InlineConfirm
@@ -200,7 +190,7 @@ export default function TenantBookingCard({
               >
                 Batalkan Pesanan
               </button>
-              {booking.status === 'pending' && !expired && (
+              {view.canMarkPaid && (
                 <button
                   type="button"
                   onClick={() => void handleMarkPaid(booking)}

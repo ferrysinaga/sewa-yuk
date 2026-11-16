@@ -4,7 +4,7 @@
 | ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Pemilik     | UI/UX Designer                                                                                                                                                          |
 | Kolaborator | Frontend Developer, QA                                                                                                                                                  |
-| Status      | Spesifikasi selesai; siap diimplementasikan pada FE-08                                                                                                                  |
+| Status      | Spesifikasi selesai; diimplementasikan pada FE-08                                                                                                                       |
 | Acuan       | `docs/product/PM-04-expiry-cancellation-policy.md`, `frontend.md`, `src/types/booking.ts`, `src/lib/booking.ts`, `src/lib/boothDisplay.ts`, `qa_checklist_test_plan.md` |
 | Tanggal     | 16 November 2026                                                                                                                                                        |
 
@@ -120,17 +120,17 @@ Aturan tambahan:
 
 ### 5.2 Tabel pemesanan admin (`BookingTable`)
 
-| Elemen                 | Copy kanonik                                                                                                                                                      |
-| ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Header kolom           | Kode, Tenant, Event, Booth, Total, Status, Dibuat, Aksi                                                                                                           |
-| Fallback tenant        | `Nama tenant belum diisi` (baris kedua: `—`)                                                                                                                      |
-| Fallback event         | `—`                                                                                                                                                               |
-| Fallback booth         | `Booth dihapus`                                                                                                                                                   |
-| Tombol konfirmasi      | `Konfirmasi` dengan `aria-label` "Konfirmasi pembayaran {kode}"                                                                                                   |
-| Tombol batal           | `Batalkan` dengan `aria-label` "Batalkan pesanan {kode}"                                                                                                          |
-| Konfirmasi inline      | Judul "Batalkan pesanan {kode}?", deskripsi "Booth akan tersedia kembali untuk penyewa lain. Tindakan ini tidak dapat dibatalkan.", tombol "Ya, batalkan pesanan" |
-| Empty state tabel      | Baris `colSpan={8}`: "Tidak ada pesanan pada filter ini" + "Coba ubah filter atau kata kunci pencarian."                                                          |
-| Teks pagination kosong | `Tidak ada pesanan`                                                                                                                                               |
+| Elemen                 | Copy kanonik                                                                                                                                                                                                |
+| ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Header kolom           | Kode, Tenant, Event, Booth, Total, Status, Dibuat, Aksi                                                                                                                                                     |
+| Fallback tenant        | `Nama tenant belum diisi` (baris kedua: `—`)                                                                                                                                                                |
+| Fallback event         | `—`                                                                                                                                                                                                         |
+| Fallback booth         | `Booth dihapus`                                                                                                                                                                                             |
+| Tombol konfirmasi      | `Konfirmasi` dengan `aria-label` "Konfirmasi pembayaran {kode}"                                                                                                                                             |
+| Tombol batal           | `Batalkan` dengan `aria-label` "Batalkan pesanan {kode}"                                                                                                                                                    |
+| Konfirmasi inline      | Judul "Batalkan pesanan {kode}?", deskripsi "Booth akan tersedia kembali untuk penyewa lain. Tindakan ini tidak dapat dibatalkan.", tombol "Ya, batalkan pesanan"                                           |
+| Empty state halaman    | Panel di bawah tabel: "Tidak ada pesanan pada filter ini" + "Coba ubah filter atau kata kunci pencarian." (tanpa filter: "Belum ada pesanan" + "Pesanan tenant akan muncul di sini setelah booth dipesan.") |
+| Teks pagination kosong | `Tidak ada pesanan`                                                                                                                                                                                         |
 
 ### 5.3 Toast
 
@@ -239,14 +239,15 @@ ditulis sebagai literal "24" di komponen mana pun.
 | `src/pages/tenant/tenant-bookings/TenantBookingCard.tsx`    | Baris `Diverifikasi`, baris tenggat `Batas pembayaran awal`, panel info tanpa "Booked"         |
 | `src/pages/tenant/tenant-bookings/BookingStatusFilters.tsx` | `aria-label` chip Dibatalkan + teks bantuan "Termasuk pesanan kedaluwarsa."                    |
 | `src/pages/tenant/tenant-bookings/useTenantBookings.ts`     | Toast batal dibedakan `expired`/`manual`                                                       |
-| `src/pages/admin/admin-bookings/BookingTable.tsx`           | Badge Netral, `aria-label` aksi, fallback "Booth dihapus"/"Nama tenant belum diisi", empty row |
+| `src/pages/admin/admin-bookings/BookingTable.tsx`           | Badge dari modul status, `aria-label` aksi, fallback "Booth dihapus"/"Nama tenant belum diisi" |
 | `src/pages/admin/admin-bookings/BookingFilters.tsx`         | Opsi "Dibatalkan (termasuk kedaluwarsa)"                                                       |
 | `src/pages/admin/admin-bookings/useAdminBookings.ts`        | Toast batal dan konfirmasi memakai copy kanonik ("terisi")                                     |
 | `src/pages/admin/admin-bookings/BookingMetricsCards.tsx`    | Sub-copy "Booth sudah menjadi terisi"                                                          |
+| `src/pages/admin/AdminBookings.tsx`                         | Empty state "Belum ada pesanan"/"Tidak ada pesanan pada filter ini" dan copy booth "terisi"    |
 | `src/components/map/TenantSidebar.tsx`                      | Label status booth tetap; pastikan memakai `BOOTH_STATUS_LABEL`                                |
 
 Batasan FE-08: tidak mengubah routing, skema/RPC, Zustand, atau DnD. Perubahan
-hanya pada copy, pemetaan presentasi, `aria-label`, dan satu empty row tabel.
+hanya pada copy, pemetaan presentasi, `aria-label`, dan empty state.
 
 ## 11. Verifikasi dan batasan
 
@@ -259,3 +260,21 @@ hanya pada copy, pemetaan presentasi, `aria-label`, dan satu empty row tabel.
   layar 375/768/1280 px dijalankan pada FE-08 setelah implementasi.
 - Verifikasi staging dengan akun nyata tetap menjadi bagian gate rilis QA/REL
   (OPS-04).
+
+## 12. Catatan implementasi FE-08
+
+- `src/lib/bookingStatus.ts` menjadi satu sumber view model status: label,
+  badge/dot, deskripsi, aturan tenggat dan countdown, aksi yang tersedia, serta
+  copy toast (`getCancelBookingToast`, `getConfirmBookingToast`,
+  `getExpiredSweepToast`, `MARK_PAID_TOAST`).
+- Tone `awaiting_confirmation` di `src/types/booking.ts` menjadi
+  `bg-canvas text-ink ring-line` (CH-01).
+- Kartu tenant memakai `Diverifikasi` untuk `paid_at`, `Batas pembayaran awal`
+  tanpa countdown, dan countdown `role="timer"` dengan `aria-live="off"` serta
+  `aria-label` kalimat lengkap.
+- Toast pembatalan tenant dan admin membaca `cancelled_reason`; toast
+  konfirmasi admin memakai istilah "terisi".
+- `src/lib/bookingStatus.test.ts` mengunci pemetaan status, aturan countdown,
+  dan copy toast (14 test).
+- Tidak ada perubahan pada query Supabase, kontrak RPC, Zustand, routing, atau
+  DnD.

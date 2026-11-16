@@ -6,37 +6,43 @@ export default function BookingStatusFilters({ state }: { state: TenantBookingsS
   const { bookings, statusFilter, setStatusFilter } = state
 
   return (
-    <div className="mt-6 flex flex-wrap gap-2" role="group" aria-label="Filter status pesanan">
-      {statusFilters.map((status) => {
-        const isActive = statusFilter === status
-        const count =
-          status === 'all'
-            ? bookings.length
-            : bookings.filter((booking) => booking.status === status).length
+    <div className="mt-6">
+      <div className="flex flex-wrap gap-2" role="group" aria-label="Filter status pesanan">
+        {statusFilters.map((status) => {
+          const isActive = statusFilter === status
+          const count =
+            status === 'all'
+              ? bookings.length
+              : bookings.filter((booking) => booking.status === status).length
 
-        return (
-          <button
-            key={status}
-            type="button"
-            onClick={() => setStatusFilter(status)}
-            aria-pressed={isActive}
-            className={`inline-flex items-center gap-1.5 rounded-control px-3 py-1.5 text-xs font-medium ring-1 ring-inset transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 ${
-              isActive
-                ? 'bg-pine text-on-accent ring-pine'
-                : 'bg-surface text-muted ring-line hover:bg-canvas'
-            }`}
-          >
-            {status === 'all' ? 'Semua' : BOOKING_STATUS_LABEL[status]}
-            <span
-              className={`rounded-full px-1.5 py-0.5 text-tiny font-semibold ${
-                isActive ? 'bg-pine-dark text-on-accent' : 'bg-unavailable text-muted'
+          return (
+            <button
+              key={status}
+              type="button"
+              onClick={() => setStatusFilter(status)}
+              aria-pressed={isActive}
+              className={`inline-flex items-center gap-1.5 rounded-control px-3 py-1.5 text-xs font-medium ring-1 ring-inset transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 ${
+                isActive
+                  ? 'bg-pine text-on-accent ring-pine'
+                  : 'bg-surface text-muted ring-line hover:bg-canvas'
               }`}
             >
-              {count}
-            </span>
-          </button>
-        )
-      })}
+              {status === 'all' ? 'Semua' : BOOKING_STATUS_LABEL[status]}
+              {status === 'cancelled' && (
+                <span className="sr-only">, termasuk pesanan kedaluwarsa</span>
+              )}
+              <span
+                className={`rounded-full px-1.5 py-0.5 text-tiny font-semibold ${
+                  isActive ? 'bg-pine-dark text-on-accent' : 'bg-unavailable text-muted'
+                }`}
+              >
+                {count}
+              </span>
+            </button>
+          )
+        })}
+      </div>
+      <p className="mt-2 text-compact text-muted">Termasuk pesanan kedaluwarsa.</p>
     </div>
   )
 }

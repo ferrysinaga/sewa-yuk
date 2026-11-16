@@ -4,6 +4,11 @@ import { useBookingClock } from '../../../hooks/useBookingClock'
 import { useBookingFeed } from '../../../hooks/useBookingFeed'
 import { useExpiredBookingSweep } from '../../../hooks/useExpiredBookingSweep'
 import { getBookingErrorMessage, isExpiredBooking } from '../../../lib/booking'
+import {
+  MARK_PAID_TOAST,
+  getCancelBookingToast,
+  getExpiredSweepToast,
+} from '../../../lib/bookingStatus'
 import { sweepExpiredBookings } from '../../../lib/bookingExpiry'
 import { isSupabaseConfigured, supabase } from '../../../lib/supabase'
 import { useAuthStore } from '../../../store/useAuthStore'
@@ -108,7 +113,7 @@ export function useTenantBookings() {
     onSweep: sweepExpiredBookings,
     onSwept: (released) => {
       if (released) {
-        showToast(`${released} pesanan kedaluwarsa dibatalkan dan booth kembali tersedia.`, 'info')
+        showToast(getExpiredSweepToast(released), 'info')
       }
 
       setReloadToken((token) => token + 1)
@@ -158,7 +163,7 @@ export function useTenantBookings() {
         setBookings((current) => current.map((row) => (row.id === updated.id ? updated : row)))
       }
 
-      showToast('Konfirmasi pembayaran dikirim. Menunggu verifikasi organizer.', 'success')
+      showToast(MARK_PAID_TOAST, 'success')
     } catch (paymentError) {
       showToast(`Gagal mengirim konfirmasi: ${getBookingErrorMessage(paymentError)}`, 'error')
     } finally {
@@ -185,7 +190,7 @@ export function useTenantBookings() {
         setBookings((current) => current.map((row) => (row.id === updated.id ? updated : row)))
       }
 
-      showToast('Pesanan dibatalkan dan booth kembali tersedia.', 'success')
+      showToast(getCancelBookingToast(updated?.cancelled_reason ?? null), 'success')
     } catch (cancelError) {
       showToast(`Gagal membatalkan pesanan: ${getBookingErrorMessage(cancelError)}`, 'error')
     } finally {
@@ -202,7 +207,7 @@ export function useTenantBookings() {
       const released = await sweepExpiredBookings()
 
       if (released) {
-        showToast(`${released} pesanan kedaluwarsa dibatalkan dan booth kembali tersedia.`, 'info')
+        showToast(getExpiredSweepToast(released), 'info')
       }
     } finally {
       setRefreshing(false)

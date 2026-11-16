@@ -751,7 +751,7 @@ FRONTEND DEVELOPER
     - Halaman admin diuji visual dengan sesi + REST mock lokal; verifikasi
       staging dengan akun nyata tetap bagian dari gate rilis.
 
-[ ] FE-08. Implementasikan copy dan presentasi status booking [P2]
+[x] FE-08. Implementasikan copy dan presentasi status booking [P2]
     Pemilik: Frontend Developer
     Kolaborator: UI/UX Designer, QA
     Konteks: Matriks copy dari UX-05 dan temuan F-01..F-04 pada PM-04 belum
@@ -782,6 +782,45 @@ FRONTEND DEVELOPER
     - npm run test:e2e -- e2e/smoke.spec.ts e2e/a11y.spec.ts.
     - Unit test untuk pemetaan status, label, dan format sisa waktu.
     Dependensi: UX-05, FE-07
+    STATUS: SELESAI (16 November 2026)
+    Hasil:
+    - src/lib/bookingStatus.ts (baru): view model status (label, badge/dot,
+      deskripsi, aturan tenggat, mode countdown, aksi) plus copy toast
+      (MARK_PAID_TOAST, getCancelBookingToast, getConfirmBookingToast,
+      getExpiredSweepToast) dan describeRemainingTime untuk aria-label.
+    - F-01: baris paid_at memakai "Diverifikasi"; kartu sebelum verifikasi
+      menampilkan "Menunggu Verifikasi".
+    - F-02: awaiting_confirmation memakai "Batas pembayaran awal", tanpa
+      countdown, plus catatan "Batas ini tidak berlaku setelah konfirmasi
+      pembayaran dikirim.".
+    - F-03: toast batal tenant/admin membaca cancelled_reason (expired vs
+      manual); toast admin menyertakan kode pesanan.
+    - F-04: nilai 24 jam tetap satu sumber BOOKING_HOLD_HOURS dan dipakai
+      checkout; tidak ada literal baru di komponen.
+    - CH-01: tone awaiting_confirmation menjadi bg-canvas text-ink ring-line;
+      dot badge aria-hidden dan status selalu bertekst.
+    - Countdown memakai role="timer" aria-live="off" dengan aria-label kalimat
+      lengkap yang berubah per menit.
+    - Admin: aria-label tombol konfirmasi/batal berisi kode pesanan, fallback
+      "Nama tenant belum diisi"/"Booth dihapus", opsi filter "Dibatalkan
+      (termasuk kedaluwarsa)", empty state diselaraskan, dan copy "Booked"
+      diganti "terisi".
+    - Tenant: chip Dibatalkan menjelaskan cakupan kedaluwarsa lewat teks
+      tersembunyi dan teks bantuan di bawah filter.
+    - Tes baru: src/lib/bookingStatus.test.ts (14 test) dan
+      src/pages/tenant/tenant-bookings/TenantBookingCard.test.tsx (5 test).
+    - Dokumen bukti: docs/qa/FE_08_BOOKING_STATUS_COPY.md + screenshot di
+      docs/qa/screenshots/fe-08/.
+    Verifikasi:
+    - `npm run verify` lulus (lint, format, typecheck, 242 unit test, build,
+      budget bundle 791,73 kB / 850 kB, secret scan).
+    - `npm run test:e2e -- e2e/smoke.spec.ts e2e/a11y.spec.ts
+      e2e/responsive.spec.ts`: 11 lulus, 14 skip (staging/.env.e2e tidak
+      tersedia), 0 gagal.
+    - Audit axe via sesi + REST mock: 0 pelanggaran pada /bookings dan
+      /admin/bookings di 375 px dan 1280 px; page scrollWidth sama dengan
+      clientWidth (tanpa overflow halaman).
+    - Verifikasi staging dengan akun nyata tetap bagian gate rilis (OPS-04).
 
 
 ===============================================================================

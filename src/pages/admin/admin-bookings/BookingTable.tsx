@@ -1,15 +1,8 @@
 import { Fragment } from 'react'
 import InlineConfirm from '../../../components/ui/InlineConfirm'
-import { formatCurrency, formatDateTime, isExpiredBooking } from '../../../lib/booking'
-import {
-  BOOKING_EXPIRED_BADGE,
-  BOOKING_EXPIRED_DOT,
-  BOOKING_EXPIRED_LABEL,
-  BOOKING_STATUS_BADGE,
-  BOOKING_STATUS_DOT,
-  BOOKING_STATUS_LABEL,
-  PAYMENT_METHOD_LABEL,
-} from '../../../types/booking'
+import { formatCurrency, formatDateTime } from '../../../lib/booking'
+import { getBookingStatusView } from '../../../lib/bookingStatus'
+import { PAYMENT_METHOD_LABEL } from '../../../types/booking'
 import type { AdminBookingsState } from './useAdminBookings'
 
 export default function BookingTable({ state }: { state: AdminBookingsState }) {
@@ -48,18 +41,7 @@ export default function BookingTable({ state }: { state: AdminBookingsState }) {
           {state.bookings.map((booking) => {
             const event = state.blueprintById.get(booking.blueprint_id)
             const isUpdating = state.updatingId === booking.id
-            const expired = isExpiredBooking(booking, state.now)
-            const canCancel =
-              booking.status === 'pending' || booking.status === 'awaiting_confirmation'
-            const canConfirm = canCancel && !expired
-            const bookingStatusLabel = expired
-              ? BOOKING_EXPIRED_LABEL
-              : BOOKING_STATUS_LABEL[booking.status]
-            const statusBadge = expired
-              ? BOOKING_EXPIRED_BADGE
-              : BOOKING_STATUS_BADGE[booking.status]
-            const statusDot = expired ? BOOKING_EXPIRED_DOT : BOOKING_STATUS_DOT[booking.status]
-
+            const view = getBookingStatusView(booking, state.now)
             const confirmingCancel = state.confirmingCancelId === booking.id
 
             return (
@@ -75,7 +57,7 @@ export default function BookingTable({ state }: { state: AdminBookingsState }) {
                   </td>
                   <td className="px-4 py-3.5">
                     <p className="max-w-[180px] truncate text-xs font-medium text-ink">
-                      {booking.tenant_name || 'Tanpa nama'}
+                      {booking.tenant_name || 'Nama tenant belum diisi'}
                     </p>
                     <p className="max-w-[180px] truncate text-compact text-muted">
                       {booking.tenant_email || '—'}
@@ -94,7 +76,7 @@ export default function BookingTable({ state }: { state: AdminBookingsState }) {
                       {booking.booth_category}
                     </span>
                     <p className="mt-1 font-mono text-compact text-muted">
-                      {booking.booth_id ? booking.booth_id.slice(0, 8) : 'booth dihapus'}
+                      {booking.booth_id ? booking.booth_id.slice(0, 8) : 'Booth dihapus'}
                     </p>
                   </td>
                   <td className="whitespace-nowrap px-4 py-3.5 text-right text-xs font-medium text-ink">
@@ -102,10 +84,10 @@ export default function BookingTable({ state }: { state: AdminBookingsState }) {
                   </td>
                   <td className="whitespace-nowrap px-4 py-3.5">
                     <span
-                      className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-compact font-semibold ring-1 ring-inset ${statusBadge}`}
+                      className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-compact font-semibold ring-1 ring-inset ${view.badge}`}
                     >
-                      <span className={`h-1.5 w-1.5 rounded-full ${statusDot}`} />
-                      {bookingStatusLabel}
+                      <span aria-hidden="true" className={`h-1.5 w-1.5 rounded-full ${view.dot}`} />
+                      {view.label}
                     </span>
                   </td>
                   <td className="whitespace-nowrap px-4 py-3.5 text-compact text-muted">
@@ -113,13 +95,14 @@ export default function BookingTable({ state }: { state: AdminBookingsState }) {
                   </td>
                   <td className="whitespace-nowrap px-4 py-3.5">
                     <div className="flex items-center justify-end gap-2">
-                      {canCancel ? (
+                      {view.canCancel ? (
                         <>
-                          {canConfirm && (
+                          {view.canConfirm && (
                             <button
                               type="button"
                               onClick={() => void state.handleConfirm(booking)}
                               disabled={isUpdating}
+                              aria-label={`Konfirmasi pembayaran ${booking.booking_code}`}
                               className="rounded-control bg-pine px-3 py-1.5 text-compact font-semibold text-on-accent transition-colors hover:bg-pine-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
                             >
                               {isUpdating ? 'Memproses…' : 'Konfirmasi'}
@@ -131,6 +114,7 @@ export default function BookingTable({ state }: { state: AdminBookingsState }) {
                             disabled={isUpdating}
                             aria-expanded={confirmingCancel}
                             aria-controls={`cancel-booking-${booking.id}`}
+                            aria-label={`Batalkan pesanan ${booking.booking_code}`}
                             className="rounded-control px-2 py-1.5 text-compact font-semibold text-muted transition-colors hover:bg-danger-soft hover:text-danger-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-danger focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
                           >
                             Batalkan

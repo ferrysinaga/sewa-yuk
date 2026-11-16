@@ -51,7 +51,9 @@ export default function BookingFilters({ state }: { state: AdminBookingsState })
           <option value="all">Semua status</option>
           {BOOKING_STATUS_OPTIONS.map((status) => (
             <option key={status} value={status}>
-              {BOOKING_STATUS_LABEL[status]}
+              {status === 'cancelled'
+                ? `${BOOKING_STATUS_LABEL[status]} (termasuk kedaluwarsa)`
+                : BOOKING_STATUS_LABEL[status]}
             </option>
           ))}
         </select>

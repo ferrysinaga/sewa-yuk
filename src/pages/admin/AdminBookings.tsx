@@ -59,14 +59,14 @@ export default function AdminBookings() {
               {!state.listLoading && state.bookings.length === 0 && (
                 <div className="border-t border-line px-6 py-10 text-center">
                   <p className="text-sm font-semibold text-ink">
-                    {state.totalCount === 0 && !state.filtersActive
-                      ? 'Belum ada pemesanan'
-                      : 'Tidak ada pesanan yang cocok'}
+                    {state.filtersActive
+                      ? 'Tidak ada pesanan pada filter ini'
+                      : 'Belum ada pesanan'}
                   </p>
                   <p className="mx-auto mt-1 max-w-sm text-xs leading-relaxed text-muted">
-                    {state.totalCount === 0 && !state.filtersActive
-                      ? 'Pemesanan dari tenant akan muncul di sini setelah mereka memilih booth.'
-                      : 'Coba ubah kata kunci atau filter event dan status.'}
+                    {state.filtersActive
+                      ? 'Coba ubah filter atau kata kunci pencarian.'
+                      : 'Pesanan tenant akan muncul di sini setelah booth dipesan.'}
                   </p>
                 </div>
               )}
@@ -75,7 +75,7 @@ export default function AdminBookings() {
             </section>
 
             <p className="mt-6 text-center text-compact text-muted">
-              Verifikasi pembayaran akan mengubah status booth menjadi Booked secara otomatis.
+              Verifikasi pembayaran akan mengubah status booth menjadi terisi secara otomatis.
             </p>
           </>
         )}

@@ -42,7 +42,7 @@ export const BOOKING_STATUS_LABEL: Record<BookingStatus, string> = {
 
 export const BOOKING_STATUS_BADGE: Record<BookingStatus, string> = {
   pending: 'bg-clay-soft text-clay-dark ring-line',
-  awaiting_confirmation: 'bg-surface text-pine-dark ring-line',
+  awaiting_confirmation: 'bg-canvas text-ink ring-line',
   confirmed: 'bg-pine-soft text-pine-dark ring-line',
   cancelled: 'bg-unavailable text-muted ring-line',
 }

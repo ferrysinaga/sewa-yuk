@@ -23,7 +23,7 @@ export default function BookingMetricsCards({ state }: { state: AdminBookingsSta
         <p className="mt-2 text-2xl font-semibold tabular-nums tracking-tight text-ink">
           {state.metrics.confirmed}
         </p>
-        <p className="mt-1 text-xs text-muted">Booth sudah menjadi Booked</p>
+        <p className="mt-1 text-xs text-muted">Booth sudah menjadi terisi</p>
       </div>
       <div className="rounded-card border border-line bg-surface p-5">
         <p className="text-xs font-medium text-muted">Pendapatan terkonfirmasi</p>

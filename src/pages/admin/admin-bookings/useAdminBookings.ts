@@ -4,6 +4,11 @@ import { useBookingClock } from '../../../hooks/useBookingClock'
 import { useBookingFeed } from '../../../hooks/useBookingFeed'
 import { useDebouncedValue } from '../../../hooks/useDebouncedValue'
 import { getBookingErrorMessage, isExpiredBooking } from '../../../lib/booking'
+import {
+  getCancelBookingToast,
+  getConfirmBookingToast,
+  getExpiredSweepToast,
+} from '../../../lib/bookingStatus'
 import type { BookingRealtimePayload } from '../../../lib/bookingRealtime'
 import { sweepExpiredBookings } from '../../../lib/bookingExpiry'
 import { isSupabaseConfigured, supabase } from '../../../lib/supabase'
@@ -420,7 +425,7 @@ export function useAdminBookings() {
         applyUpdatedBooking(updated)
       }
 
-      showToast(`Pembayaran ${booking.booking_code} dikonfirmasi. Booth menjadi Booked.`, 'success')
+      showToast(getConfirmBookingToast(booking.booking_code), 'success')
     } catch (confirmError) {
       showToast(`Gagal mengonfirmasi pembayaran: ${getBookingErrorMessage(confirmError)}`, 'error')
     } finally {
@@ -447,7 +452,12 @@ export function useAdminBookings() {
         applyUpdatedBooking(updated)
       }
 
-      showToast(`Pesanan ${booking.booking_code} dibatalkan. Booth kembali tersedia.`, 'success')
+      showToast(
+        getCancelBookingToast(updated?.cancelled_reason ?? null, {
+          bookingCode: booking.booking_code,
+        }),
+        'success',
+      )
     } catch (cancelError) {
       showToast(`Gagal membatalkan pesanan: ${getBookingErrorMessage(cancelError)}`, 'error')
     } finally {
@@ -464,7 +474,7 @@ export function useAdminBookings() {
       const released = await sweepExpiredBookings()
 
       if (released) {
-        showToast(`${released} pesanan kedaluwarsa dibatalkan dan booth kembali tersedia.`, 'info')
+        showToast(getExpiredSweepToast(released), 'info')
       }
     } finally {
       setRefreshing(false)
