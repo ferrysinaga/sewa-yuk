@@ -33,7 +33,7 @@ export default function BoothMapCanvas({
           <svg
             viewBox={viewBox}
             role="group"
-            aria-label="Pratinjau denah booth Hall A"
+            aria-label="Denah contoh booth Hall A"
             aria-describedby="peta-hint"
             className="block h-auto w-full select-none"
           >

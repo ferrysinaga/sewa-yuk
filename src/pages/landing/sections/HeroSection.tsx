@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 import BoothMap from '../BoothMap'
-import { ArrowDown, ArrowRight } from '../LandingIcons'
+import { ArrowRight } from '../LandingIcons'
 
 export default function HeroSection() {
   return (
@@ -33,15 +33,7 @@ export default function HeroSection() {
               Jelajahi acara
               <ArrowRight />
             </Link>
-            <a
-              href="#cara-kerja"
-              className="inline-flex items-center justify-center gap-2 rounded-[6px] px-1 py-2 text-sm font-semibold text-pine transition-colors hover:text-pine-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 focus-visible:ring-offset-canvas sm:px-3 motion-reduce:transition-none"
-            >
-              Lihat cara kerja
-              <ArrowDown />
-            </a>
           </div>
-
           <ul className="mt-9 flex flex-wrap items-center gap-x-3 gap-y-2 border-t border-line pt-5 text-xs font-medium text-muted">
             {['Peta interaktif', 'Status real-time', 'Satu booth, satu penyewa'].map(
               (item, index) => (

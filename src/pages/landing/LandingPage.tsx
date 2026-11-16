@@ -1,12 +1,8 @@
 import { useDocumentTitle } from '../../hooks/useDocumentTitle'
-import CtaSection from './sections/CtaSection'
-import EventsSection from './sections/EventsSection'
 import HeroSection from './sections/HeroSection'
 import LandingFooter from './sections/LandingFooter'
 import LandingHeader from './sections/LandingHeader'
 import RolesSection from './sections/RolesSection'
-import StepsSection from './sections/StepsSection'
-import ValuesSection from './sections/ValuesSection'
 
 export default function LandingPage() {
   useDocumentTitle('Beranda')
@@ -24,11 +20,7 @@ export default function LandingPage() {
 
       <main id="main" tabIndex={-1} className="focus:outline-none">
         <HeroSection />
-        <EventsSection />
-        <ValuesSection />
         <RolesSection />
-        <StepsSection />
-        <CtaSection />
       </main>
 
       <LandingFooter />
