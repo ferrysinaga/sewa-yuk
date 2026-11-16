@@ -322,6 +322,34 @@ UI/UX DESIGNER
     - Smoke + a11y publik: 4 lulus, 3 skip karena `.env.e2e` belum tersedia;
       review visual halaman terautentikasi menunggu staging.
 
+[ ] UX-05. Tetapkan copy dan matriks presentasi status booking [P2]
+    Pemilik: UI/UX Designer
+    Kolaborator: Frontend Developer, QA
+    Konteks: PM-04 mencatat F-01..F-04 (label "Dibayar", countdown pada
+    awaiting_confirmation, toast batal, dan sumber konstanta 24 jam), sedangkan
+    UX-04 menemukan label status masih ditulis ulang di beberapa komponen.
+    FE-08 membutuhkan satu spesifikasi copy sebelum implementasi agar tenant dan
+    organizer melihat aturan yang sama dengan RPC dan dokumentasi.
+    Rencana:
+    - Susun matriks status booking x peran (tenant/organizer) x komponen
+      (badge, kartu, tabel, filter, toast, empty state).
+    - Tetapkan satu label dan satu deskripsi kanonik per status, termasuk status
+      yang tidak memakai hitungan 24 jam.
+    - Tentukan copy pembatalan manual vs kedaluwarsa, dan pastikan "Dibayar"
+      hanya muncul setelah verifikasi.
+    - Catat istilah terlarang: placeholder, campur bahasa, dan singkatan ambigu.
+    - Tinjau apakah badge status butuh pembeda selain warna (ikon/teks).
+    Acceptance:
+    - Setiap status punya satu label dan satu deskripsi kanonik yang disetujui.
+    - Copy konsisten dengan docs/product/PM-04-expiry-cancellation-policy.md dan
+      frontend.md; tidak ada warna, radius, atau ukuran baru.
+    - Matriks ditautkan dari FE-08 agar implementasi tidak menebak.
+    Verifikasi:
+    - Review bersama Frontend Developer dan QA sebelum FE-08 dimulai.
+    - Matriks ditambahkan ke docs/product/PM-04-expiry-cancellation-policy.md
+      atau dokumen UX terpisah.
+    Dependensi: PM-04, UX-04
+
 
 ===============================================================================
 FRONTEND DEVELOPER
@@ -692,6 +720,38 @@ FRONTEND DEVELOPER
       tersedia), 0 gagal.
     - Halaman admin diuji visual dengan sesi + REST mock lokal; verifikasi
       staging dengan akun nyata tetap bagian dari gate rilis.
+
+[ ] FE-08. Implementasikan copy dan presentasi status booking [P2]
+    Pemilik: Frontend Developer
+    Kolaborator: UI/UX Designer, QA
+    Konteks: Matriks copy dari UX-05 dan temuan F-01..F-04 pada PM-04 belum
+    diterapkan di UI. Label status dan batas 24 jam masih ditulis ulang di
+    beberapa komponen sehingga rawan berbeda antara tabel, kartu, filter, badge,
+    dan toast.
+    Rencana:
+    - Satukan label, deskripsi, dan batas 24 jam pada satu modul
+      (mis. src/lib/bookingStatus.ts) yang dipakai tabel, kartu, filter, badge,
+      dan toast.
+    - F-01: label "Dibayar" hanya tampil setelah paid_at terisi; sebelum
+      verifikasi tampilkan "Menunggu verifikasi".
+    - F-02: awaiting_confirmation menampilkan sisa waktu atau copy eksplisit
+      bahwa hitungan 24 jam tidak berlaku.
+    - F-03: toast pembatalan membedakan batal manual dan kedaluwarsa.
+    - F-04: konstanta 24 jam dibaca dari satu sumber, bukan nilai yang ditulis
+      ulang di komponen.
+    - Umumkan perubahan status yang terlihat (badge/countdown) ke pembaca layar
+      tanpa mengubah kontrak RPC atau query Supabase.
+    Acceptance:
+    - Tidak ada label atau aturan status yang berbeda antara UI, RPC, dan
+      docs/product/PM-04-expiry-cancellation-policy.md.
+    - Copy mengikuti matriks UX-05 tanpa placeholder atau campur bahasa.
+    - Tidak ada perubahan routing, skema, RPC, Zustand, atau DnD.
+    - Badge/countdown tetap terbaca pada 375 px dan lolos axe.
+    Verifikasi:
+    - npm run verify.
+    - npm run test:e2e -- e2e/smoke.spec.ts e2e/a11y.spec.ts.
+    - Unit test untuk pemetaan status, label, dan format sisa waktu.
+    Dependensi: UX-05, FE-07
 
 
 ===============================================================================
