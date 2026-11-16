@@ -179,16 +179,16 @@ async function main() {
   const missing = findMissing(options, targets)
 
   if (missing.emails.length > 0 || missing.ids.length > 0) {
-    console.error(
-      `Target tidak ditemukan: ${[...missing.emails, ...missing.ids].join(', ')}`,
-    )
+    console.error(`Target tidak ditemukan: ${[...missing.emails, ...missing.ids].join(', ')}`)
     process.exitCode = 1
     return
   }
 
   const changes = targets.filter((user) => user.app_metadata?.role !== 'organizer')
 
-  console.log(`User dibaca: ${users.length}; target: ${targets.length}; perlu diubah: ${changes.length}.`)
+  console.log(
+    `User dibaca: ${users.length}; target: ${targets.length}; perlu diubah: ${changes.length}.`,
+  )
 
   for (const user of changes) {
     const current = user.app_metadata?.role ?? '(kosong)'

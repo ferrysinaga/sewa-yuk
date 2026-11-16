@@ -104,8 +104,8 @@ export default function Register() {
             Buat akun baru
           </h1>
           <p className="mt-2 text-sm leading-relaxed text-muted">
-            Akun baru dibuat sebagai penyewa. Akun penyelenggara ditunjuk oleh admin setelah
-            proses verifikasi.
+            Akun baru dibuat sebagai penyewa. Akun penyelenggara ditunjuk oleh admin setelah proses
+            verifikasi.
           </p>
         </div>
 

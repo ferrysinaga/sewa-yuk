@@ -12,15 +12,15 @@ bagian 6 dijalankan di staging.
 
 ## 1. Ringkasan perubahan
 
-| Lapisan                | Sebelum                                          | Sesudah                                                        |
-| ---------------------- | ------------------------------------------------ | -------------------------------------------------------------- |
-| Sumber role            | `auth.jwt() -> 'user_metadata' ->> 'role'`       | `auth.jwt() -> 'app_metadata' ->> 'role'`                       |
-| Helper SQL             | Tidak ada                                        | `public.current_user_role()` (fallback `tenant`)                |
-| Policy tabel           | Ekspresi `user_metadata` berulang                | Memanggil `public.current_user_role()`                          |
-| RPC                    | `coalesce(auth.jwt() -> 'user_metadata' ->> 'role', '')` | `public.current_user_role()`                            |
-| Frontend               | `user.user_metadata?.role ?? app_metadata?.role` | Hanya `app_metadata.role`; fallback `tenant`                    |
-| Registrasi             | Pengguna memilih organizer/tenant                | Selalu tenant; organizer ditunjuk admin                         |
-| Backfill               | Tidak ada                                        | `scripts/backfill-roles.mjs` dengan allowlist eksplisit         |
+| Lapisan      | Sebelum                                                  | Sesudah                                                 |
+| ------------ | -------------------------------------------------------- | ------------------------------------------------------- |
+| Sumber role  | `auth.jwt() -> 'user_metadata' ->> 'role'`               | `auth.jwt() -> 'app_metadata' ->> 'role'`               |
+| Helper SQL   | Tidak ada                                                | `public.current_user_role()` (fallback `tenant`)        |
+| Policy tabel | Ekspresi `user_metadata` berulang                        | Memanggil `public.current_user_role()`                  |
+| RPC          | `coalesce(auth.jwt() -> 'user_metadata' ->> 'role', '')` | `public.current_user_role()`                            |
+| Frontend     | `user.user_metadata?.role ?? app_metadata?.role`         | Hanya `app_metadata.role`; fallback `tenant`            |
+| Registrasi   | Pengguna memilih organizer/tenant                        | Selalu tenant; organizer ditunjuk admin                 |
+| Backfill     | Tidak ada                                                | `scripts/backfill-roles.mjs` dengan allowlist eksplisit |
 
 File terkait:
 
