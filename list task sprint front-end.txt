@@ -1,0 +1,343 @@
+DAFTAR TASK SPRINT FRONT-END - sewa-yuk
+Basis acuan : frontend.md (Prinsip Kerja, §2-§11)
+Status acuan: 17dde48 (ujung branch feature/touch-targets)
+Disusun     : 9 November 2026
+Legenda     : [P0] blocker kualitas/rilis, [P1] penting, [P2] perapian
+
+CARA PAKAI
+- Satu task = satu branch: feature/, fix/, refactor/, test/, docs/, chore/, atau perf/.
+- Kerjakan berurutan dalam satu sprint. Jangan menambah fitur sambil merombak struktur
+  (frontend.md §0 dan §9.2).
+- Sebelum commit: npm run verify. Untuk perubahan UI tambahkan:
+  npm run test:e2e -- e2e/smoke.spec.ts e2e/a11y.spec.ts
+- Perbarui file ini (status + hasil verifikasi) dan catat perubahan visual di log iterasi.
+- DoD lengkap ada di frontend.md §11. Sebuah task hanya boleh dicentang bila seluruh
+  butir DoD yang relevan sudah terpenuhi.
+
+TEMUAN AUDIT AWAL (dasar penyusunan sprint)
+- InteractiveMap.tsx 744 baris; 5 hook >300 baris (useAdminBookings 526,
+  useAdminBlueprintList 440, useAdminDashboard 341, useTenantEventView 317,
+  useBlueprintEditor 312). frontend.md §2 meminta file >200 baris ditinjau.
+- Belum ada selector sempit useBoothById/useBoothIds. Beberapa komponen masih
+  berlangganan state.booths utuh (BlueprintCanvas:128, InteractiveMap:209,
+  TenantSidebar:45, useTenantEventView:282-288).
+- Masih ada `as unknown as` di BlueprintCanvas.tsx:27 dan CheckoutModal.test.tsx:53
+  (frontend.md §8.2 melarang `any`/`as` untuk membungkam TypeScript).
+- Token warna belum sepenuhnya sama dengan frontend.md §5: surface #ffffff vs #fffefb,
+  muted #5a625b vs #6b7269, clay vs terracotta, line-strong dan radius-sm/md belum ada.
+- Realtime sudah membersihkan channel di 3 tempat (useBookingFeed, useAdminDashboard,
+  useTenantEventView), tetapi belum refetch saat channel kembali SUBSCRIBED
+  (frontend.md §7).
+- Target sentuh ikon sudah 44x44 setelah task 37. Kontrol teks kecil masih 20-36 px:
+  link footer/breadcrumb, InlineConfirm 26 px, filter 28 px, paginasi 32 px.
+- Tidak ditemukan barrel file, gradien, blur, shadow-xl, emoji ikon, atau console.log
+  di src. Ini modal awal yang harus dijaga.
+- Unit test: 128 test di 18 file. E2E tanpa .env.e2e: 3 lulus + 7 skip.
+
+===============================================================================
+SPRINT 1 - FONDASI KODE, TOKEN, DAN PERFORMA RENDER          (P0, 1-2 minggu)
+===============================================================================
+
+[ ] S1-01 Selesaikan lint, format, dan gerbang CI
+    Basis: frontend.md §8.2, §11
+    Masalah: dependency ESLint/Prettier sudah disiapkan, tetapi script, flat config,
+    .prettierrc, .prettierignore, dan langkah CI belum lengkap. Tanpa ini, aturan
+    "tidak ada any/as baru" dan "tidak ada console.log" hanya dicek manual.
+    Rencana:
+    - Tambah eslint.config.js (typescript-eslint, react-hooks, react-refresh) dan
+      konfigurasi Prettier yang mengikuti gaya repo (tanpa semicolon, kutip tunggal).
+    - Tambah script lint, lint:fix, format, format:check; masukkan lint + format:check
+      ke npm run verify dan pekerjaan CI.
+    - Perbaiki pelanggaran yang muncul tanpa mengubah perilaku.
+    Acceptance: npm run lint dan npm run format:check lulus; tsc/test/build tetap lulus;
+    CI menjalankan langkah yang sama.
+    Verifikasi: npm run verify; npx playwright test e2e/smoke.spec.ts.
+
+[ ] S1-02 Selaraskan token warna, radius, dan tipografi
+    Basis: frontend.md §5 (Token warna dan Karakter visual)
+    Masalah: sebagian nilai token berbeda dari spesifikasi dan radius masih ditulis
+    sebagai arbitrary value (rounded-[10px]) di banyak komponen.
+    Rencana:
+    - Petakan token: line-strong, terracotta (alias clay), radius-sm 6px, radius-md 10px.
+      Pertahankan nama lama sebagai alias agar komponen tidak perlu diubah sekaligus.
+    - Daftarkan radius di tailwind.config.ts dan ganti rounded-[6px]/rounded-[10px]
+      secara bertahap ke rounded-sm/rounded-md.
+    - Pastikan tidak ada hex mentah baru di komponen; satu-satunya yang tersisa hanya
+      teks putih pada pratinjau SVG AuthLayout.
+    - Satu sans-serif konsisten dan tabular-nums untuk harga/ukuran.
+    Acceptance: token terdokumentasi di src/style.css; tidak ada perubahan visual berarti;
+    screenshot 375/768/1280 dibandingkan sebelum-sesudah.
+    Verifikasi: npm run verify; E2E smoke + A11Y-01/A11Y-02.
+
+[ ] S1-03 Hapus `as unknown as` yang tidak perlu
+    Basis: frontend.md §8.2 (Slop kode)
+    Masalah: BlueprintCanvas.tsx:27 memakai `element as unknown as HTMLElement | null`
+    untuk setNodeRef; test CheckoutModal memakai cast DOMRectList. Cast menyembunyikan
+    kesalahan tipe dan memudahkan regresi.
+    Rencana:
+    - Ganti dengan narrowing yang benar (instanceof HTMLElement / tipe ref dnd-kit).
+    - Untuk test, buat helper DOMRectList bertipe tanpa cast ganda, atau gunakan
+      mock yang sudah disediakan Testing Library.
+    Acceptance: pencarian `as unknown as` di src hanya menyisakan alasan tertulis bila
+    benar-benar diperlukan; tsc lulus.
+    Verifikasi: npm run typecheck; npm test.
+
+[ ] S1-04 Tambah selector sempit useBoothById dan useBoothIds
+    Basis: frontend.md §3 (Selector sempit wajib)
+    Masalah: beberapa komponen berlangganan seluruh array booths, sehingga perubahan
+    satu booth berpotensi merender ulang peta/panel yang tidak berubah.
+    Rencana:
+    - Tambah useBoothById(id) dan useBoothIds() dengan useShallow di useBoothStore.
+    - Pakai useBoothById di BoothSidebar dan panel detail; pakai useBoothIds di
+      komponen peta yang hanya perlu daftar id.
+    - Jangan mengubah bentuk state, aksi, atau perilaku realtime.
+    Acceptance: tidak ada lagi `state.booths` utuh di komponen yang hanya butuh satu
+    booth; test store dan test komponen tetap lulus.
+    Verifikasi: npm run verify; React Profiler sebelum-sesudah saat status satu booth
+    berubah.
+
+[ ] S1-05 Pecah InteractiveMap.tsx (744 baris)
+    Basis: frontend.md §2 dan §4
+    Masalah: satu file menangani layout peta, kontrol zoom, legenda, render booth,
+    tooltip, dan status realtime. Sulit ditinjau dan rawan konflik.
+    Rencana:
+    - Pecah menjadi MapControls, MapLegend, MapCanvas, TenantBooth, dan hook
+      useMapViewport/useTenantMapFeed sesuai tanggung jawab.
+    - Pertahankan markup, label, aria, dan perilaku pan/zoom/DnD yang sudah berjalan.
+    - Target: tidak ada file peta >250 baris tanpa alasan.
+    Acceptance: build chunk stabil; E2E smoke + a11y lulus; tidak ada perubahan perilaku
+    yang terlihat pada 375/768/1280.
+    Verifikasi: npm run verify; E2E smoke + A11Y-01/A11Y-02.
+
+[ ] S1-06 Pecah hook admin >300 baris
+    Basis: frontend.md §2 dan §8.2
+    Masalah: useAdminBookings (526) dan useAdminBlueprintList (440) mencampur fetch,
+    filter, pagination, realtime, dan handler aksi.
+    Rencana:
+    - Pisahkan minimal: useBookingQuery (fetch + pagination), useBookingFilters
+      (pencarian/status/event), dan useBookingActions (verifikasi/batal).
+    - Pisahkan useBlueprintQuery dan useBlueprintActions dari useAdminBlueprintList.
+    - Pertahankan nama fungsi/return yang dipakai halaman agar perubahan terisolasi.
+    Acceptance: tidak ada hook admin >300 baris; test dan perilaku filter/pagination
+    tetap sama.
+    Verifikasi: npm test; npm run build.
+
+[ ] S1-07 Pecah hook tenant dan editor >300 baris
+    Basis: frontend.md §2 dan §8.2
+    Masalah: useAdminDashboard (341), useTenantEventView (317), dan useBlueprintEditor
+    (312) mencampur query, realtime, state turunan, dan aksi UI.
+    Rencana:
+    - Pisahkan query/realtime dari aksi dan state turunan (mis. useDashboardMetrics,
+      useTenantBoothFeed, useBlueprintDraft).
+    - Jangan memindahkan logika ke lib/ bila membutuhkan hook (frontend.md §2).
+    Acceptance: file hook <300 baris; tidak ada perubahan perilaku realtime atau
+    perhitungan metrik.
+    Verifikasi: npm run verify; E2E smoke.
+
+[ ] S1-08 Audit memo dan stabilitas props peta
+    Basis: frontend.md §4 (Performa peta)
+    Masalah: TenantBooth dan BoothRect sudah memo, tetapi perlu bukti bahwa props stabil
+    dan perubahan satu booth tidak merender seluruh peta.
+    Rencana:
+    - Ukur render dengan React Profiler sebelum-sesudah S1-04.
+    - Pastikan handler memakai useCallback bila diteruskan ke komponen memo; jangan
+      membuat objek baru setiap render.
+    - Untuk pan/zoom, ubah transform pada grup pembungkus, bukan koordinat tiap booth.
+    Acceptance: catatan baseline render (jumlah commit per interaksi) terlampir di log
+    iterasi; tidak ada animasi atribut SVG x/y/width.
+    Verifikasi: React Profiler; npm run build.
+
+===============================================================================
+SPRINT 2 - REALTIME, RESPONSIF, DAN STATUS PETA                (P0/P1, 1-2 minggu)
+===============================================================================
+
+[ ] S2-01 Refetch sekali saat realtime kembali SUBSCRIBED
+    Basis: frontend.md §7 (Koneksi putus)
+    Masalah: useBookingFeed hanya memperbarui lastEventAt saat SUBSCRIBED; perubahan
+    yang terlewat selama tab tidur/jaringan putus tidak diambil ulang. Feed booth di
+    useTenantEventView dan useAdminDashboard juga perlu diaudit.
+    Rencana:
+    - Saat status berubah dari disconnected/connecting ke SUBSCRIBED, panggil refetch
+      satu kali (bukan loop) untuk booking dan booth.
+    - Jangan refetch pada SUBSCRIBED pertama bila data awal baru saja dimuat.
+    - Pertahankan tombol "Muat ulang data" sebagai fallback manual.
+    Acceptance: skenario CONN-04 di qa_checklist_test_plan.md lulus; tidak ada channel
+    ganda atau fetch berulang.
+    Verifikasi: matikan jaringan saat halaman terbuka lalu nyalakan; cek data berubah
+    tanpa reload; npm run verify.
+
+[ ] S2-02 Audit cleanup channel dan langganan ganda
+    Basis: frontend.md §7 (Cleanup)
+    Masalah: cleanup sudah ada di 3 tempat, tetapi perpindahan rute cepat dan perubahan
+    dependency effect bisa membuat channel menumpuk atau subscribe dua kali.
+    Rencana:
+    - Catat nama channel yang aktif saat membuka /event/:id, /bookings, /admin,
+      /admin/bookings lalu berpindah rute berulang.
+    - Pastikan setiap effect mengembalikan removeChannel dan tidak membuat channel baru
+      hanya karena callback berubah (gunakan ref seperti useBookingFeed).
+    - Tambah komentar "mengapa" bila ada dependency yang sengaja dihilangkan.
+    Acceptance: tidak ada peringatan channel ganda; jumlah channel kembali ke nol
+    setelah meninggalkan halaman.
+    Verifikasi: DevTools Supabase/console; npm test.
+
+[ ] S2-03 Panel detail mobile tidak menutupi peta
+    Basis: frontend.md §6 dan §10
+    Masalah: panel detail masih berupa aside yang ditempatkan di samping peta. Di 375 px
+    perlu dipastikan panel berubah menjadi bagian di bawah peta atau bottom sheet dan
+    tidak menutupi legenda/kontrol zoom.
+    Rencana:
+    - Audit TenantEventView dan TenantSidebar pada 360/375 px.
+    - Bila perlu, ubah panel menjadi drawer/bottom sheet dengan padding peta, tombol
+      tutup yang jelas, focus trap, Escape, dan pengembalian fokus.
+    - Ringkasan harga dan tombol pesan harus tetap terlihat tanpa menutupi denah.
+    Acceptance: peta tetap bisa dipan/zoom saat panel tertutup; panel tidak menutupi
+    kontrol utama; keyboard dan screen reader tetap bisa menutup panel.
+    Verifikasi: uji 360/375/768/1280; E2E smoke + A11Y.
+
+[ ] S2-04 Pastikan status booth terbaca tanpa warna
+    Basis: frontend.md §5 dan §11
+    Masalah: status dibedakan lewat warna/outline. Perlu bukti bahwa label/legenda dan
+    keadaan interaksi selalu tampil, termasuk untuk Reserved/Booked.
+    Rencana:
+    - Audit legenda peta, label booth, aria-label, dan panel detail.
+    - Pastikan booth tidak tersedia tetap menampilkan status/alasan dan tidak menawarkan
+      aksi pesan.
+    - Jangan mengandalkan hover; status harus terbaca dari teks.
+    Acceptance: screenshot grayscale masih bisa membedakan status; axe lulus.
+    Verifikasi: E2E a11y; cek manual grayscale.
+
+[ ] S2-05 Naikkan target sentuh kontrol utama non-ikon
+    Basis: frontend.md §6 (minimal 44x44 untuk kontrol utama)
+    Masalah: setelah task 37, tombol ikon sudah 44x44, tetapi kontrol teks kecil masih
+    20-36 px (link footer/breadcrumb, InlineConfirm, filter status, paginasi, tombol
+    header).
+    Rencana:
+    - Prioritas: tombol aksi utama (pesan, simpan, verifikasi, batal) dan filter.
+    - Gunakan min-h-11/min-w-11 atau padding vertikal; jangan memperbesar teks.
+    - Link inline dalam kalimat boleh tetap kecil sesuai pengecualian WCAG 2.5.8.
+    Acceptance: semua tombol aksi utama >=44x44; tidak ada kontrol non-inline <24x24.
+    Verifikasi: ukur di 360/768/1280; axe lulus; layout desktop tidak bergeser berarti.
+
+[ ] S2-06 Audit responsif dan keyboard pada alur inti
+    Basis: frontend.md §6 dan §11
+    Masalah: axe hanya mengaudit halaman statis. Alur memilih booth, checkout, dan
+    konfirmasi belum tentu bisa diselesaikan tanpa mouse di semua ukuran.
+    Rencana:
+    - Uji 375/768/1280: landing, /event, /event/:id, /bookings, /admin,
+      /admin/bookings, /admin/blueprint, editor.
+    - Uji Tab/Shift+Tab/Enter/Space/Escape pada peta, dialog checkout, filter, paginasi,
+      dan konfirmasi inline.
+    - Catat temuan sebagai task kecil terpisah bila bukan perbaikan satu baris.
+    Acceptance: seluruh alur utama selesai dengan keyboard; fokus terlihat; tidak ada
+    focus trap yang bocor.
+    Verifikasi: checklist manual + E2E a11y.
+
+[ ] S2-07 Audit pesan loading, kosong, gagal, dan berhasil
+    Basis: frontend.md §6 dan §8.3
+    Masalah: StatePanel sudah dipakai, tetapi sebagian pesan masih generik dan belum
+    menyebut langkah berikutnya.
+    Rencana:
+    - Cek setiap halaman: pesan memuat menyebut apa yang dimuat; error menyebut apa yang
+      gagal dan apa yang bisa dilakukan; empty state menyebut kondisi nyata.
+    - Pastikan toast sukses menyebut objek konkret (mis. "Booth A-12 ditandai dipesan").
+    - Hapus "Success!", "Submit", atau pesan pemasaran kosong.
+    Acceptance: tidak ada pesan generik tanpa konteks; role status/alert tetap benar.
+    Verifikasi: npm test; E2E smoke.
+
+===============================================================================
+SPRINT 3 - AKSESIBILITAS, ANTI-SLOP, DAN RILIS              (P1/P2, 1 minggu)
+===============================================================================
+
+[ ] S3-01 Keyboard-only end-to-end
+    Basis: frontend.md §6 dan §11
+    Masalah: audit manual perlu diulang setelah perubahan Sprint 1-2 untuk memastikan
+    tidak ada regresi fokus atau urutan tab.
+    Rencana:
+    - Jalankan alur organizer (buat denah, tambah booth, simpan, publikasikan) dan
+      tenant (cari event, pilih booth, checkout, batalkan) hanya dengan keyboard.
+    - Perbaiki urutan fokus, label, dan Escape yang tertinggal.
+    Acceptance: kedua alur selesai tanpa mouse; fokus kembali ke pemicu setelah dialog
+    ditutup.
+    Verifikasi: catatan langkah + E2E smoke.
+
+[ ] S3-02 Audit kontras dan focus-visible
+    Basis: frontend.md §5 dan §6
+    Masalah: axe WCAG AA lulus, tetapi teks kecil muted/clay dan keadaan disabled perlu
+    dicek manual pada latar surface/canvas/pine-soft.
+    Rencana:
+    - Ukur kontras teks 11-12 px, placeholder, badge status, dan tombol disabled.
+    - Pastikan setiap outline-none punya focus-visible ring yang kontras dan tidak
+      terpotong overflow-hidden.
+    Acceptance: kontras teks normal >=4.5:1 dan teks besar >=3:1; focus ring terlihat
+    di semua kontrol.
+    Verifikasi: axe + alat kontras; E2E a11y.
+
+[ ] S3-03 Audit copy dan hapus sisa AI slop
+    Basis: frontend.md §8.1-§8.3
+    Masalah: perlu pengecekan akhir untuk memastikan tidak ada copy generik, ikon tanpa
+    teks, card berlebihan, atau KPI yang tidak dipakai.
+    Rencana:
+    - Sisir landing, dashboard, editor, checkout, dan empty state.
+    - Hapus elemen yang tidak membantu keputusan (frontend.md §8.5).
+    - Ganti istilah teknis internal dengan bahasa operator.
+    Acceptance: setiap tombol menjelaskan aksinya; tidak ada emoji ikon, gradien, blur,
+    shadow tebal, atau teks placeholder.
+    Verifikasi: grep pola terlarang; review visual 3 breakpoint.
+
+[ ] S3-04 Audit motion dan prefers-reduced-motion
+    Basis: frontend.md §6 dan §8.4
+    Masalah: style.css sudah mematikan animasi/transisi saat reduced motion, tetapi
+    masih ada ~34 deklarasi transition tanpa motion-reduce di komponen.
+    Rencana:
+    - Pastikan durasi interaksi 120-180 ms dan tidak ada animasi berulang selain spinner.
+    - Biarkan global reduced-motion sebagai jaring pengaman; tambahkan motion-reduce
+      hanya pada animasi yang tetap terlihat (mis. spinner sudah ditangani).
+    - Hapus animasi dekoratif/parallax bila ditemukan.
+    Acceptance: dengan prefers-reduced-motion aktif tidak ada transisi/animasi
+    non-esensial; spinner berhenti atau tidak berputar.
+    Verifikasi: DevTools emulasi reduced motion; npm run build.
+
+[ ] S3-05 Screenshot before/after 3 breakpoint
+    Basis: frontend.md §9.2
+    Masalah: perubahan visual Sprint 1-2 perlu bukti, bukan ingatan.
+    Rencana:
+    - Ambil screenshot landing, /event, detail event, dashboard, dan editor pada
+      375/768/1280 sebelum dan sesudah perubahan.
+    - Simpan di folder lokal atau artifact CI; jangan commit gambar besar.
+    Acceptance: setiap perubahan visual punya pasangan before/after dan catatan satu
+    kalimat.
+    Verifikasi: Playwright screenshot; review manual.
+
+[ ] S3-06 Buat log iterasi frontend
+    Basis: frontend.md §9.3
+    Masalah: belum ada log iterasi formal; keputusan visual mudah hilang di riwayat
+    commit.
+    Rencana:
+    - Tambah frontend-iterations.md dengan tabel: Iterasi, Masalah, Perubahan,
+      Verifikasi, Status.
+    - Isi entri untuk task 29-38 yang sudah selesai sebagai baseline.
+    Acceptance: log memuat minimal 5 iterasi terakhir dan formatnya sama dengan
+    frontend.md §9.3.
+    Verifikasi: review dokumen.
+
+[ ] S3-07 Checklist DoD rilis frontend
+    Basis: frontend.md §11
+    Masalah: DoD belum dijalankan sebagai gerbang rilis yang eksplisit.
+    Rencana:
+    - Salin checklist §11 ke issue/PR rilis dan centang satu per satu.
+    - Jalankan npm run verify, E2E smoke, dan a11y; catat hasil aktual (jumlah test,
+      ukuran chunk, skip E2E).
+    - Jangan tandai rilis selesai bila ada butir DoD yang belum terpenuhi.
+    Acceptance: checklist terisi lengkap dengan bukti; tidak ada task Sprint 1-2 yang
+    tersisa tanpa alasan.
+    Verifikasi: npm run verify; npm run test:e2e -- e2e/smoke.spec.ts e2e/a11y.spec.ts.
+
+===============================================================================
+CATATAN AKHIR
+===============================================================================
+- Task 38 di NEXT_TASKS.txt (lint/format) adalah prasyarat S1-01; jangan menduplikasi
+  pekerjaan. Setelah selesai, tutup task 38 dan centang S1-01.
+- Task 18 (error boundary global) masih terbuka di NEXT_TASKS.txt dan berada di luar
+  sprint front-end ini sampai branch fix/error-boundary-chunk-recovery di-merge.
+- Jangan mengubah routing, RPC/skema Supabase, logika Zustand, atau DnD yang sudah
+  berjalan tanpa alasan kuat dan pengujian ulang.
