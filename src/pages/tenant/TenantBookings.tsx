@@ -2,7 +2,6 @@ import AppHeader from '../../components/layout/AppHeader'
 import { ErrorPanel, LoadingPanel } from '../../components/ui/StatePanel'
 import { useDocumentTitle } from '../../hooks/useDocumentTitle'
 import BookingEmptyState from './tenant-bookings/BookingEmptyState'
-import BookingMetrics from './tenant-bookings/BookingMetrics'
 import BookingStatusFilters from './tenant-bookings/BookingStatusFilters'
 import TenantBookingCard from './tenant-bookings/TenantBookingCard'
 import TenantBookingsHeader from './tenant-bookings/TenantBookingsHeader'
@@ -38,8 +37,6 @@ export default function TenantBookings() {
 
         {!state.loading && !state.error && (
           <>
-            <BookingMetrics state={state} />
-
             <BookingStatusFilters state={state} />
 
             {state.visibleBookings.length === 0 ? (

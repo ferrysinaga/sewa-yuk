@@ -209,15 +209,12 @@ export function useAdminDashboard() {
       blueprints.map((blueprint) => {
         const eventBooths = booths.filter((booth) => booth.blueprint_id === blueprint.id)
         const total = eventBooths.length
-        const booked = eventBooths.filter((booth) => booth.status === 'Booked').length
         const available = eventBooths.filter((booth) => booth.status === 'Available').length
 
         return {
           ...blueprint,
           total,
-          booked,
           available,
-          occupancy: total > 0 ? Math.round((booked / total) * 100) : 0,
         }
       }),
     [blueprints, booths],
@@ -269,13 +266,6 @@ export function useAdminDashboard() {
       setUpdatingIds((current) => current.filter((id) => id !== booth.id))
     }
   }
-
-  const statusDistribution = statusOptions.map((status) => {
-    const count = scopeBooths.filter((booth) => booth.status === status).length
-    const percentage = metrics.total > 0 ? Math.round((count / metrics.total) * 100) : 0
-
-    return { status, count, percentage }
-  })
 
   const summaryCards = [
     {
@@ -331,7 +321,6 @@ export function useAdminDashboard() {
     activeEvent,
     activeEventLabel,
     handleStatusChange,
-    statusDistribution,
     summaryCards,
     categoryLabel,
     statusMeta,

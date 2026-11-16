@@ -5,7 +5,6 @@ import { useDocumentTitle } from '../../hooks/useDocumentTitle'
 import BoothInventoryTable from './admin-dashboard/BoothInventoryTable'
 import DashboardHeader from './admin-dashboard/DashboardHeader'
 import EventSummaryList from './admin-dashboard/EventSummaryList'
-import StatusDistribution from './admin-dashboard/StatusDistribution'
 import SummaryCards from './admin-dashboard/SummaryCards'
 import { useAdminDashboard } from './admin-dashboard/useAdminDashboard'
 
@@ -51,11 +50,7 @@ export default function AdminDashboard() {
 
             <div className="mt-6 grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_320px]">
               <BoothInventoryTable dashboard={dashboard} />
-
-              <aside className="space-y-5">
-                <StatusDistribution dashboard={dashboard} />
-                <EventSummaryList dashboard={dashboard} />
-              </aside>
+              <EventSummaryList dashboard={dashboard} />
             </div>
           </>
         )}

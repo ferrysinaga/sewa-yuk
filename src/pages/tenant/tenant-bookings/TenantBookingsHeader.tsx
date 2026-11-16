@@ -24,8 +24,6 @@ export default function TenantBookingsHeader({ state }: { state: TenantBookingsS
           <SyncStatusBadge
             status={feed.status}
             lastUpdatedAt={lastUpdatedAt}
-            onRefresh={() => void handleRefresh()}
-            refreshing={refreshing}
           />
         </div>
       </div>
@@ -36,7 +34,7 @@ export default function TenantBookingsHeader({ state }: { state: TenantBookingsS
           disabled={refreshing || loading}
           className="inline-flex items-center justify-center gap-2 rounded-[8px] border border-line bg-surface px-5 py-2.5 text-sm font-semibold text-ink transition-colors hover:bg-canvas focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
         >
-          {refreshing ? 'Memperbarui…' : 'Perbarui status'}
+          {refreshing ? 'Memuat pesanan…' : 'Muat ulang pesanan'}
         </button>
         <Link
           to="/event"

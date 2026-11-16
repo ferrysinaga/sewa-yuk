@@ -1,0 +1,102 @@
+TASK FRONT-END: ITERASI UI UNTUK MENGHILANGKAN "AI SLOP"
+Status: DONE
+Prioritas: P2
+
+Progress iterasi:
+- Landing disederhanakan dengan menghapus bagian berulang dan daftar event
+  statis yang sudah tidak akurat; peta demo kini jelas diberi label ilustrasi.
+- Detail booth penyewa tidak lagi menampilkan koordinat/dimensi kanvas dalam
+  piksel yang tidak membantu keputusan sewa.
+- Autentikasi kini fokus pada form; angka contoh, panel promosi, dan tautan
+  beranda yang berulang dihilangkan.
+- Explorer menampilkan informasi event dan jumlah booth tersedia tanpa
+  ilustrasi denah generik atau indikator okupansi yang berulang.
+- Dashboard organizer dan daftar denah diringkas untuk mengutamakan inventaris,
+  pilihan event, status, dan ketersediaan aktual.
+- Editor denah menampilkan kanvas sebelum metadata; ringkasan pembayaran
+  tenant yang redundan dihapus dan muat ulang diperjelas.
+- Batasan layout dan audit status/viewport mobile-desktop diperiksa; validasi
+  unit, build, smoke, serta aksesibilitas selesai. E2E halaman terlindungi
+  dilewati karena kredensial/data uji tidak tersedia.
+
+Tujuan
+Rapikan antarmuka agar terasa spesifik untuk pemesanan dan pengelolaan booth,
+bukan template SaaS/dashboard generik. Utamakan informasi dan aksi yang benar-
+benar membantu pengguna; hapus elemen dekoratif atau berulang sebelum
+menambahkan komponen baru.
+
+Konteks peningkatan layout
+Perbaikan layout harus membantu pengguna memahami posisi mereka, menemukan
+informasi yang dibutuhkan, dan menyelesaikan tugas utama dengan langkah yang
+lebih jelas. Jangan menyusun ulang elemen hanya demi variasi visual.
+
+- Bentuk hierarki yang jelas: judul dan konteks halaman, informasi penting,
+  lalu aksi utama; aksi sekunder tidak boleh mengalahkan aksi utama.
+- Kelompokkan informasi yang memang dibutuhkan bersama. Pada pemilihan booth,
+  jaga hubungan visual antara peta, legenda/filter, detail booth, harga, status,
+  serta aksi pemesanan.
+- Gunakan lebar konten dan alignment yang konsisten. Hindari kolom kosong,
+  baris yang terlalu padat, kartu bertumpuk, atau teks panjang yang memecah
+  alur baca.
+- Pada layar sempit, susun ulang konten berdasarkan urutan tugas, bukan sekadar
+  mengecilkan layout desktop. Pastikan peta, filter, formulir, dan tombol utama
+  tetap mudah ditemukan dan digunakan tanpa menutupi konten.
+- Kurangi perpindahan fokus dan scroll yang tidak perlu. Dekatkan kontrol
+  dengan konten yang diubahnya dan pertahankan posisi/status yang relevan
+  setelah aksi, filter, atau validasi.
+- Gunakan ruang kosong untuk memisahkan kelompok informasi; jangan menambah
+  panel, border, warna, atau dekorasi bila spacing dan tipografi sudah cukup.
+- Pertahankan pola layout yang familier antarhalaman untuk navigasi, formulir,
+  status, dan konfirmasi. Perbedaan hanya dibuat bila mendukung konteks tugas.
+- Validasi layout dengan konten panjang, data kosong, status/error, ukuran
+  viewport mobile dan desktop, serta navigasi keyboard.
+
+Prinsip
+- Ikuti frontend.md dan token desain yang sudah ada.
+- Jangan menambah gradient, glassmorphism, shadow dekoratif, pill/badge tanpa
+fungsi, KPI palsu, ikon emoji, atau kartu untuk setiap potongan informasi.
+- Hindari judul pemasaran generik, teks pengisi, instruksi berulang, dan label
+yang tidak menjelaskan data atau aksi secara spesifik.
+- Jangan mengubah routing, alur booking, skema/RPC Supabase, state Zustand,
+atau perilaku drag-and-drop.
+- Perubahan harus berupa implementasi UI yang terukur, bukan penggantian tema
+menyeluruh atau penambahan dependensi.
+
+Ruang lingkup
+1. Audit halaman Landing, EventExplorer, TenantEventView, Login/Register,
+   AdminDashboard, BlueprintList, BlueprintEditor, dan halaman booking.
+   Catat elemen yang berulang, dekoratif, tidak informatif, atau bersaing
+   dengan aksi utama; hapus atau sederhanakan hanya bila tidak membantu tugas
+   pengguna.
+2. Tegaskan hierarki per halaman:
+   - Landing: arahkan ke penemuan acara dan pemesanan booth.
+   - Explorer/detail acara: jadikan acara dan peta booth fokus; dekatkan
+     legenda, filter, detail pilihan, harga, dan aksi booking dengan peta.
+   - Login/Register: utamakan form, pesan validasi, dan aksi autentikasi.
+   - Admin: utamakan pemilihan acara, status denah, kanvas, serta aksi edit
+     yang sering dipakai; tampilkan ringkasan hanya bila membantu keputusan.
+   - Booking: utamakan status, tenggat, jumlah, dan aksi yang relevan.
+3. Samakan penggunaan spacing, heading, lebar konten, tombol, field, border,
+   dan status panel menggunakan komponen/token yang sudah tersedia. Hindari
+   membuat abstraksi baru jika pola hanya digunakan sekali.
+4. Periksa tampilan desktop dan mobile, termasuk loading, kosong, error,
+   disabled, terpilih, dan konfirmasi. Jangan menutupi peta atau aksi penting.
+5. Pertahankan aksesibilitas: urutan heading masuk akal, label dan status
+   spesifik, fokus keyboard terlihat, target sentuh memadai, kontras WCAG AA,
+   serta animasi menghormati prefers-reduced-motion.
+
+Kriteria selesai
+- Setiap perubahan mengurangi elemen atau ambiguitas yang teridentifikasi;
+  tidak ada dekorasi/pola generik baru tanpa alasan produk yang jelas.
+- Aksi utama tiap halaman dapat dikenali tanpa membaca paragraf panjang.
+- Semua data, aksi, dan status tetap berasal dari perilaku aplikasi yang nyata;
+  tidak menambahkan metrik, placeholder, atau klaim yang dibuat-buat.
+- Alur booking, autentikasi, pengelolaan denah, realtime, dan drag-and-drop
+  tetap berfungsi.
+- Tidak ada regresi responsive atau aksesibilitas pada halaman yang disentuh.
+- Jalankan npm run verify. Untuk perubahan UI, jalankan juga:
+  npm run test:e2e -- e2e/smoke.spec.ts
+  npm run test:e2e -- e2e/a11y.spec.ts
+- Tinjau diff akhir: hapus kode/style yang tidak lagi dipakai dan pastikan
+  setiap perubahan UI mendukung tugas pengguna, bukan sekadar membuat halaman
+  terlihat lebih ramai.
