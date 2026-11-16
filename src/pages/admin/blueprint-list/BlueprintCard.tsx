@@ -209,7 +209,7 @@ export default function BlueprintCard({
       <div className="mt-auto flex flex-col gap-2 pt-4">
         <Link
           to={`/admin/blueprint/${blueprint.id}`}
-          className="inline-flex items-center justify-center gap-2 rounded-card-sm bg-pine px-4 py-2.5 text-sm font-semibold text-on-accent transition-colors hover:bg-pine-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2"
+          className="inline-flex items-center justify-center gap-2 rounded-control bg-pine px-4 py-2.5 text-sm font-semibold text-on-accent transition-colors hover:bg-pine-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2"
         >
           Atur Denah & Booth
         </Link>
@@ -219,7 +219,7 @@ export default function BlueprintCard({
             to={`/event/${blueprint.id}`}
             target="_blank"
             rel="noreferrer"
-            className="inline-flex items-center justify-center rounded-card-sm border border-line bg-surface px-3 py-2 text-xs font-semibold text-ink transition-colors hover:bg-canvas focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2"
+            className="inline-flex items-center justify-center rounded-control border border-line bg-surface px-3 py-2 text-xs font-semibold text-ink transition-colors hover:bg-canvas focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2"
           >
             Pratinjau
           </Link>
@@ -227,7 +227,7 @@ export default function BlueprintCard({
             type="button"
             onClick={onPublishToggle}
             disabled={isUpdating}
-            className={`inline-flex items-center justify-center rounded-card-sm px-3 py-2 text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60 ${
+            className={`inline-flex items-center justify-center rounded-control px-3 py-2 text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60 ${
               isPublished
                 ? 'border border-line bg-surface text-ink hover:bg-canvas'
                 : 'bg-pine text-on-accent hover:bg-pine-dark'
@@ -243,7 +243,7 @@ export default function BlueprintCard({
             onClick={editing ? onCancelEdit : onStartEdit}
             aria-expanded={editing}
             aria-controls={editing ? `edit-form-${blueprint.id}` : undefined}
-            className="inline-flex items-center justify-center rounded-card-sm border border-line bg-surface px-3 py-2 text-xs font-semibold text-ink transition-colors hover:bg-canvas focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2"
+            className="inline-flex items-center justify-center rounded-control border border-line bg-surface px-3 py-2 text-xs font-semibold text-ink transition-colors hover:bg-canvas focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2"
           >
             {editing ? 'Tutup Edit' : 'Edit Detail'}
           </button>
@@ -253,7 +253,7 @@ export default function BlueprintCard({
             aria-expanded={confirmingDelete}
             aria-controls={confirmingDelete ? `delete-blueprint-${blueprint.id}` : undefined}
             disabled={deleting}
-            className="inline-flex items-center justify-center rounded-card-sm border border-danger bg-surface px-3 py-2 text-xs font-semibold text-danger-dark transition-colors hover:bg-danger-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-danger focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+            className="inline-flex items-center justify-center rounded-control border border-danger bg-surface px-3 py-2 text-xs font-semibold text-danger-dark transition-colors hover:bg-danger-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-danger focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {deleting ? 'Menghapus…' : 'Hapus'}
           </button>

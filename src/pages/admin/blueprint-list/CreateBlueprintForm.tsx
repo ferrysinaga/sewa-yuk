@@ -58,7 +58,7 @@ export default function CreateBlueprintForm({
             value={name}
             onChange={(event) => onNameChange(event.target.value)}
             placeholder="Contoh: Pameran Teknologi Nusantara 2026"
-            className="mt-1.5 w-full rounded-card-sm border border-line bg-surface px-3 py-2 text-sm text-ink placeholder:text-muted focus:border-pine focus:outline-none focus:ring-2 focus:ring-pine-soft"
+            className="mt-1.5 w-full rounded-control border border-line bg-surface px-3 py-2 text-sm text-ink placeholder:text-muted focus:border-pine focus:outline-none focus:ring-2 focus:ring-pine-soft"
           />
         </div>
 
@@ -72,7 +72,7 @@ export default function CreateBlueprintForm({
             value={blueprintId}
             onChange={(event) => onIdChange(event.target.value)}
             placeholder="pameran-teknologi-2026"
-            className="mt-1.5 w-full rounded-card-sm border border-line bg-surface px-3 py-2 font-mono text-sm text-ink placeholder:text-muted focus:border-pine focus:outline-none focus:ring-2 focus:ring-pine-soft"
+            className="mt-1.5 w-full rounded-control border border-line bg-surface px-3 py-2 font-mono text-sm text-ink placeholder:text-muted focus:border-pine focus:outline-none focus:ring-2 focus:ring-pine-soft"
           />
           <p className="mt-1 text-compact text-muted">
             Huruf kecil, angka, dan tanda hubung. Contoh URL: /event/
@@ -90,7 +90,7 @@ export default function CreateBlueprintForm({
             value={venue}
             onChange={(event) => onVenueChange(event.target.value)}
             placeholder="Jakarta Convention Center - Hall A"
-            className="mt-1.5 w-full rounded-card-sm border border-line bg-surface px-3 py-2 text-sm text-ink placeholder:text-muted focus:border-pine focus:outline-none focus:ring-2 focus:ring-pine-soft"
+            className="mt-1.5 w-full rounded-control border border-line bg-surface px-3 py-2 text-sm text-ink placeholder:text-muted focus:border-pine focus:outline-none focus:ring-2 focus:ring-pine-soft"
           />
         </div>
 
@@ -104,7 +104,7 @@ export default function CreateBlueprintForm({
             value={eventDate}
             onChange={(event) => onEventDateChange(event.target.value)}
             placeholder="12 - 15 Maret 2026"
-            className="mt-1.5 w-full rounded-card-sm border border-line bg-surface px-3 py-2 text-sm text-ink placeholder:text-muted focus:border-pine focus:outline-none focus:ring-2 focus:ring-pine-soft"
+            className="mt-1.5 w-full rounded-control border border-line bg-surface px-3 py-2 text-sm text-ink placeholder:text-muted focus:border-pine focus:outline-none focus:ring-2 focus:ring-pine-soft"
           />
         </div>
 
@@ -118,7 +118,7 @@ export default function CreateBlueprintForm({
             onChange={(event) => onDescriptionChange(event.target.value)}
             rows={3}
             placeholder="Deskripsi singkat event yang akan tampil di halaman tenant."
-            className="mt-1.5 w-full resize-y rounded-card-sm border border-line bg-surface px-3 py-2 text-sm text-ink placeholder:text-muted focus:border-pine focus:outline-none focus:ring-2 focus:ring-pine-soft"
+            className="mt-1.5 w-full resize-y rounded-control border border-line bg-surface px-3 py-2 text-sm text-ink placeholder:text-muted focus:border-pine focus:outline-none focus:ring-2 focus:ring-pine-soft"
           />
         </div>
       </div>
@@ -136,7 +136,7 @@ export default function CreateBlueprintForm({
         <button
           type="button"
           onClick={onCancel}
-          className="inline-flex items-center justify-center rounded-card-sm border border-line bg-surface px-5 py-2.5 text-sm font-semibold text-ink transition-colors hover:bg-canvas focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2"
+          className="inline-flex items-center justify-center rounded-control border border-line bg-surface px-5 py-2.5 text-sm font-semibold text-ink transition-colors hover:bg-canvas focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2"
         >
           Batal
         </button>
@@ -144,7 +144,7 @@ export default function CreateBlueprintForm({
           type="button"
           onClick={onCreate}
           disabled={creating}
-          className="inline-flex items-center justify-center gap-2 rounded-card-sm bg-pine px-5 py-2.5 text-sm font-semibold text-on-accent transition-colors hover:bg-pine-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+          className="inline-flex items-center justify-center gap-2 rounded-control bg-pine px-5 py-2.5 text-sm font-semibold text-on-accent transition-colors hover:bg-pine-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
         >
           {creating && <Spinner size="md" tone="white" />}
           {creating ? 'Membuat…' : 'Buat & Atur Booth'}

@@ -96,15 +96,26 @@ export default function TenantEventHeader({ state }: { state: TenantEventViewSta
             <p className="text-tiny font-semibold uppercase tracking-[0.14em] text-muted">
               Ketersediaan
             </p>
-            <p className="mt-1 text-2xl font-semibold tabular-nums text-ink">
-              {availableCount}
-              <span className="ml-1 text-sm font-medium text-muted">/ {totalBooths} booth</span>
-            </p>
-            <p className="mt-1 text-compact leading-relaxed text-muted">
-              {reservedCount > 0
-                ? `${reservedCount} booth sedang dipesan penyewa lain.`
-                : 'Semua booth tersedia untuk dipilih.'}
-            </p>
+            {totalBooths > 0 ? (
+              <>
+                <p className="mt-1 text-2xl font-semibold tabular-nums text-ink">
+                  {availableCount}
+                  <span className="ml-1 text-sm font-medium text-muted">/ {totalBooths} booth</span>
+                </p>
+                <p className="mt-1 text-compact leading-relaxed text-muted">
+                  {reservedCount > 0
+                    ? `${reservedCount} booth sedang dipesan penyewa lain.`
+                    : 'Semua booth tersedia untuk dipilih.'}
+                </p>
+              </>
+            ) : (
+              <>
+                <p className="mt-1 text-base font-semibold text-ink">Belum ada booth</p>
+                <p className="mt-1 text-compact leading-relaxed text-muted">
+                  Booth untuk event ini belum dipublikasikan.
+                </p>
+              </>
+            )}
           </div>
         )}
       </div>

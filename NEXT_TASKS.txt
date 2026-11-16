@@ -633,7 +633,7 @@ FRONTEND DEVELOPER
     - `npm run verify` lulus (lint, format, typecheck, 198 unit test, build,
       budget bundle).
 
-[ ] FE-07. Poles tampilan dan konsistensi visual lintas halaman [P2]
+[x] FE-07. Poles tampilan dan konsistensi visual lintas halaman [P2]
     Pemilik: Frontend Developer
     Kolaborator: UI/UX, QA
     Konteks: Alur fungsional sudah stabil, tetapi hasil QA-04 dan audit UX-04
@@ -667,6 +667,31 @@ FRONTEND DEVELOPER
     - Lampirkan screenshot before/after di PR (lihat
       docs/qa/RESPONSIVE_REGRESSION.md bagian 5).
     Dependensi: UX-04, QA-04, FE-03
+    STATUS: SELESAI (15 November 2026)
+    Hasil:
+    - `/event`: breakpoint header dipindah ke `lg` agar "ACARA TERSEDIA" tidak
+      terpotong di 768 px; kartu tanpa booth tidak lagi menampilkan
+      "0 dari 0 booth tersedia"/"0% terisi" dan badge kategori duplikat.
+    - `/event/:eventId`: panel ketersediaan menampilkan "Belum ada booth" dan
+      "Booth untuk event ini belum dipublikasikan." saat total booth 0.
+    - `/admin` dan `/admin/bookings`: ringkasan metrik diseragamkan menjadi
+      grid kartu `rounded-card` dengan spacing dan tipografi yang sama;
+      `BookingMetrics` tenant ikut diselaraskan dan memakai `tabular-nums`.
+    - Tabel admin: header memakai `text-tiny tracking-[0.12em]` di kedua
+      tabel; padding sel pemesanan `px-4` membuat tabel pas di 1280 px
+      (sebelumnya 1242 px di kontainer 1214 px).
+    - Kontrol (tombol, link aksi, input, select) memakai `rounded-control`;
+      panel/kartu tetap `rounded-card`/`rounded-card-sm`.
+    - Dokumen bukti: docs/qa/FE_07_VISUAL_POLISH.md + screenshot before/after
+      di docs/qa/screenshots/fe-07/.
+    Verifikasi:
+    - `npm run verify` lulus (lint, format, typecheck, 223 unit test, build,
+      budget bundle, secret scan).
+    - `npm run test:e2e -- e2e/smoke.spec.ts e2e/a11y.spec.ts
+      e2e/responsive.spec.ts`: 11 lulus, 14 skip (staging/.env.e2e tidak
+      tersedia), 0 gagal.
+    - Halaman admin diuji visual dengan sesi + REST mock lokal; verifikasi
+      staging dengan akun nyata tetap bagian dari gate rilis.
 
 
 ===============================================================================

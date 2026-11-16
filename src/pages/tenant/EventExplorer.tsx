@@ -159,7 +159,7 @@ export default function EventExplorer() {
         tabIndex={-1}
         className="mx-auto max-w-7xl px-4 py-10 focus:outline-none sm:px-6 sm:py-12 lg:px-8"
       >
-        <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
+        <div className="flex flex-col justify-between gap-6 lg:flex-row lg:items-end">
           <div className="max-w-2xl">
             <div className="flex items-center gap-2.5">
               <span aria-hidden="true" className="h-px w-6 bg-clay" />
@@ -176,7 +176,7 @@ export default function EventExplorer() {
             </p>
           </div>
 
-          <div className="border-t border-line pt-4 sm:border-l sm:border-t-0 sm:pl-6 sm:pt-0 sm:text-right">
+          <div className="border-t border-line pt-4 lg:border-l lg:border-t-0 lg:pl-6 lg:pt-0 lg:text-right">
             <p className="text-tiny font-semibold uppercase tracking-[0.14em] text-muted">
               Acara tersedia
             </p>
@@ -225,7 +225,10 @@ export default function EventExplorer() {
               )
             })}
           </div>
-          <p className="ml-auto text-xs tabular-nums text-muted" aria-live="polite">
+          <p
+            className="w-full text-right text-xs tabular-nums text-muted sm:ml-auto sm:w-auto"
+            aria-live="polite"
+          >
             {loading ? 'Memuat acara…' : `${visibleEvents.length} dari ${events.length} acara`}
           </p>
         </div>
@@ -287,11 +290,9 @@ export default function EventExplorer() {
               const occupancy =
                 event.totalBooths > 0 ? Math.round((sold / event.totalBooths) * 100) : 0
               const categoryText =
-                event.categories.length === 0
-                  ? 'Belum ada booth'
-                  : event.categories.length === 1
-                    ? getBoothCategoryLabel(event.categories[0])
-                    : `${event.categories.length} kategori`
+                event.categories.length === 1
+                  ? getBoothCategoryLabel(event.categories[0])
+                  : `${event.categories.length} kategori`
 
               return (
                 <Link
@@ -365,9 +366,11 @@ export default function EventExplorer() {
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
                       <h2 className="text-base font-semibold text-ink sm:text-lg">{event.name}</h2>
-                      <span className="rounded-chip border border-line bg-surface px-1.5 py-0.5 text-tiny font-medium text-muted">
-                        {categoryText}
-                      </span>
+                      {event.categories.length > 0 && (
+                        <span className="rounded-chip border border-line bg-surface px-1.5 py-0.5 text-tiny font-medium text-muted">
+                          {categoryText}
+                        </span>
+                      )}
                     </div>
                     <p className="mt-1 text-xs text-muted">{event.venue || 'Venue belum diatur'}</p>
                     <p className="mt-0.5 text-xs tabular-nums text-muted">
@@ -378,28 +381,41 @@ export default function EventExplorer() {
                         {event.description}
                       </p>
                     )}
-                    <div className="mt-3 flex items-center gap-3">
-                      <div className="h-1.5 w-full max-w-[220px] overflow-hidden rounded-micro bg-unavailable">
-                        <div
-                          className="h-full rounded-micro bg-pine"
-                          style={{ width: `${occupancy}%` }}
-                        />
+                    {event.totalBooths > 0 && (
+                      <div className="mt-3 flex items-center gap-3">
+                        <div className="h-1.5 w-full max-w-[220px] overflow-hidden rounded-micro bg-unavailable">
+                          <div
+                            className="h-full rounded-micro bg-pine"
+                            style={{ width: `${occupancy}%` }}
+                          />
+                        </div>
+                        <span className="shrink-0 text-compact tabular-nums text-muted">
+                          {occupancy}% terisi
+                        </span>
                       </div>
-                      <span className="shrink-0 text-compact tabular-nums text-muted">
-                        {occupancy}% terisi
-                      </span>
-                    </div>
+                    )}
                   </div>
 
                   <div className="flex items-center justify-between gap-4 sm:flex-col sm:items-end sm:gap-2 sm:text-right">
                     <div>
-                      <p className="text-sm font-semibold tabular-nums text-ink">
-                        {event.availableBooths}{' '}
-                        <span className="font-normal text-muted">dari {event.totalBooths}</span>
-                      </p>
-                      <p className="text-tiny font-semibold uppercase tracking-[0.12em] text-muted">
-                        booth tersedia
-                      </p>
+                      {event.totalBooths > 0 ? (
+                        <>
+                          <p className="text-sm font-semibold tabular-nums text-ink">
+                            {event.availableBooths}{' '}
+                            <span className="font-normal text-muted">dari {event.totalBooths}</span>
+                          </p>
+                          <p className="text-tiny font-semibold uppercase tracking-[0.12em] text-muted">
+                            booth tersedia
+                          </p>
+                        </>
+                      ) : (
+                        <>
+                          <p className="text-sm font-semibold text-ink">Belum ada booth</p>
+                          <p className="text-tiny font-semibold uppercase tracking-[0.12em] text-muted">
+                            belum dipublikasikan
+                          </p>
+                        </>
+                      )}
                     </div>
                     <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-pine transition-colors group-hover:text-pine-dark">
                       Lihat peta

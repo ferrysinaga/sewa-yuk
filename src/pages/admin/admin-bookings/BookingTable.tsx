@@ -16,30 +16,30 @@ export default function BookingTable({ state }: { state: AdminBookingsState }) {
   return (
     <div className="overflow-x-auto">
       <table className="min-w-[980px] w-full divide-y divide-line text-left text-sm">
-        <thead className="bg-canvas text-compact font-semibold uppercase tracking-wide text-muted">
+        <thead className="bg-canvas text-tiny font-semibold uppercase tracking-[0.12em] text-muted">
           <tr>
-            <th scope="col" className="px-5 py-3">
+            <th scope="col" className="px-4 py-3">
               Kode
             </th>
-            <th scope="col" className="px-5 py-3">
+            <th scope="col" className="px-4 py-3">
               Tenant
             </th>
-            <th scope="col" className="px-5 py-3">
+            <th scope="col" className="px-4 py-3">
               Event
             </th>
-            <th scope="col" className="px-5 py-3">
+            <th scope="col" className="px-4 py-3">
               Booth
             </th>
-            <th scope="col" className="px-5 py-3 text-right">
+            <th scope="col" className="px-4 py-3 text-right">
               Total
             </th>
-            <th scope="col" className="px-5 py-3">
+            <th scope="col" className="px-4 py-3">
               Status
             </th>
-            <th scope="col" className="px-5 py-3">
+            <th scope="col" className="px-4 py-3">
               Dibuat
             </th>
-            <th scope="col" className="px-5 py-3 text-right">
+            <th scope="col" className="px-4 py-3 text-right">
               Aksi
             </th>
           </tr>
@@ -65,7 +65,7 @@ export default function BookingTable({ state }: { state: AdminBookingsState }) {
             return (
               <Fragment key={booking.id}>
                 <tr className="transition-colors hover:bg-canvas">
-                  <td className="whitespace-nowrap px-5 py-3.5">
+                  <td className="whitespace-nowrap px-4 py-3.5">
                     <p className="font-mono text-xs font-semibold text-ink">
                       {booking.booking_code}
                     </p>
@@ -73,7 +73,7 @@ export default function BookingTable({ state }: { state: AdminBookingsState }) {
                       {PAYMENT_METHOD_LABEL[booking.payment_method]}
                     </p>
                   </td>
-                  <td className="px-5 py-3.5">
+                  <td className="px-4 py-3.5">
                     <p className="max-w-[180px] truncate text-xs font-medium text-ink">
                       {booking.tenant_name || 'Tanpa nama'}
                     </p>
@@ -81,7 +81,7 @@ export default function BookingTable({ state }: { state: AdminBookingsState }) {
                       {booking.tenant_email || '—'}
                     </p>
                   </td>
-                  <td className="px-5 py-3.5">
+                  <td className="px-4 py-3.5">
                     <p className="max-w-[200px] truncate text-xs font-medium text-ink">
                       {event?.name ?? booking.blueprint_id}
                     </p>
@@ -89,7 +89,7 @@ export default function BookingTable({ state }: { state: AdminBookingsState }) {
                       {event?.venue ?? '—'}
                     </p>
                   </td>
-                  <td className="whitespace-nowrap px-5 py-3.5">
+                  <td className="whitespace-nowrap px-4 py-3.5">
                     <span className="inline-flex rounded-full bg-unavailable px-2.5 py-1 text-compact font-medium text-ink ring-1 ring-inset ring-line">
                       {booking.booth_category}
                     </span>
@@ -97,10 +97,10 @@ export default function BookingTable({ state }: { state: AdminBookingsState }) {
                       {booking.booth_id ? booking.booth_id.slice(0, 8) : 'booth dihapus'}
                     </p>
                   </td>
-                  <td className="whitespace-nowrap px-5 py-3.5 text-right text-xs font-medium text-ink">
+                  <td className="whitespace-nowrap px-4 py-3.5 text-right text-xs font-medium text-ink">
                     {formatCurrency(booking.price)}
                   </td>
-                  <td className="whitespace-nowrap px-5 py-3.5">
+                  <td className="whitespace-nowrap px-4 py-3.5">
                     <span
                       className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-compact font-semibold ring-1 ring-inset ${statusBadge}`}
                     >
@@ -108,10 +108,10 @@ export default function BookingTable({ state }: { state: AdminBookingsState }) {
                       {bookingStatusLabel}
                     </span>
                   </td>
-                  <td className="whitespace-nowrap px-5 py-3.5 text-compact text-muted">
+                  <td className="whitespace-nowrap px-4 py-3.5 text-compact text-muted">
                     {formatDateTime(booking.created_at)}
                   </td>
-                  <td className="whitespace-nowrap px-5 py-3.5">
+                  <td className="whitespace-nowrap px-4 py-3.5">
                     <div className="flex items-center justify-end gap-2">
                       {canCancel ? (
                         <>
@@ -120,7 +120,7 @@ export default function BookingTable({ state }: { state: AdminBookingsState }) {
                               type="button"
                               onClick={() => void state.handleConfirm(booking)}
                               disabled={isUpdating}
-                              className="rounded-card-sm bg-pine px-3 py-1.5 text-compact font-semibold text-on-accent transition-colors hover:bg-pine-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+                              className="rounded-control bg-pine px-3 py-1.5 text-compact font-semibold text-on-accent transition-colors hover:bg-pine-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
                             >
                               {isUpdating ? 'Memproses…' : 'Konfirmasi'}
                             </button>
@@ -131,7 +131,7 @@ export default function BookingTable({ state }: { state: AdminBookingsState }) {
                             disabled={isUpdating}
                             aria-expanded={confirmingCancel}
                             aria-controls={`cancel-booking-${booking.id}`}
-                            className="rounded-card-sm px-2 py-1.5 text-compact font-semibold text-muted transition-colors hover:bg-danger-soft hover:text-danger-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-danger focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+                            className="rounded-control px-2 py-1.5 text-compact font-semibold text-muted transition-colors hover:bg-danger-soft hover:text-danger-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-danger focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
                           >
                             Batalkan
                           </button>
@@ -145,7 +145,7 @@ export default function BookingTable({ state }: { state: AdminBookingsState }) {
 
                 {confirmingCancel && (
                   <tr className="bg-canvas">
-                    <td colSpan={8} className="px-5 py-3">
+                    <td colSpan={8} className="px-4 py-3">
                       <InlineConfirm
                         id={`cancel-booking-${booking.id}`}
                         title={`Batalkan pesanan ${booking.booking_code}?`}

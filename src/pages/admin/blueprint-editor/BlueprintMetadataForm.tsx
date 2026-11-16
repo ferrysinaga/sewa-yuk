@@ -48,7 +48,7 @@ export default function BlueprintMetadataForm({
             type="text"
             value={draft.name}
             onChange={(event) => updateDraft({ name: event.target.value })}
-            className="mt-1.5 w-full rounded-card-sm border border-line bg-surface px-3 py-2 text-sm text-ink focus:border-pine focus:outline-none focus:ring-2 focus:ring-pine-soft"
+            className="mt-1.5 w-full rounded-control border border-line bg-surface px-3 py-2 text-sm text-ink focus:border-pine focus:outline-none focus:ring-2 focus:ring-pine-soft"
           />
         </div>
 
@@ -62,7 +62,7 @@ export default function BlueprintMetadataForm({
             value={draft.venue}
             onChange={(event) => updateDraft({ venue: event.target.value })}
             placeholder="Nama venue dan hall"
-            className="mt-1.5 w-full rounded-card-sm border border-line bg-surface px-3 py-2 text-sm text-ink placeholder:text-muted focus:border-pine focus:outline-none focus:ring-2 focus:ring-pine-soft"
+            className="mt-1.5 w-full rounded-control border border-line bg-surface px-3 py-2 text-sm text-ink placeholder:text-muted focus:border-pine focus:outline-none focus:ring-2 focus:ring-pine-soft"
           />
         </div>
 
@@ -76,7 +76,7 @@ export default function BlueprintMetadataForm({
             value={draft.eventDate}
             onChange={(event) => updateDraft({ eventDate: event.target.value })}
             placeholder="12 - 15 Maret 2026"
-            className="mt-1.5 w-full rounded-card-sm border border-line bg-surface px-3 py-2 text-sm text-ink placeholder:text-muted focus:border-pine focus:outline-none focus:ring-2 focus:ring-pine-soft"
+            className="mt-1.5 w-full rounded-control border border-line bg-surface px-3 py-2 text-sm text-ink placeholder:text-muted focus:border-pine focus:outline-none focus:ring-2 focus:ring-pine-soft"
           />
         </div>
 
@@ -90,7 +90,7 @@ export default function BlueprintMetadataForm({
             onChange={(event) => updateDraft({ description: event.target.value })}
             rows={3}
             placeholder="Deskripsi singkat event untuk tenant."
-            className="mt-1.5 w-full resize-y rounded-card-sm border border-line bg-surface px-3 py-2 text-sm text-ink placeholder:text-muted focus:border-pine focus:outline-none focus:ring-2 focus:ring-pine-soft"
+            className="mt-1.5 w-full resize-y rounded-control border border-line bg-surface px-3 py-2 text-sm text-ink placeholder:text-muted focus:border-pine focus:outline-none focus:ring-2 focus:ring-pine-soft"
           />
         </div>
 

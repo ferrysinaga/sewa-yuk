@@ -135,7 +135,7 @@ export function ErrorPanel({
             <button
               type="button"
               onClick={onRetry}
-              className="inline-flex items-center justify-center rounded-card-sm bg-pine px-5 py-2.5 text-sm font-semibold text-on-accent transition-colors hover:bg-pine-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 focus-visible:ring-offset-surface motion-reduce:transition-none"
+              className="inline-flex items-center justify-center rounded-control bg-pine px-5 py-2.5 text-sm font-semibold text-on-accent transition-colors hover:bg-pine-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 focus-visible:ring-offset-surface motion-reduce:transition-none"
             >
               {retryLabel}
             </button>

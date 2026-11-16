@@ -29,7 +29,7 @@ export default function BookingEmptyState({ hasBookings }: { hasBookings: boolea
       {!hasBookings && (
         <Link
           to="/event"
-          className="mt-5 inline-flex items-center justify-center rounded-card-sm bg-pine px-5 py-2.5 text-sm font-semibold text-on-accent transition-colors hover:bg-pine-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2"
+          className="mt-5 inline-flex items-center justify-center rounded-control bg-pine px-5 py-2.5 text-sm font-semibold text-on-accent transition-colors hover:bg-pine-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2"
         >
           Cari Booth
         </Link>

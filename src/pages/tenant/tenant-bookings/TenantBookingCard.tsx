@@ -196,7 +196,7 @@ export default function TenantBookingCard({
                 disabled={isUpdating}
                 aria-expanded={confirmingCancel}
                 aria-controls={`cancel-booking-${booking.id}`}
-                className="inline-flex items-center justify-center rounded-card-sm border border-line bg-surface px-4 py-2 text-xs font-semibold text-ink transition-colors hover:border-danger hover:bg-danger-soft hover:text-danger-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-danger focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+                className="inline-flex items-center justify-center rounded-control border border-line bg-surface px-4 py-2 text-xs font-semibold text-ink transition-colors hover:border-danger hover:bg-danger-soft hover:text-danger-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-danger focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 Batalkan Pesanan
               </button>
@@ -205,7 +205,7 @@ export default function TenantBookingCard({
                   type="button"
                   onClick={() => void handleMarkPaid(booking)}
                   disabled={isUpdating}
-                  className="inline-flex items-center justify-center gap-2 rounded-card-sm bg-pine px-4 py-2 text-xs font-semibold text-on-accent transition-colors hover:bg-pine-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+                  className="inline-flex items-center justify-center gap-2 rounded-control bg-pine px-4 py-2 text-xs font-semibold text-on-accent transition-colors hover:bg-pine-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   {isUpdating ? 'Mengirim…' : 'Saya Sudah Bayar'}
                 </button>

@@ -20,7 +20,7 @@ export default function BookingStatusFilters({ state }: { state: TenantBookingsS
             type="button"
             onClick={() => setStatusFilter(status)}
             aria-pressed={isActive}
-            className={`inline-flex items-center gap-1.5 rounded-card-sm px-3 py-1.5 text-xs font-medium ring-1 ring-inset transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 ${
+            className={`inline-flex items-center gap-1.5 rounded-control px-3 py-1.5 text-xs font-medium ring-1 ring-inset transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 ${
               isActive
                 ? 'bg-pine text-on-accent ring-pine'
                 : 'bg-surface text-muted ring-line hover:bg-canvas'
