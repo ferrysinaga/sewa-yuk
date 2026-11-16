@@ -38,60 +38,7 @@ export const categoryFilters: Array<{ value: Category | 'all'; label: string }> 
 ]
 
 export const navItems = [
-  { label: 'Acara', href: '#acara' },
-  { label: 'Cara kerja', href: '#cara-kerja' },
   { label: 'Penyelenggara', href: '#penyelenggara' },
-]
-
-export const events = [
-  {
-    id: 'hall-a',
-    title: 'Pameran Teknologi Nusantara 2026',
-    venue: 'Jakarta Convention Center · Hall A',
-    day: '12–15',
-    month: 'Mar 2026',
-    category: 'Teknologi',
-    available: 42,
-    total: 120,
-  },
-  {
-    id: 'hall-b',
-    title: 'Festival Kuliner Merdeka',
-    venue: 'Grand City Convention · Hall B',
-    day: '2–5',
-    month: 'Apr 2026',
-    category: 'F&B',
-    available: 18,
-    total: 90,
-  },
-  {
-    id: 'hall-5',
-    title: 'Indonesia Fashion Week',
-    venue: 'ICE BSD · Hall 5',
-    day: '21–26',
-    month: 'Apr 2026',
-    category: 'Pakaian',
-    available: 31,
-    total: 140,
-  },
-]
-
-export const values = [
-  {
-    title: 'Lokasi terbaca sebelum bayar',
-    description:
-      'Lihat posisi booth terhadap pintu masuk, lorong utama, dan booth tetangga. Bandingkan ukuran serta harga tanpa menebak.',
-  },
-  {
-    title: 'Status tidak pernah tertinggal',
-    description:
-      'Booth yang baru dikunci langsung berubah di layar semua orang, sehingga tidak ada dua penyewa yang merasa memegang lokasi yang sama.',
-  },
-  {
-    title: 'Satu denah untuk semua',
-    description:
-      'Penyelenggara menyusun tata letak, penyewa membaca denah yang sama. Perubahan langsung tersaji tanpa file gambar terpisah.',
-  },
 ]
 
 export const organizerPoints = [
@@ -104,19 +51,4 @@ export const tenantPoints = [
   'Sorot booth sesuai kategori dan kebutuhan',
   'Buka detail lewat klik atau navigasi keyboard',
   'Kunci posisi secara real-time sebelum diambil',
-]
-
-export const steps = [
-  {
-    title: 'Pilih acara',
-    description: 'Buka acara yang masih menerima penyewa, lalu periksa tanggal dan lokasinya.',
-  },
-  {
-    title: 'Baca denah',
-    description: 'Sorot kategori, pilih booth, dan periksa ukuran, harga, serta statusnya.',
-  },
-  {
-    title: 'Kunci booth',
-    description: 'Masuk untuk mengunci pilihan. Booth langsung ditandai agar tidak diambil orang lain.',
-  },
 ]

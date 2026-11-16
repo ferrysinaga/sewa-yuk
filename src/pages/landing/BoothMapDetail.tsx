@@ -44,34 +44,25 @@ export default function BoothMapDetail({ activeBooth, onClearSelection }: BoothM
             <div className="flex flex-wrap items-end justify-between gap-3 sm:justify-end">
               <div className="sm:text-right">
                 <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted">
-                  Harga sewa
+                  Harga contoh
                 </p>
                 <p className="mt-0.5 text-base font-semibold tabular-nums text-ink">
                   {formatPrice(activeBooth.price)}
                 </p>
               </div>
-              {activeBooth.status === 'Available' ? (
-                <Link
-                  to="/event"
-                  className="inline-flex items-center justify-center gap-2 rounded-[6px] bg-pine px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-pine-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 focus-visible:ring-offset-surface motion-reduce:transition-none"
-                >
-                  Pesan booth
-                  <ArrowRight />
-                </Link>
-              ) : (
-                <span className="inline-flex items-center rounded-[6px] border border-line bg-canvas px-3 py-2 text-xs font-medium text-muted">
-                  Tidak dapat dipesan
-                </span>
-              )}
+              <Link
+                to="/event"
+                className="inline-flex items-center justify-center gap-2 rounded-[6px] bg-pine px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-pine-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 focus-visible:ring-offset-surface motion-reduce:transition-none"
+              >
+                Cari booth aktual
+                <ArrowRight />
+              </Link>
             </div>
           </div>
 
           {activeBooth.status !== 'Available' && (
             <p className="mt-3 border-t border-line pt-3 text-xs leading-relaxed text-muted">
-              {activeBooth.status === 'Reserved'
-                ? 'Booth ini sedang ditahan untuk penyewa lain.'
-                : 'Booth ini sudah terisi.'}{' '}
-              Pilih booth bertanda tersedia untuk melanjutkan.
+              Status ini hanya contoh. Ketersediaan aktual dapat dilihat pada halaman acara.
             </p>
           )}
 
@@ -92,7 +83,7 @@ export default function BoothMapDetail({ activeBooth, onClearSelection }: BoothM
             to="/event"
             className="inline-flex items-center gap-1.5 text-sm font-semibold text-pine transition-colors hover:text-pine-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 focus-visible:ring-offset-surface motion-reduce:transition-none"
           >
-            Lihat semua booth
+            Lihat acara aktual
             <ArrowRight />
           </Link>
         </div>
