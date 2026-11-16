@@ -16,7 +16,11 @@ export default function TenantBookings() {
     <div className="min-h-screen bg-canvas">
       <AppHeader />
 
-      <main id="main" tabIndex={-1} className="mx-auto max-w-5xl px-4 py-10 focus:outline-none sm:px-6 lg:px-8">
+      <main
+        id="main"
+        tabIndex={-1}
+        className="mx-auto max-w-5xl px-4 py-10 focus:outline-none sm:px-6 lg:px-8"
+      >
         <TenantBookingsHeader state={state} />
 
         {state.loading && (

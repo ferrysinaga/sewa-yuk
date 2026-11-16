@@ -1,11 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import {
-  CANVAS_HEIGHT,
-  CANVAS_WIDTH,
-  GRID_SIZE,
-  clamp,
-  snapToGrid,
-} from './canvas'
+import { CANVAS_HEIGHT, CANVAS_WIDTH, GRID_SIZE, clamp, snapToGrid } from './canvas'
 
 describe('canvas constants', () => {
   it('menetapkan ukuran kanvas dan grid yang dipakai editor', () => {

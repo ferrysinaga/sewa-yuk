@@ -13,10 +13,7 @@ function readCredentials(emailKey: string, passwordKey: string): Credentials {
   }
 }
 
-export const organizer = readCredentials(
-  'E2E_ORGANIZER_EMAIL',
-  'E2E_ORGANIZER_PASSWORD',
-)
+export const organizer = readCredentials('E2E_ORGANIZER_EMAIL', 'E2E_ORGANIZER_PASSWORD')
 
 export const tenantA = readCredentials('E2E_TENANT_A_EMAIL', 'E2E_TENANT_A_PASSWORD')
 export const tenantB = readCredentials('E2E_TENANT_B_EMAIL', 'E2E_TENANT_B_PASSWORD')

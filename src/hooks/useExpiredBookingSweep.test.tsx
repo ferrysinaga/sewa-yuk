@@ -64,8 +64,7 @@ describe('useExpiredBookingSweep', () => {
     })
 
     const { rerender } = renderHook(
-      ({ bookings, currentNow }) =>
-        useExpiredBookingSweep({ bookings, now: currentNow, onSweep }),
+      ({ bookings, currentNow }) => useExpiredBookingSweep({ bookings, now: currentNow, onSweep }),
       { initialProps: { bookings: [first], currentNow: NOW } },
     )
 
@@ -80,9 +79,7 @@ describe('useExpiredBookingSweep', () => {
     const onSweep = vi.fn().mockResolvedValue(0)
     const future = makeBooking({ expires_at: '2026-11-07T11:00:00.000Z' })
 
-    renderHook(() =>
-      useExpiredBookingSweep({ bookings: [future], now: NOW, onSweep }),
-    )
+    renderHook(() => useExpiredBookingSweep({ bookings: [future], now: NOW, onSweep }))
 
     await act(async () => {})
 

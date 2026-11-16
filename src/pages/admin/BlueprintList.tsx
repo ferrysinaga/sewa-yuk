@@ -14,11 +14,12 @@ export default function BlueprintList() {
     <div className="min-h-screen bg-canvas">
       <AppHeader />
 
-      <main id="main" tabIndex={-1} className="mx-auto max-w-7xl px-4 py-8 focus:outline-none sm:px-6 lg:px-8">
-        <BlueprintListHeader
-          showCreate={list.showCreate}
-          onToggleCreate={list.toggleCreate}
-        />
+      <main
+        id="main"
+        tabIndex={-1}
+        className="mx-auto max-w-7xl px-4 py-8 focus:outline-none sm:px-6 lg:px-8"
+      >
+        <BlueprintListHeader showCreate={list.showCreate} onToggleCreate={list.toggleCreate} />
 
         {list.showCreate && (
           <CreateBlueprintForm
@@ -45,7 +46,8 @@ export default function BlueprintList() {
               <span className="font-semibold text-ink">{list.summaries.length}</span> denah
             </span>
             <span>
-              <span className="font-semibold text-pine-dark">{list.publishedCount}</span> dipublikasikan
+              <span className="font-semibold text-pine-dark">{list.publishedCount}</span>{' '}
+              dipublikasikan
             </span>
             <span>
               <span className="font-semibold text-clay-dark">{list.draftCount}</span> draft
@@ -61,11 +63,7 @@ export default function BlueprintList() {
         )}
 
         {!list.loading && list.error && (
-          <ErrorPanel
-            title="Gagal memuat denah"
-            description={list.error}
-            onRetry={list.retry}
-          />
+          <ErrorPanel title="Gagal memuat denah" description={list.error} onRetry={list.retry} />
         )}
 
         {!list.loading && !list.error && list.summaries.length === 0 && (

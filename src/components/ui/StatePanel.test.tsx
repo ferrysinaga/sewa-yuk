@@ -24,11 +24,7 @@ describe('ErrorPanel', () => {
     const onRetry = vi.fn()
 
     render(
-      <ErrorPanel
-        title="Gagal memuat data"
-        description="Koneksi terputus."
-        onRetry={onRetry}
-      />,
+      <ErrorPanel title="Gagal memuat data" description="Koneksi terputus." onRetry={onRetry} />,
     )
 
     expect(screen.getByRole('alert')).toHaveTextContent('Gagal memuat data')
@@ -64,9 +60,7 @@ describe('ErrorPanel', () => {
       />,
     )
 
-    expect(screen.getByRole('alert')).toHaveTextContent(
-      'Gagal memuat denah: Batas waktu habis.',
-    )
+    expect(screen.getByRole('alert')).toHaveTextContent('Gagal memuat denah: Batas waktu habis.')
 
     fireEvent.click(screen.getByRole('button', { name: 'Coba lagi' }))
     expect(onRetry).toHaveBeenCalledTimes(1)
@@ -90,12 +84,7 @@ describe('EmptyPanel', () => {
 
   it('mendukung ikon daftar dan judul ringkas sebagai paragraf', () => {
     const { container } = render(
-      <EmptyPanel
-        compact
-        titleAs="p"
-        title="Tidak ada hasil"
-        description="Ubah kata kunci."
-      />,
+      <EmptyPanel compact titleAs="p" title="Tidak ada hasil" description="Ubah kata kunci." />,
     )
 
     expect(screen.queryByRole('heading')).not.toBeInTheDocument()

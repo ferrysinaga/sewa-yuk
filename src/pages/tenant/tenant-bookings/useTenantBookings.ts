@@ -103,10 +103,7 @@ export function useTenantBookings() {
     onSweep: sweepExpiredBookings,
     onSwept: (released) => {
       if (released) {
-        showToast(
-          `${released} pesanan kedaluwarsa dibatalkan dan booth kembali tersedia.`,
-          'info',
-        )
+        showToast(`${released} pesanan kedaluwarsa dibatalkan dan booth kembali tersedia.`, 'info')
       }
 
       setReloadToken((token) => token + 1)
@@ -153,9 +150,7 @@ export function useTenantBookings() {
       const updated = (Array.isArray(data) ? data[0] : data) as BookingRow | null
 
       if (updated) {
-        setBookings((current) =>
-          current.map((row) => (row.id === updated.id ? updated : row)),
-        )
+        setBookings((current) => current.map((row) => (row.id === updated.id ? updated : row)))
       }
 
       showToast('Konfirmasi pembayaran dikirim. Menunggu verifikasi organizer.', 'success')
@@ -182,9 +177,7 @@ export function useTenantBookings() {
       const updated = (Array.isArray(data) ? data[0] : data) as BookingRow | null
 
       if (updated) {
-        setBookings((current) =>
-          current.map((row) => (row.id === updated.id ? updated : row)),
-        )
+        setBookings((current) => current.map((row) => (row.id === updated.id ? updated : row)))
       }
 
       showToast('Pesanan dibatalkan dan booth kembali tersedia.', 'success')
@@ -204,10 +197,7 @@ export function useTenantBookings() {
       const released = await sweepExpiredBookings()
 
       if (released) {
-        showToast(
-          `${released} pesanan kedaluwarsa dibatalkan dan booth kembali tersedia.`,
-          'info',
-        )
+        showToast(`${released} pesanan kedaluwarsa dibatalkan dan booth kembali tersedia.`, 'info')
       }
     } finally {
       setRefreshing(false)

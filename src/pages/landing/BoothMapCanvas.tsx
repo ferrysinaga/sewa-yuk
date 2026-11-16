@@ -39,7 +39,12 @@ export default function BoothMapCanvas({
           >
             <defs>
               <pattern id="landing-booth-grid" width="20" height="20" patternUnits="userSpaceOnUse">
-                <path d="M 20 0 L 0 0 0 20" fill="none" stroke="var(--color-grid)" strokeWidth="1" />
+                <path
+                  d="M 20 0 L 0 0 0 20"
+                  fill="none"
+                  stroke="var(--color-grid)"
+                  strokeWidth="1"
+                />
               </pattern>
             </defs>
 
@@ -107,7 +112,11 @@ export default function BoothMapCanvas({
               const titleTone = isSelected && !isUnavailable ? 'fill-white' : 'fill-ink'
               const metaTone = isSelected && !isUnavailable ? 'fill-pine-soft' : 'fill-muted'
               const priceTone =
-                isSelected && !isUnavailable ? 'fill-white' : isUnavailable ? 'fill-muted' : 'fill-ink'
+                isSelected && !isUnavailable
+                  ? 'fill-white'
+                  : isUnavailable
+                    ? 'fill-muted'
+                    : 'fill-ink'
 
               return (
                 <g
@@ -133,7 +142,6 @@ export default function BoothMapCanvas({
                   }`}
                 >
                   <title>{`${booth.label} — ${statusLabel[booth.status]}`}</title>
-
                   <rect
                     x={booth.x}
                     y={booth.y}
@@ -144,7 +152,6 @@ export default function BoothMapCanvas({
                     strokeDasharray={isReserved ? '4 3' : undefined}
                     className={`transition-colors motion-reduce:transition-none ${rectTone}`}
                   />
-
                   <rect
                     x={booth.x - 3}
                     y={booth.y - 3}
@@ -157,23 +164,20 @@ export default function BoothMapCanvas({
                     strokeDasharray="4 3"
                     className="pointer-events-none opacity-0 transition-opacity group-focus-visible:opacity-100 motion-reduce:transition-none"
                   />
-
                   <text
                     x={booth.x + 12}
                     y={booth.y + 24}
                     className={`pointer-events-none text-[11px] font-semibold ${titleTone}`}
                   >
                     {booth.id}
-                  </text>
-                  {' '}
+                  </text>{' '}
                   <text
                     x={booth.x + 12}
                     y={booth.y + 40}
                     className={`pointer-events-none text-[9px] font-medium ${metaTone}`}
                   >
                     {categoryLabel[booth.category]} · {statusLabel[booth.status]}
-                  </text>
-                  {' '}
+                  </text>{' '}
                   <text
                     x={booth.x + 12}
                     y={booth.y + booth.height - 12}
@@ -181,7 +185,6 @@ export default function BoothMapCanvas({
                   >
                     {formatPrice(booth.price)}
                   </text>
-
                   {isSelected && (
                     <g
                       transform={`translate(${booth.x + booth.width - 14} ${booth.y + 14})`}
@@ -202,7 +205,12 @@ export default function BoothMapCanvas({
               )
             })}
 
-            <path d="M220 384h80" stroke="var(--color-line)" strokeWidth="4" strokeLinecap="round" />
+            <path
+              d="M220 384h80"
+              stroke="var(--color-line)"
+              strokeWidth="4"
+              strokeLinecap="round"
+            />
             <path
               d="M256 372v12"
               stroke="var(--color-line)"
@@ -228,7 +236,10 @@ export default function BoothMapCanvas({
       <div className="mt-3 flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
         <ul className="flex flex-wrap items-center gap-x-4 gap-y-2 text-[11px] font-medium text-muted">
           <li className="inline-flex items-center gap-1.5">
-            <span aria-hidden="true" className="h-2.5 w-2.5 rounded-[2px] border border-pine bg-surface" />
+            <span
+              aria-hidden="true"
+              className="h-2.5 w-2.5 rounded-[2px] border border-pine bg-surface"
+            />
             Tersedia
           </li>
           <li className="inline-flex items-center gap-1.5">

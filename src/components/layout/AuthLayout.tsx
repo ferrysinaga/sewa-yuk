@@ -3,7 +3,9 @@ import type { ReactNode } from 'react'
 
 function BrandMark({ className = 'h-9 w-9' }: { className?: string }) {
   return (
-    <span className={`flex shrink-0 items-center justify-center rounded-[7px] bg-pine text-white ${className}`}>
+    <span
+      className={`flex shrink-0 items-center justify-center rounded-[7px] bg-pine text-white ${className}`}
+    >
       <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" className="h-5 w-5">
         <rect x="4" y="4" width="7" height="6" rx="1" stroke="currentColor" strokeWidth="1.6" />
         <rect x="13" y="4" width="7" height="6" rx="1" stroke="currentColor" strokeWidth="1.6" />
@@ -16,7 +18,12 @@ function BrandMark({ className = 'h-9 w-9' }: { className?: string }) {
 
 function CheckIcon() {
   return (
-    <svg viewBox="0 0 16 16" fill="none" aria-hidden="true" className="mt-0.5 h-3.5 w-3.5 shrink-0 text-pine">
+    <svg
+      viewBox="0 0 16 16"
+      fill="none"
+      aria-hidden="true"
+      className="mt-0.5 h-3.5 w-3.5 shrink-0 text-pine"
+    >
       <path
         d="m3.5 8.5 3 3 6-7"
         stroke="currentColor"
@@ -91,18 +98,78 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
               </p>
               <span className="text-[10px] tabular-nums text-muted">Hall A</span>
             </div>
-            <svg viewBox="0 0 400 150" role="img" aria-label="Pratinjau denah booth" className="mt-3 h-auto w-full">
-              <rect x="0.5" y="0.5" width="399" height="149" rx="7" fill="var(--color-map)" stroke="var(--color-line)" />
-              <rect x="20" y="20" width="100" height="50" rx="6" fill="var(--color-surface)" stroke="var(--color-pine)" strokeWidth="1.4" />
-              <rect x="132" y="20" width="100" height="50" rx="6" fill="var(--color-unavailable)" stroke="var(--color-muted)" strokeDasharray="4 3" />
-              <rect x="244" y="20" width="136" height="110" rx="6" fill="var(--color-pine)" stroke="var(--color-pine-dark)" strokeWidth="1.6" />
-              <rect x="20" y="82" width="212" height="48" rx="6" fill="var(--color-unavailable-deep)" stroke="var(--color-muted)" />
-              <text x="32" y="42" fill="var(--color-ink)" fontSize="9" fontWeight="600">A-01</text>
-              <text x="32" y="56" fill="var(--color-muted)" fontSize="8">Tersedia</text>
-              <text x="256" y="48" fill="#ffffff" fontSize="9" fontWeight="600">B-02</text>
-              <text x="256" y="62" fill="var(--color-pine-soft)" fontSize="8">Dipilih</text>
-              <text x="32" y="104" fill="var(--color-ink)" fontSize="9" fontWeight="600">A-04</text>
-              <text x="32" y="118" fill="var(--color-muted)" fontSize="8">Terisi</text>
+            <svg
+              viewBox="0 0 400 150"
+              role="img"
+              aria-label="Pratinjau denah booth"
+              className="mt-3 h-auto w-full"
+            >
+              <rect
+                x="0.5"
+                y="0.5"
+                width="399"
+                height="149"
+                rx="7"
+                fill="var(--color-map)"
+                stroke="var(--color-line)"
+              />
+              <rect
+                x="20"
+                y="20"
+                width="100"
+                height="50"
+                rx="6"
+                fill="var(--color-surface)"
+                stroke="var(--color-pine)"
+                strokeWidth="1.4"
+              />
+              <rect
+                x="132"
+                y="20"
+                width="100"
+                height="50"
+                rx="6"
+                fill="var(--color-unavailable)"
+                stroke="var(--color-muted)"
+                strokeDasharray="4 3"
+              />
+              <rect
+                x="244"
+                y="20"
+                width="136"
+                height="110"
+                rx="6"
+                fill="var(--color-pine)"
+                stroke="var(--color-pine-dark)"
+                strokeWidth="1.6"
+              />
+              <rect
+                x="20"
+                y="82"
+                width="212"
+                height="48"
+                rx="6"
+                fill="var(--color-unavailable-deep)"
+                stroke="var(--color-muted)"
+              />
+              <text x="32" y="42" fill="var(--color-ink)" fontSize="9" fontWeight="600">
+                A-01
+              </text>
+              <text x="32" y="56" fill="var(--color-muted)" fontSize="8">
+                Tersedia
+              </text>
+              <text x="256" y="48" fill="#ffffff" fontSize="9" fontWeight="600">
+                B-02
+              </text>
+              <text x="256" y="62" fill="var(--color-pine-soft)" fontSize="8">
+                Dipilih
+              </text>
+              <text x="32" y="104" fill="var(--color-ink)" fontSize="9" fontWeight="600">
+                A-04
+              </text>
+              <text x="32" y="118" fill="var(--color-muted)" fontSize="8">
+                Terisi
+              </text>
             </svg>
           </div>
 
@@ -121,7 +188,11 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
         </div>
       </aside>
 
-      <main id="main" tabIndex={-1} className="flex min-h-screen flex-col bg-surface focus:outline-none">
+      <main
+        id="main"
+        tabIndex={-1}
+        className="flex min-h-screen flex-col bg-surface focus:outline-none"
+      >
         <div className="flex items-center justify-between border-b border-line px-4 py-4 sm:px-6 lg:hidden">
           <Link
             to="/"

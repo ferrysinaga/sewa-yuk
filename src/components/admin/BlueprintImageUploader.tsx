@@ -40,7 +40,10 @@ export default function BlueprintImageUploader({
     try {
       await removeBlueprintImage(imagePath)
     } catch (cleanupError) {
-      console.warn('Gagal menghapus gambar yang belum tersimpan:', getBlueprintImageErrorMessage(cleanupError))
+      console.warn(
+        'Gagal menghapus gambar yang belum tersimpan:',
+        getBlueprintImageErrorMessage(cleanupError),
+      )
     }
   }
 
@@ -124,7 +127,13 @@ export default function BlueprintImageUploader({
         ) : (
           <div className="flex aspect-[1000/640] flex-col items-center justify-center gap-2 p-6 text-center">
             <span className="flex h-10 w-10 items-center justify-center rounded-[6px] bg-surface text-muted ">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                className="h-5 w-5"
+              >
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -134,8 +143,8 @@ export default function BlueprintImageUploader({
             </span>
             <p className="text-xs font-semibold text-ink">Belum ada gambar denah</p>
             <p className="max-w-xs text-[11px] leading-relaxed text-muted">
-              Unggah denah venue agar tenant mendapat gambaran tata letak. Booth tetap dapat
-              dipilih langsung dari kanvas interaktif.
+              Unggah denah venue agar tenant mendapat gambaran tata letak. Booth tetap dapat dipilih
+              langsung dari kanvas interaktif.
             </p>
           </div>
         )}
@@ -191,7 +200,10 @@ export default function BlueprintImageUploader({
       </p>
 
       {error && (
-        <p role="alert" className="mt-2 rounded-[6px] border border-danger bg-danger-soft px-3 py-2 text-[11px] text-danger-dark">
+        <p
+          role="alert"
+          className="mt-2 rounded-[6px] border border-danger bg-danger-soft px-3 py-2 text-[11px] text-danger-dark"
+        >
           {error}
         </p>
       )}

@@ -1,9 +1,6 @@
 import { Link } from 'react-router-dom'
 import SyncStatusBadge from '../../../components/ui/SyncStatusBadge'
-import {
-  BLUEPRINT_STATUS_BADGE,
-  BLUEPRINT_STATUS_LABEL,
-} from '../../../types/blueprint'
+import { BLUEPRINT_STATUS_BADGE, BLUEPRINT_STATUS_LABEL } from '../../../types/blueprint'
 import type { TenantEventViewState } from './useTenantEventView'
 
 function ArrowLeft() {
@@ -66,7 +63,9 @@ export default function TenantEventHeader({ state }: { state: TenantEventViewSta
                     blueprint.status === 'draft' ? 'bg-clay' : 'bg-muted'
                   }`}
                 />
-                {role === 'organizer' ? 'Pratinjau organizer' : BLUEPRINT_STATUS_LABEL[blueprint.status]}
+                {role === 'organizer'
+                  ? 'Pratinjau organizer'
+                  : BLUEPRINT_STATUS_LABEL[blueprint.status]}
               </span>
             )}
             <SyncStatusBadge

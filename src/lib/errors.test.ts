@@ -11,9 +11,9 @@ describe('getErrorMessage', () => {
   })
 
   it('mengambil pesan dari objek { message }', () => {
-    expect(
-      getErrorMessage({ message: 'relation "bookings" does not exist' }, 'Fallback'),
-    ).toBe('relation "bookings" does not exist')
+    expect(getErrorMessage({ message: 'relation "bookings" does not exist' }, 'Fallback')).toBe(
+      'relation "bookings" does not exist',
+    )
   })
 
   it('memakai fallback untuk null, undefined, dan pesan kosong', () => {

@@ -29,11 +29,7 @@ export default function ProtectedRoute({ allowedRoles }: ProtectedRouteProps) {
 
   if (!session) {
     return (
-      <Navigate
-        to="/login"
-        replace
-        state={{ from: `${location.pathname}${location.search}` }}
-      />
+      <Navigate to="/login" replace state={{ from: `${location.pathname}${location.search}` }} />
     )
   }
 

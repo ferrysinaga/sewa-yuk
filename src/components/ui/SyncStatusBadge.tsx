@@ -7,10 +7,7 @@ interface SyncStatusBadgeProps {
   refreshing?: boolean
 }
 
-const STATUS_META: Record<
-  RealtimeStatus,
-  { label: string; badge: string; dot: string }
-> = {
+const STATUS_META: Record<RealtimeStatus, { label: string; badge: string; dot: string }> = {
   live: {
     label: 'Sinkron real-time',
     badge: 'bg-pine-soft text-pine-dark',

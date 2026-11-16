@@ -106,9 +106,7 @@ export default function BoothInventoryTable({ dashboard }: { dashboard: AdminDas
           <select
             id="admin-category-filter"
             value={categoryFilter}
-            onChange={(event) =>
-              setCategoryFilter(event.target.value as typeof categoryFilter)
-            }
+            onChange={(event) => setCategoryFilter(event.target.value as typeof categoryFilter)}
             className="w-full rounded-[6px] border border-line bg-surface px-3 py-2 text-sm text-ink outline-none transition-colors focus:border-pine focus:ring-2 focus:ring-pine-soft motion-reduce:transition-none"
           >
             <option value="all">Semua kategori</option>
@@ -126,9 +124,7 @@ export default function BoothInventoryTable({ dashboard }: { dashboard: AdminDas
           <select
             id="admin-status-filter"
             value={statusFilter}
-            onChange={(event) =>
-              setStatusFilter(event.target.value as BoothStatus | 'all')
-            }
+            onChange={(event) => setStatusFilter(event.target.value as BoothStatus | 'all')}
             className="w-full rounded-[6px] border border-line bg-surface px-3 py-2 text-sm text-ink outline-none transition-colors focus:border-pine focus:ring-2 focus:ring-pine-soft motion-reduce:transition-none"
           >
             <option value="all">Semua status</option>
@@ -171,7 +167,10 @@ export default function BoothInventoryTable({ dashboard }: { dashboard: AdminDas
               const isUpdating = updatingIds.includes(booth.id)
 
               return (
-                <tr key={booth.id} className="transition-colors hover:bg-canvas motion-reduce:transition-none">
+                <tr
+                  key={booth.id}
+                  className="transition-colors hover:bg-canvas motion-reduce:transition-none"
+                >
                   <td className="whitespace-nowrap px-5 py-3.5">
                     <p className="font-mono text-xs font-semibold text-ink" title={booth.id}>
                       {booth.id.slice(0, 8)}

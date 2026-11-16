@@ -51,9 +51,8 @@ export default function InlineConfirm({
 
     if (event.key !== 'Tab') return
 
-    const focusable = containerRef.current?.querySelectorAll<HTMLButtonElement>(
-      'button:not([disabled])',
-    )
+    const focusable =
+      containerRef.current?.querySelectorAll<HTMLButtonElement>('button:not([disabled])')
     if (!focusable || focusable.length === 0) return
 
     const first = focusable[0]

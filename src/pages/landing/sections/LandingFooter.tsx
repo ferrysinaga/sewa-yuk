@@ -15,10 +15,7 @@ export default function LandingFooter() {
             </div>
           </div>
 
-          <nav
-            className="flex flex-wrap items-center gap-x-5 gap-y-2"
-            aria-label="Navigasi footer"
-          >
+          <nav className="flex flex-wrap items-center gap-x-5 gap-y-2" aria-label="Navigasi footer">
             {navItems.map((item) => (
               <a
                 key={item.href}

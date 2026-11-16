@@ -52,9 +52,7 @@ export function formatRemaining(remainingMs: number | null): string {
   const minutes = Math.floor((totalSeconds % 3600) / 60)
   const seconds = totalSeconds % 60
 
-  return [hours, minutes, seconds]
-    .map((value) => String(value).padStart(2, '0'))
-    .join(':')
+  return [hours, minutes, seconds].map((value) => String(value).padStart(2, '0')).join(':')
 }
 
 /**

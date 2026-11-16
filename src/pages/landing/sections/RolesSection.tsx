@@ -33,8 +33,8 @@ export default function RolesSection() {
               Susun denah, publikasikan sekali.
             </h3>
             <p className="mt-3 max-w-md text-sm leading-relaxed text-muted">
-              Ruang kerja drag-and-drop dengan bantuan grid. Atur kategori, harga, dan ukuran
-              booth, lalu tampilkan denah yang sama ke halaman acara.
+              Ruang kerja drag-and-drop dengan bantuan grid. Atur kategori, harga, dan ukuran booth,
+              lalu tampilkan denah yang sama ke halaman acara.
             </p>
             <ul className="mt-5 space-y-2.5">
               {organizerPoints.map((point) => (

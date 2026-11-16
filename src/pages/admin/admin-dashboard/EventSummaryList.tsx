@@ -1,8 +1,5 @@
 import { Link } from 'react-router-dom'
-import {
-  BLUEPRINT_STATUS_BADGE,
-  BLUEPRINT_STATUS_LABEL,
-} from '../../../types/blueprint'
+import { BLUEPRINT_STATUS_BADGE, BLUEPRINT_STATUS_LABEL } from '../../../types/blueprint'
 import type { AdminDashboardState } from './useAdminDashboard'
 
 export default function EventSummaryList({ dashboard }: { dashboard: AdminDashboardState }) {
@@ -26,16 +23,12 @@ export default function EventSummaryList({ dashboard }: { dashboard: AdminDashbo
                 onClick={() => setBlueprintFilter(isActive ? 'all' : event.id)}
                 aria-pressed={isActive}
                 className={`w-full rounded-[6px] border p-3 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2 focus-visible:ring-offset-surface motion-reduce:transition-none ${
-                  isActive
-                    ? 'border-pine bg-pine-soft'
-                    : 'border-line bg-surface hover:border-pine'
+                  isActive ? 'border-pine bg-pine-soft' : 'border-line bg-surface hover:border-pine'
                 }`}
               >
                 <span className="flex items-center justify-between gap-2">
                   <span className="flex min-w-0 items-center gap-2">
-                    <span className="truncate text-xs font-semibold text-ink">
-                      {event.name}
-                    </span>
+                    <span className="truncate text-xs font-semibold text-ink">{event.name}</span>
                     <span
                       className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold ring-1 ring-inset ${BLUEPRINT_STATUS_BADGE[event.status]}`}
                     >

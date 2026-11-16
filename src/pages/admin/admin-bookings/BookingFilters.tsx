@@ -1,7 +1,4 @@
-import {
-  BOOKING_STATUS_LABEL,
-  BOOKING_STATUS_OPTIONS,
-} from '../../../types/booking'
+import { BOOKING_STATUS_LABEL, BOOKING_STATUS_OPTIONS } from '../../../types/booking'
 import type { BookingStatus } from '../../../types/booking'
 import type { AdminBookingsState } from './useAdminBookings'
 

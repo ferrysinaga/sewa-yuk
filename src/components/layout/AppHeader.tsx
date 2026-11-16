@@ -74,10 +74,42 @@ export default function AppHeader() {
           >
             <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[7px] bg-pine text-white">
               <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" className="h-5 w-5">
-                <rect x="4" y="4" width="7" height="6" rx="1" stroke="currentColor" strokeWidth="1.6" />
-                <rect x="13" y="4" width="7" height="6" rx="1" stroke="currentColor" strokeWidth="1.6" />
-                <rect x="4" y="12" width="7" height="8" rx="1" stroke="currentColor" strokeWidth="1.6" />
-                <rect x="13" y="12" width="7" height="8" rx="1" stroke="currentColor" strokeWidth="1.6" />
+                <rect
+                  x="4"
+                  y="4"
+                  width="7"
+                  height="6"
+                  rx="1"
+                  stroke="currentColor"
+                  strokeWidth="1.6"
+                />
+                <rect
+                  x="13"
+                  y="4"
+                  width="7"
+                  height="6"
+                  rx="1"
+                  stroke="currentColor"
+                  strokeWidth="1.6"
+                />
+                <rect
+                  x="4"
+                  y="12"
+                  width="7"
+                  height="8"
+                  rx="1"
+                  stroke="currentColor"
+                  strokeWidth="1.6"
+                />
+                <rect
+                  x="13"
+                  y="12"
+                  width="7"
+                  height="8"
+                  rx="1"
+                  stroke="currentColor"
+                  strokeWidth="1.6"
+                />
               </svg>
             </span>
             <span className="leading-tight">
@@ -98,7 +130,11 @@ export default function AppHeader() {
             <div className="hidden text-right sm:block">
               <p className="max-w-[180px] truncate text-sm font-medium text-ink">{displayName}</p>
               <p className="text-xs text-muted">
-                {role === 'organizer' ? 'Penyelenggara' : role === 'tenant' ? 'Penyewa' : 'Pengguna'}
+                {role === 'organizer'
+                  ? 'Penyelenggara'
+                  : role === 'tenant'
+                    ? 'Penyewa'
+                    : 'Pengguna'}
               </p>
             </div>
             <span

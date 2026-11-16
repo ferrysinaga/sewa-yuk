@@ -32,9 +32,10 @@ describe('applyBookingChange', () => {
     const existing = makeBooking()
     const inserted = makeBooking({ id: 'booking-2', booking_code: 'BK-002' })
 
-    expect(
-      applyBookingChange([existing], { eventType: 'INSERT', new: inserted }),
-    ).toEqual([inserted, existing])
+    expect(applyBookingChange([existing], { eventType: 'INSERT', new: inserted })).toEqual([
+      inserted,
+      existing,
+    ])
   })
 
   it('UPDATE mengganti booking yang ada tanpa mengubah urutan', () => {
@@ -42,9 +43,10 @@ describe('applyBookingChange', () => {
     const second = makeBooking({ id: 'booking-2', booking_code: 'BK-002' })
     const updated = makeBooking({ id: 'booking-2', booking_code: 'BK-002', status: 'confirmed' })
 
-    expect(
-      applyBookingChange([first, second], { eventType: 'UPDATE', new: updated }),
-    ).toEqual([first, updated])
+    expect(applyBookingChange([first, second], { eventType: 'UPDATE', new: updated })).toEqual([
+      first,
+      updated,
+    ])
   })
 
   it('UPDATE dengan row parsial mempertahankan field lain', () => {
@@ -65,9 +67,10 @@ describe('applyBookingChange', () => {
     const existing = makeBooking()
     const incoming = makeBooking({ id: 'booking-3', booking_code: 'BK-003' })
 
-    expect(
-      applyBookingChange([existing], { eventType: 'UPDATE', new: incoming }),
-    ).toEqual([incoming, existing])
+    expect(applyBookingChange([existing], { eventType: 'UPDATE', new: incoming })).toEqual([
+      incoming,
+      existing,
+    ])
   })
 
   it('DELETE menghapus booking berdasarkan old.id', () => {

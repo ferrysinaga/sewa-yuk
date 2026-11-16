@@ -1,14 +1,6 @@
 import { expect, test } from '@playwright/test'
 import type { Browser, BrowserContext, Page } from '@playwright/test'
-import {
-  boothId,
-  eventId,
-  login,
-  missingEnv,
-  skipMessage,
-  tenantA,
-  tenantB,
-} from './fixtures'
+import { boothId, eventId, login, missingEnv, skipMessage, tenantA, tenantB } from './fixtures'
 
 /**
  * E2E realtime SYNC-01/02/03.
@@ -48,10 +40,7 @@ async function openTwoTenants(browser: Browser): Promise<{
   const pageA = await contextA.newPage()
   const pageB = await contextB.newPage()
 
-  await Promise.all([
-    login(pageA, tenantA),
-    login(pageB, tenantB),
-  ])
+  await Promise.all([login(pageA, tenantA), login(pageB, tenantB)])
 
   await Promise.all([openEvent(pageA), openEvent(pageB)])
 
@@ -66,12 +55,10 @@ async function selectBoothAndOpenCheckout(page: Page) {
 
 async function confirmBooking(page: Page) {
   const dialog = page.getByRole('dialog')
-  await dialog
-    .getByRole('button', { name: /Buat Pesanan & Kunci Booth/ })
-    .click()
-  await expect(
-    page.getByRole('heading', { name: 'Booth berhasil dikunci' }),
-  ).toBeVisible({ timeout: 45_000 })
+  await dialog.getByRole('button', { name: /Buat Pesanan & Kunci Booth/ }).click()
+  await expect(page.getByRole('heading', { name: 'Booth berhasil dikunci' })).toBeVisible({
+    timeout: 45_000,
+  })
 }
 
 async function reserveBooth(page: Page) {
@@ -87,9 +74,7 @@ async function reserveBooth(page: Page) {
 async function safeCancelBooking(page: Page) {
   try {
     await page.goto('/bookings')
-    const cancelButton = page
-      .getByRole('button', { name: 'Batalkan Pesanan' })
-      .first()
+    const cancelButton = page.getByRole('button', { name: 'Batalkan Pesanan' }).first()
 
     const visible = await cancelButton
       .waitFor({ state: 'visible', timeout: 10_000 })
@@ -136,17 +121,13 @@ test('SYNC-01: perubahan status booth terlihat real-time di konteks penyewa lain
     await expect(boothOnB).toHaveAttribute('data-booth-status', 'Reserved', {
       timeout: 30_000,
     })
-    await expect(
-      pageB.getByText(/booth sedang dipesan penyewa lain/),
-    ).toBeVisible()
+    await expect(pageB.getByText(/booth sedang dipesan penyewa lain/)).toBeVisible()
   } finally {
     await cleanup(contextA, contextB, pageA, pageB)
   }
 })
 
-test('SYNC-02: booth yang dikunci penyewa lain tidak bisa dipesan', async ({
-  browser,
-}) => {
+test('SYNC-02: booth yang dikunci penyewa lain tidak bisa dipesan', async ({ browser }) => {
   const { contextA, contextB, pageA, pageB } = await openTwoTenants(browser)
 
   try {
@@ -173,17 +154,12 @@ test('SYNC-02: booth yang dikunci penyewa lain tidak bisa dipesan', async ({
   }
 })
 
-test('SYNC-03: pemesanan bersamaan hanya menghasilkan satu transaksi', async ({
-  browser,
-}) => {
+test('SYNC-03: pemesanan bersamaan hanya menghasilkan satu transaksi', async ({ browser }) => {
   const { contextA, contextB, pageA, pageB } = await openTwoTenants(browser)
 
   try {
     // Keduanya memilih booth dan membuka checkout sebelum salah satu mengunci.
-    await Promise.all([
-      selectBoothAndOpenCheckout(pageA),
-      selectBoothAndOpenCheckout(pageB),
-    ])
+    await Promise.all([selectBoothAndOpenCheckout(pageA), selectBoothAndOpenCheckout(pageB)])
 
     const confirmA = pageA
       .getByRole('dialog')
@@ -211,9 +187,7 @@ test('SYNC-03: pemesanan bersamaan hanya menghasilkan satu transaksi', async ({
     expect(aWon !== bWon).toBe(true)
 
     const loser = aWon ? pageB : pageA
-    await expect(loser.getByRole('alert')).toContainText(
-      /Booth sudah tidak tersedia/,
-    )
+    await expect(loser.getByRole('alert')).toContainText(/Booth sudah tidak tersedia/)
   } finally {
     await cleanup(contextA, contextB, pageA, pageB)
   }

@@ -75,7 +75,9 @@ export default function BoothMap() {
           <h2 className="mt-2 text-base font-semibold leading-snug tracking-tight text-ink sm:text-lg">
             Pameran Teknologi Nusantara 2026
           </h2>
-          <p className="mt-1 text-xs text-muted">12–15 Maret 2026 · Jakarta Convention Center, Hall A</p>
+          <p className="mt-1 text-xs text-muted">
+            12–15 Maret 2026 · Jakarta Convention Center, Hall A
+          </p>
         </div>
         <div className="text-right">
           <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted">

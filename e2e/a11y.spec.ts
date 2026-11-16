@@ -2,14 +2,7 @@ import AxeBuilder from '@axe-core/playwright'
 import { expect, test } from '@playwright/test'
 import type { Page } from '@playwright/test'
 import type { AxeResults } from 'axe-core'
-import {
-  eventId,
-  login,
-  missingEnv,
-  organizer,
-  skipMessage,
-  tenantA,
-} from './fixtures'
+import { eventId, login, missingEnv, organizer, skipMessage, tenantA } from './fixtures'
 
 /**
  * Audit aksesibilitas WCAG A/AA dengan axe-core.
@@ -24,9 +17,7 @@ const WCAG_TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']
 function formatViolations(violations: AxeResults['violations']): string {
   return violations
     .map((violation) => {
-      const targets = violation.nodes
-        .map((node) => `    - ${node.target.join(' ')}`)
-        .join('\n')
+      const targets = violation.nodes.map((node) => `    - ${node.target.join(' ')}`).join('\n')
 
       return `${violation.id} (${violation.impact ?? 'unknown'}): ${violation.help}\n${targets}`
     })
@@ -61,19 +52,14 @@ test('A11Y-02: Event explorer tidak memiliki pelanggaran WCAG AA', async ({ page
 })
 
 test('A11Y-03: Detail event tidak memiliki pelanggaran WCAG AA', async ({ page }) => {
-  test.skip(
-    !eventId,
-    skipMessage('A11Y-03', missingEnv([['E2E_EVENT_ID', eventId]])),
-  )
+  test.skip(!eventId, skipMessage('A11Y-03', missingEnv([['E2E_EVENT_ID', eventId]])))
 
   await page.goto(`/event/${eventId}`)
   await waitForPage(page)
   await expectNoViolations(page, 'Detail event')
 })
 
-test('A11Y-04: Dashboard organizer tidak memiliki pelanggaran WCAG AA', async ({
-  page,
-}) => {
+test('A11Y-04: Dashboard organizer tidak memiliki pelanggaran WCAG AA', async ({ page }) => {
   const missing = missingEnv([
     ['E2E_ORGANIZER_EMAIL', organizer.email],
     ['E2E_ORGANIZER_PASSWORD', organizer.password],
@@ -86,9 +72,7 @@ test('A11Y-04: Dashboard organizer tidak memiliki pelanggaran WCAG AA', async ({
   await expectNoViolations(page, 'Dashboard organizer')
 })
 
-test('A11Y-05: Pemesanan organizer tidak memiliki pelanggaran WCAG AA', async ({
-  page,
-}) => {
+test('A11Y-05: Pemesanan organizer tidak memiliki pelanggaran WCAG AA', async ({ page }) => {
   const missing = missingEnv([
     ['E2E_ORGANIZER_EMAIL', organizer.email],
     ['E2E_ORGANIZER_PASSWORD', organizer.password],

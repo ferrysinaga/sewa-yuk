@@ -34,17 +34,12 @@ describe('AppErrorBoundary', () => {
     fireEvent.click(reloadButton)
     expect(reloadPage).toHaveBeenCalledTimes(1)
 
-    expect(screen.getByRole('link', { name: 'Kembali ke beranda' })).toHaveAttribute(
-      'href',
-      '/',
-    )
+    expect(screen.getByRole('link', { name: 'Kembali ke beranda' })).toHaveAttribute('href', '/')
   })
 
   it('memuat ulang otomatis satu kali saat chunk gagal dimuat', () => {
     const reloadPage = vi.fn()
-    const chunkError = new Error(
-      'Failed to fetch dynamically imported module: /assets/admin.js',
-    )
+    const chunkError = new Error('Failed to fetch dynamically imported module: /assets/admin.js')
 
     const { unmount } = render(
       <AppErrorBoundary reloadPage={reloadPage}>

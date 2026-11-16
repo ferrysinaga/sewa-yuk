@@ -9,9 +9,7 @@ import {
 describe('isChunkLoadError', () => {
   it('mengenali pesan kegagalan chunk dari browser umum', () => {
     expect(
-      isChunkLoadError(
-        new Error('Failed to fetch dynamically imported module: /assets/admin.js'),
-      ),
+      isChunkLoadError(new Error('Failed to fetch dynamically imported module: /assets/admin.js')),
     ).toBe(true)
     expect(isChunkLoadError(new Error('Importing a module script failed.'))).toBe(true)
     expect(isChunkLoadError(new Error('error loading dynamically imported module'))).toBe(true)
